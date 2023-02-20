@@ -1,74 +1,47 @@
 <template>
   <el-container>
     <el-header>
-      List of Actors
+      <el-radio-group v-model="actor_category" size="large" style="margin: 20px">
+        <el-radio-button v-for="category in ActorCategoryList" :label="category.value">
+          {{ category.name }}
+        </el-radio-button>
+      </el-radio-group>
     </el-header>
+
     <el-main>
-      <div margin="20">
-        <el-radio-group v-model="actor_category" size="large">
-          <el-radio-button v-for="category in ActorCategoryList" :label="category.value">
-            {{ category.name }}
-          </el-radio-button>
-        </el-radio-group>
-      </div>
-      <div>
-        <el-table :data="actor_list"><!--style="width: 100%" -->
-          <!-- actor_name -->
-          <el-table-column label="Name">
-            <template #default="scope">
-              <el-row :gutter="20" justify="start">
-                <el-col>
-                  <el-avatar shape="square" size="large" fit="contain" :src="iconActor(scope.row.actor_name)"/>
-                </el-col>
-                <el-col>
-                  <el-link :href="hrefActor(scope.row.actor_name)" target="_blank"
-                           :class="styleActor(scope.row.actor_category)"
-                           style="font-size: 20px">
-                    {{ scope.row.actor_name }}
-                  </el-link>
-                </el-col>
-                <el-col>
-                  <svg-icon v-if="scope.row.completed" size="20px" name="completed"
-                            style="color: limegreen; margin-bottom: 3px;"/>
-                </el-col>
-              </el-row>
-            </template>
-          </el-table-column>
-          <!-- actor tags -->
-          <el-table-column label="Tag">
-            <template #default="scope">
-              <el-row :gutter="20">
-                <el-tag v-for="tag_id in scope.row.rel_tags" size="large"
-                        @close="removeActorFromTag(scope.$index, scope.row, tag_id)" closable round>
-                  {{ getTagName(tag_id) }}
-                </el-tag>
-                <el-select v-model="scope.row._new_tag_list"
-                           placeholder="+ New Tag"
-                           multiple filterable clearable>
-                  <el-option
-                      v-for="actor_tag in actor_tag_list"
-                      :key="actor_tag.tag_id"
-                      :label="actor_tag.tag_name"
-                      :value="actor_tag.tag_id"
-                  />
-                </el-select>
-                <el-button v-if="scope.row._new_tag_list.length > 0" type="primary" size="large"
-                           @click="onAddTag(scope.$index, scope.row)">
-                  Save
-                </el-button>
-                <el-button v-if="scope.row._new_tag_list.length > 0" type="warning" size="large"
-                           @click="onCancelAddTag(scope.$index, scope.row)">
-                  Cancel
-                </el-button>
-              </el-row>
-            </template>
-          </el-table-column>
-          <!-- Category -->
-          <el-table-column label="Category">
-            <template #default="scope">
-              <el-select v-model="scope.row.actor_category"
-                         @change="setActorCategory(scope.$index, scope.row)"
-                         >
+      <el-pagination
+          v-model:current-page="cur_actor_page"
+          :page-size="actor_size"
+          :total="actor_count"
+          @current-change="onActorPageChange"
+          layout="total, prev, pager, next"
+          background
+          style="margin-bottom: 20px"
+      />
+
+      <el-space wrap size="large" alignment="stretch">
+        <el-card v-for="(actor, actor_index) in actor_list"
+                 :key="actor.actor_name"
+                 class="box-card"
+                 :body-style="{ padding: '10px' }"
+                 shadow="always"
+                 style="width: 200px;">
+          <el-space direction="vertical" alignment="center" :fill="true">
+            <!-- avatar -->
+            <el-image :src="iconActor(actor.actor_name)" style="height: 180px"/>
+            <!-- name -->
+            <el-link :href="hrefActor(actor.actor_name)" target="_blank"
+                     :class="styleActor(actor.actor_category)"
+                     style="font-size: 20px; word-wrap: anywhere;">
+              {{ actor.actor_name }}
+            </el-link>
+            <!-- complete + category -->
+            <el-space direction="horizontal" alignment="center">
+              <svg-icon v-if="actor.completed" size="20px" name="completed"
+                        style="color: limegreen;"/>
+              <el-select v-model="actor.actor_category"
+                         @change="setActorCategory(actor_index, actor)"
+              >
                 <el-option
                     style="width: fit-content"
                     v-for="category in ActorCategoryList"
@@ -78,22 +51,44 @@
                     :fit-input-width="true"
                     :disabled="!category.selectable"
                     :class="styleActor(category)">
-                    {{ `[${category.name}] (${category.desc})` }}
+                  {{ `[${category.name}] (${category.desc})` }}
                 </el-option>
               </el-select>
-            </template>
-          </el-table-column>
-          <!-- end of columns -->
-        </el-table>
-        <el-pagination
-            v-model:current-page="cur_actor_page"
-            :page-size="actor_size"
-            :total="actor_count"
-            @current-change="onActorPageChange"
-            layout="total, prev, pager, next"
-            background
-        />
-      </div>
+              <svg-icon @click="actor._edit_tags = true"
+                        size="20px" name="edit" />
+            </el-space>
+            <!-- tags -->
+            <el-space wrap>
+              <el-tag v-for="tag_id in actor.rel_tags"
+                      @close="removeActorFromTag(actor_index, actor, tag_id)"
+                      :closable="actor._edit_tags"
+                      style="font-size: 18px;background: lightblue;color: hotpink"
+                      round>
+                {{ getTagName(tag_id) }}
+              </el-tag>
+              <el-select v-if="actor._edit_tags"
+                         v-model="actor._new_tag_list"
+                         placeholder="+ New Tag"
+                         multiple filterable clearable>
+                <el-option
+                    v-for="actor_tag in actor_tag_list"
+                    :key="actor_tag.tag_id"
+                    :label="actor_tag.tag_name"
+                    :value="actor_tag.tag_id"
+                />
+              </el-select>
+            </el-space>
+            <el-space v-if="actor._edit_tags" direction="horizontal" alignment="center">
+              <el-button type="primary"  @click="onAddTag(actor_index, actor)">
+                Save
+              </el-button>
+              <el-button type="warning"  @click="onCancelAddTag(actor_index, actor)">
+                Cancel
+              </el-button>
+            </el-space>
+          </el-space>
+        </el-card>
+      </el-space>
     </el-main>
   </el-container>
 </template>
@@ -197,6 +192,7 @@ export default {
 
     async onCancelAddTag(actor_index: number, actor: ActorData) {
       actor._new_tag_list = []
+      actor._edit_tags = false
     },
 
     async setActorCategory(actor_index: number, actor: ActorData) {
@@ -218,6 +214,19 @@ export default {
 </script>
 
 <style scoped>
+
+.actor_name_column {
+  display: inline-flex;
+  margin: 5px;
+  padding: 5px;
+  align-content: baseline;
+}
+
+.wrapper {
+  display: grid;
+  grid-template-columns: repeat(1fr, 1fr, 1fr, 1fr);
+  grid-auto-rows: minmax(100px, auto);
+}
 
 .actor_all {
   color: sandybrown;
