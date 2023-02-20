@@ -8,6 +8,9 @@ import Download from "./components/Download.vue";
 import Welcome from "./components/Welcome.vue";
 import ActorTags from "./components/ActorTags.vue";
 
+import svgIcon from "./components/SvgIcon/index.vue";
+import 'virtual:svg-icons-register'
+
 // 1. 定义路由组件.
 // 也可以从其他文件导入
 
@@ -38,6 +41,7 @@ const app = createApp(Home)
 app.use(router)
 //element ui
 app.use(ElementPlus)
-
+//svg icon component
+app.component('svg-icon', svgIcon)
 //运行
 app.mount('#app')

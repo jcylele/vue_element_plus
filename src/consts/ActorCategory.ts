@@ -1,10 +1,10 @@
 export default class ActorCategory {
     // Create new instances of the same class as static attributes
-    static All = new ActorCategory("All", 0, "All Actors", false)
-    static Init = new ActorCategory("Init", 1, "New Actors")
-    static Liked = new ActorCategory("Liked", 2, "Liked Actors")
-    static Dislike = new ActorCategory("Dislike", 3, "Unliked Actors")
-    static Enough = new ActorCategory("Enough", 4, "No More, Thanks")
+    static All = new ActorCategory("all", 0, "All actors", false)
+    static Init = new ActorCategory("init", 1, "New added, not checked yet")
+    static Liked = new ActorCategory("liked", 2, "I like her!")
+    static Dislike = new ActorCategory("dislike", 3, "Not my type, bye")
+    static Enough = new ActorCategory("enough", 4, "I like her, but later")
 
     readonly name: string
     readonly value: number

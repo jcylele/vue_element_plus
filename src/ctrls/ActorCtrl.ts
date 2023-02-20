@@ -46,9 +46,13 @@ async function removeTagFromActor(actor_name: string, tag_id: number) {
     return [true, actor]
 }
 
-async function addTagToActor(actor_name: string, tag_id: number) {
-    const url = `${baseUrl}/tag?actor_name=${actor_name}&tag_id=${tag_id}`
-    const [ok, response] = await FetchCtrl.fetchPost(url)
+async function addTagToActor(actor_name: string, tag_list: number[]) {
+    const url = `${baseUrl}/tag`
+    const body = {
+        "actor_name": actor_name,
+        "tag_list": tag_list
+    }
+    const [ok, response] = await FetchCtrl.fetchPost(url, body)
     if (!ok) {
         return [false, response]
     }

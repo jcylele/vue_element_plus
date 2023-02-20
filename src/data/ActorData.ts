@@ -7,7 +7,7 @@ export default class ActorData extends EditableData{
     actor_category: ActorCategory
     readonly completed: boolean
 
-    _new_tag: number
+    _new_tag_list: number[] = []
 
     constructor(json_data?) {
         super(json_data);

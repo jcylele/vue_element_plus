@@ -6,24 +6,31 @@
     <el-main>
       <div margin="20">
         <el-radio-group v-model="actor_category" size="large">
-          <el-radio-button v-for="category in ActorCategoryList" v-bind:label="category.value">
+          <el-radio-button v-for="category in ActorCategoryList" :label="category.value">
             {{ category.name }}
           </el-radio-button>
         </el-radio-group>
       </div>
       <div>
-        <el-table :data="actor_list" height="512"><!--style="width: 100%" -->
+        <el-table :data="actor_list"><!--style="width: 100%" -->
           <!-- actor_name -->
           <el-table-column label="Name">
             <template #default="scope">
-              <el-row :gutter="20" align="bottom">
-                <el-avatar shape="square" size="large" fit="contain" :src="iconActor(scope.row.actor_name)"/>
-                <el-link :href="hrefActor(scope.row.actor_name)" font_size="20px" :underline="false" target="_blank" type="success" size="large">
-                  {{ scope.row.actor_name }}
-                </el-link>
-                <el-icon v-if="scope.row.completed">
-
-                </el-icon>
+              <el-row :gutter="20" justify="start">
+                <el-col>
+                  <el-avatar shape="square" size="large" fit="contain" :src="iconActor(scope.row.actor_name)"/>
+                </el-col>
+                <el-col>
+                  <el-link :href="hrefActor(scope.row.actor_name)" target="_blank"
+                           :class="styleActor(scope.row.actor_category)"
+                           style="font-size: 20px">
+                    {{ scope.row.actor_name }}
+                  </el-link>
+                </el-col>
+                <el-col>
+                  <svg-icon v-if="scope.row.completed" size="20px" name="completed"
+                            style="color: limegreen; margin-bottom: 3px;"/>
+                </el-col>
               </el-row>
             </template>
           </el-table-column>
@@ -31,10 +38,13 @@
           <el-table-column label="Tag">
             <template #default="scope">
               <el-row :gutter="20">
-                <el-tag v-for="tag_id in scope.row.rel_tags" size="large" @close="removeActorFromTag(scope.$index, scope.row, tag_id)" closable round>
+                <el-tag v-for="tag_id in scope.row.rel_tags" size="large"
+                        @close="removeActorFromTag(scope.$index, scope.row, tag_id)" closable round>
                   {{ getTagName(tag_id) }}
                 </el-tag>
-                <el-select v-model="scope.row._new_tag" @change="addTagToActor(scope.$index, scope.row)" filterable clearable fit-input-width placeholder="+ New Tag">
+                <el-select v-model="scope.row._new_tag_list"
+                           placeholder="+ New Tag"
+                           multiple filterable clearable>
                   <el-option
                       v-for="actor_tag in actor_tag_list"
                       :key="actor_tag.tag_id"
@@ -42,20 +52,34 @@
                       :value="actor_tag.tag_id"
                   />
                 </el-select>
+                <el-button v-if="scope.row._new_tag_list.length > 0" type="primary" size="large"
+                           @click="onAddTag(scope.$index, scope.row)">
+                  Save
+                </el-button>
+                <el-button v-if="scope.row._new_tag_list.length > 0" type="warning" size="large"
+                           @click="onCancelAddTag(scope.$index, scope.row)">
+                  Cancel
+                </el-button>
               </el-row>
             </template>
           </el-table-column>
           <!-- Category -->
           <el-table-column label="Category">
             <template #default="scope">
-              <el-select v-model="scope.row.actor_category" placeholder="Select">
+              <el-select v-model="scope.row.actor_category"
+                         @change="setActorCategory(scope.$index, scope.row)"
+                         >
                 <el-option
+                    style="width: fit-content"
                     v-for="category in ActorCategoryList"
                     :key="category.name"
                     :label="category.name"
                     :value="category"
+                    :fit-input-width="true"
                     :disabled="!category.selectable"
-                />
+                    :class="styleActor(category)">
+                    {{ `[${category.name}] (${category.desc})` }}
+                </el-option>
               </el-select>
             </template>
           </el-table-column>
@@ -109,6 +133,9 @@ export default {
     iconActor(actor_name) {
       return `https://coomer.party/icons/onlyfans/${actor_name}`
     },
+    styleActor(category: ActorCategory) {
+      return `actor_${category.name}`
+    },
     async onActorPageChange() {
       console.log(this.cur_actor_page)
       const [ok, actor_list] = await ActorCtrl.getActorList(this.actor_category, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
@@ -153,19 +180,27 @@ export default {
       const [ok, new_actor] = await ActorCtrl.removeTagFromActor(actor.actor_name, tag_id)
       if (ok) {
         this.actor_list[actor_index] = new_actor as ActorTagData
-        ElMessage({message:"remove tag succeed", type:"success"})
+        ElMessage({message: "remove tag succeed", type: "success"})
       } else {
         ElMessage(new_actor as string)
       }
     },
-    async addTagToActor(actor_index: number, actor: ActorData) {
-      const [ok, new_actor] = await ActorCtrl.addTagToActor(actor.actor_name, actor._new_tag)
+    async onAddTag(actor_index: number, actor: ActorData) {
+      const [ok, new_actor] = await ActorCtrl.addTagToActor(actor.actor_name, actor._new_tag_list)
       if (ok) {
         this.actor_list[actor_index] = new_actor as ActorTagData
-        ElMessage({message:"add tag succeed", type:"success"})
+        ElMessage({message: "add tags succeed", type: "success"})
       } else {
         ElMessage(new_actor as string)
       }
+    },
+
+    async onCancelAddTag(actor_index: number, actor: ActorData) {
+      actor._new_tag_list = []
+    },
+
+    async setActorCategory(actor_index: number, actor: ActorData) {
+      //complicated
     },
   },
   watch: {
@@ -184,4 +219,23 @@ export default {
 
 <style scoped>
 
+.actor_all {
+  color: sandybrown;
+}
+
+.actor_init {
+  color: darkgreen;
+}
+
+.actor_liked {
+  color: hotpink;
+}
+
+.actor_dislike {
+  color: blue;
+}
+
+.actor_enough {
+  color: orangered;
+}
 </style>
