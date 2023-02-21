@@ -30,11 +30,28 @@
             <!-- avatar -->
             <el-image :src="iconActor(actor.actor_name)" style="height: 180px"/>
             <!-- name -->
-            <el-link :href="hrefActor(actor.actor_name)" target="_blank"
-                     :class="styleActor(actor.actor_category)"
-                     style="font-size: 20px; word-wrap: anywhere;">
-              {{ actor.actor_name }}
-            </el-link>
+            <el-popover trigger="click" placement="top"
+                popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; padding: 20px;"
+            >
+              <template #reference>
+                <div :class="styleActor(actor.actor_category)"
+                     style="font-size: 20px; word-wrap: anywhere; text-align: center;">
+                  {{ actor.actor_name }}
+                </div>
+              </template>
+              <template #default>
+                <el-space direction="vertical" :fill="true" >
+                  <el-button @click="gotoActorPage(actor.actor_name)" :class="styleActor(actor.actor_category)" >
+                    Go To Page
+                  </el-button>
+                  <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)" :class="styleActor(actor.actor_category)" >
+                    Open Folder
+                  </el-button>
+                </el-space>
+              </template>
+            </el-popover>
+
+
             <!-- complete + category -->
             <el-space direction="horizontal" alignment="center">
               <svg-icon v-if="actor.completed" size="20px" name="completed"
@@ -104,7 +121,7 @@ import ActorTagCtrl from "../ctrls/ActorTagCtrl";
 export default {
   data() {
     return {
-      actor_category: ActorCategory.All.value,
+      actor_category: ActorCategory.Init.value,
       actor_tag_list: [] as ActorTagData[],
       actor_list: [] as ActorData[],
       actor_size: 10,
@@ -122,10 +139,14 @@ export default {
       console.log("loadMoreActors")
       // this.actor_list.push("a","b","c","d")
     },
-    hrefActor(actor_name) {
-      return `https://coomer.party/onlyfans/user/${actor_name}`
+    gotoActorPage(actor_name: string) {
+      const url = `https://coomer.party/onlyfans/user/${actor_name}`
+      window.open(url, '_blank', 'noreferrer');
     },
-    iconActor(actor_name) {
+    openFolder(actor_name: string) {
+      ActorCtrl.openActorFolder(actor_name)
+    },
+    iconActor(actor_name: string) {
       return `https://coomer.party/icons/onlyfans/${actor_name}`
     },
     styleActor(category: ActorCategory) {
@@ -141,7 +162,7 @@ export default {
         ElMessage(actor_list as string)
       }
     },
-    async onActorCategoryChange() {
+    async onFilterCategoryChange() {
       this.actor_list = []
 
       this.actor_count = 0
@@ -174,7 +195,7 @@ export default {
     async removeActorFromTag(actor_index: number, actor: ActorData, tag_id: number) {
       const [ok, new_actor] = await ActorCtrl.removeTagFromActor(actor.actor_name, tag_id)
       if (ok) {
-        this.actor_list[actor_index] = new_actor as ActorTagData
+        this.actor_list[actor_index] = new_actor as ActorData
         ElMessage({message: "remove tag succeed", type: "success"})
       } else {
         ElMessage(new_actor as string)
@@ -183,7 +204,7 @@ export default {
     async onAddTag(actor_index: number, actor: ActorData) {
       const [ok, new_actor] = await ActorCtrl.addTagToActor(actor.actor_name, actor._new_tag_list)
       if (ok) {
-        this.actor_list[actor_index] = new_actor as ActorTagData
+        this.actor_list[actor_index] = new_actor as ActorData
         ElMessage({message: "add tags succeed", type: "success"})
       } else {
         ElMessage(new_actor as string)
@@ -196,18 +217,28 @@ export default {
     },
 
     async setActorCategory(actor_index: number, actor: ActorData) {
-      //complicated
+      const [ok, new_actor] = await ActorCtrl.changeActorCategory(actor.actor_name, actor.actor_category.value)
+      if (ok) {
+        if (this.actor_category === new_actor.actor_category){
+          this.actor_list[actor_index] = new_actor as ActorData
+        }else {
+          this.actor_list.splice(actor_index, 1)
+        }
+        ElMessage({message: "change category succeed", type: "success"})
+      } else {
+        ElMessage(new_actor as string)
+      }
     },
   },
   watch: {
     async actor_category(new_actor_category, old_actor_category) {
       console.log(`${old_actor_category} -> ${new_actor_category}`)
-      await this.onActorCategoryChange()
+      await this.onFilterCategoryChange()
     }
   },
   async mounted() {
     await this.getActorTagList()
-    await this.onActorCategoryChange()
+    await this.onFilterCategoryChange()
   }
 }
 

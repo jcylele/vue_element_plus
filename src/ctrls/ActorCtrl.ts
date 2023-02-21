@@ -37,7 +37,7 @@ async function getActorList(actor_category: number, limit: number = 0, start: nu
 }
 
 async function removeTagFromActor(actor_name: string, tag_id: number) {
-    const url = `${baseUrl}/tag?actor_name=${actor_name}&tag_id=${tag_id}`
+    const url = `${baseUrl}/${actor_name}/${tag_id}`
     const [ok, response] = await FetchCtrl.fetchDelete(url)
     if (!ok) {
         return [false, response]
@@ -47,12 +47,29 @@ async function removeTagFromActor(actor_name: string, tag_id: number) {
 }
 
 async function addTagToActor(actor_name: string, tag_list: number[]) {
-    const url = `${baseUrl}/tag`
-    const body = {
-        "actor_name": actor_name,
-        "tag_list": tag_list
+    let url = `${baseUrl}/${actor_name}/tag?`;
+    const query_list = []
+    for (const tag_id of tag_list) {
+        query_list.push(`id=${tag_id}`)
     }
-    const [ok, response] = await FetchCtrl.fetchPost(url, body)
+    url += query_list.join('&');
+
+    const [ok, response] = await FetchCtrl.fetchPost(url)
+    if (!ok) {
+        return [false, response]
+    }
+    const actor = new ActorData(response)
+    return [true, actor]
+}
+
+async function openActorFolder(actor_name: string) {
+    const url = `${baseUrl}/${actor_name}/open`;
+    return await FetchCtrl.fetchGet(url)
+}
+
+async function changeActorCategory(actor_name: string, actor_category: number) {
+    const url = `${baseUrl}/${actor_name}?category=${actor_category}`;
+    const [ok, response] = await FetchCtrl.fetchPatch(url)
     if (!ok) {
         return [false, response]
     }
@@ -66,4 +83,6 @@ export default {
     getActorCount,
     addTagToActor,
     removeTagFromActor,
+    openActorFolder,
+    changeActorCategory
 }

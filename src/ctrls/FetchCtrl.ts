@@ -35,7 +35,7 @@ async function fetchPut(url: string, form_data) {
     return _fetch(url, requestOptions)
 }
 
-async function fetchPatch(url: string, form_data) {
+async function fetchPatch(url: string, form_data?) {
     const requestOptions = {
         method: "PATCH",
         headers: {"Content-Type": "application/json"},

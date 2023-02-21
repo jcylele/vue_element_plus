@@ -1,7 +1,7 @@
 import ActorCategory from "../consts/ActorCategory";
 import EditableData from "./EditableData";
 
-export default class ActorData extends EditableData{
+export default class ActorData extends EditableData {
     readonly actor_name: string
     rel_tags: number[]
     actor_category: ActorCategory
@@ -12,5 +12,10 @@ export default class ActorData extends EditableData{
     constructor(json_data?) {
         super(json_data);
         this.actor_category = ActorCategory.getByValue(json_data.actor_category)
+    }
+
+    hasFolder() {
+        return this.actor_category.value == ActorCategory.Init.value
+            || this.actor_category.value === ActorCategory.Liked.value;
     }
 }
