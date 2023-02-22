@@ -1,14 +1,48 @@
 <template>
   <el-container>
-    <el-header>
-      <el-radio-group v-model="actor_category" size="large" style="margin: 20px">
-        <el-radio-button v-for="category in ActorCategoryList" :label="category.value">
-          {{ category.name }}
-        </el-radio-button>
-      </el-radio-group>
-    </el-header>
-
     <el-main>
+      <el-form :model="filter_condition"
+               label-width="100px" label-position="left">
+
+        <el-form-item label="Category">
+
+          <el-checkbox-group v-model="filter_condition.category_list"
+                             @change="onCheckedCategoryChange"
+                             size="large">
+            <el-checkbox-button v-for="category in all_actor_category_list" :key="category.value"
+                                :label="category.value">
+              {{ category.name }}
+            </el-checkbox-button>
+          </el-checkbox-group>
+          <el-checkbox
+              size="large" border
+              style="margin-left: 10px"
+              v-model="is_category_all"
+              :indeterminate="is_category_partial"
+              @change="checkAllCategory">
+            All
+          </el-checkbox>
+        </el-form-item>
+        <el-form-item label="Tags">
+          <el-select v-model="filter_condition.tag_list"
+                     multiple filterable clearable>
+            <el-option
+                v-for="actor_tag in actor_tag_list"
+                :key="actor_tag.tag_id"
+                :label="actor_tag.tag_name"
+                :value="actor_tag.tag_id"
+            />
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Name" style="width: 320px">
+          <el-input v-model="filter_condition.name" clearable/>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="onFilterConditionChange">Search</el-button>
+          <el-button>Cancel</el-button>
+        </el-form-item>
+      </el-form>
+      <el-divider/>
       <el-pagination
           v-model:current-page="cur_actor_page"
           :page-size="actor_size"
@@ -18,7 +52,6 @@
           background
           style="margin-bottom: 20px"
       />
-
       <el-space wrap size="large" alignment="stretch">
         <el-card v-for="(actor, actor_index) in actor_list"
                  :key="actor.actor_name"
@@ -31,7 +64,7 @@
             <el-image :src="iconActor(actor.actor_name)" style="height: 180px"/>
             <!-- name -->
             <el-popover trigger="click" placement="top"
-                popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; padding: 20px;"
+                        popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; padding: 20px;"
             >
               <template #reference>
                 <div :class="styleActor(actor.actor_category)"
@@ -40,11 +73,12 @@
                 </div>
               </template>
               <template #default>
-                <el-space direction="vertical" :fill="true" >
-                  <el-button @click="gotoActorPage(actor.actor_name)" :class="styleActor(actor.actor_category)" >
+                <el-space direction="vertical" :fill="true">
+                  <el-button @click="gotoActorPage(actor.actor_name)" :class="styleActor(actor.actor_category)">
                     Go To Page
                   </el-button>
-                  <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)" :class="styleActor(actor.actor_category)" >
+                  <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)"
+                             :class="styleActor(actor.actor_category)">
                     Open Folder
                   </el-button>
                 </el-space>
@@ -61,7 +95,7 @@
               >
                 <el-option
                     style="width: fit-content"
-                    v-for="category in ActorCategoryList"
+                    v-for="category in all_actor_category_list"
                     :key="category.name"
                     :label="category.name"
                     :value="category"
@@ -72,7 +106,7 @@
                 </el-option>
               </el-select>
               <svg-icon @click="actor._edit_tags = true"
-                        size="20px" name="edit" />
+                        size="20px" name="edit"/>
             </el-space>
             <!-- tags -->
             <el-space wrap>
@@ -96,10 +130,10 @@
               </el-select>
             </el-space>
             <el-space v-if="actor._edit_tags" direction="horizontal" alignment="center">
-              <el-button type="primary"  @click="onAddTag(actor_index, actor)">
+              <el-button type="primary" @click="onAddTag(actor_index, actor)">
                 Save
               </el-button>
-              <el-button type="warning"  @click="onCancelAddTag(actor_index, actor)">
+              <el-button type="warning" @click="onCancelAddTag(actor_index, actor)">
                 Cancel
               </el-button>
             </el-space>
@@ -117,11 +151,19 @@ import ActorCtrl from "../ctrls/ActorCtrl";
 import {ElMessage} from "element-plus";
 import ActorTagData from "../data/ActorTagData";
 import ActorTagCtrl from "../ctrls/ActorTagCtrl";
+import ActorFilterCondition from "../data/ActorFilterCondition";
 
 export default {
   data() {
     return {
-      actor_category: ActorCategory.Init.value,
+      filter_condition: {
+        name: "",
+        category_list: [],
+        tag_list: []
+      } as ActorFilterCondition,
+      all_actor_category_list: [] as ActorCategory[],
+      is_category_partial: false,
+      is_category_all: false,
       actor_tag_list: [] as ActorTagData[],
       actor_list: [] as ActorData[],
       actor_size: 10,
@@ -129,16 +171,8 @@ export default {
       actor_count: 0
     }
   },
-  computed: {
-    ActorCategoryList(): ActorCategory[] {
-      return Object.values(ActorCategory)
-    },
-  },
+  computed: {},
   methods: {
-    loadMoreActors() {
-      console.log("loadMoreActors")
-      // this.actor_list.push("a","b","c","d")
-    },
     gotoActorPage(actor_name: string) {
       const url = `https://coomer.party/onlyfans/user/${actor_name}`
       window.open(url, '_blank', 'noreferrer');
@@ -154,7 +188,7 @@ export default {
     },
     async onActorPageChange() {
       console.log(this.cur_actor_page)
-      const [ok, actor_list] = await ActorCtrl.getActorList(this.actor_category, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
+      const [ok, actor_list] = await ActorCtrl.getActorList(this.filter_condition, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
       if (ok) {
         this.actor_list = actor_list
       } else {
@@ -162,11 +196,11 @@ export default {
         ElMessage(actor_list as string)
       }
     },
-    async onFilterCategoryChange() {
+    async onFilterConditionChange() {
       this.actor_list = []
 
       this.actor_count = 0
-      const [ok, actor_count] = await ActorCtrl.getActorCount(this.actor_category)
+      const [ok, actor_count] = await ActorCtrl.getActorCount(this.filter_condition)
       if (ok) {
         this.actor_count = actor_count
       } else {
@@ -176,6 +210,24 @@ export default {
       this.cur_actor_page = 1
       await this.onActorPageChange()
     },
+
+    checkAllCategory(val : boolean){
+      // console.log("all", val)
+      if (val){
+        this.filter_condition.category_list = this.all_actor_category_list.map((category,_,__) => category.value)
+      }else {
+        this.filter_condition.category_list = []
+      }
+      this.is_category_partial = false
+    },
+
+    onCheckedCategoryChange(val: number[]){
+      // console.log("check", ...val)
+      const length = this.filter_condition.category_list.length
+      this.is_category_all = length === this.all_actor_category_list.length
+      this.is_category_partial = length > 0 && length < this.all_actor_category_list.length
+    },
+
     async getActorTagList() {
       const [ok, tag_list] = await ActorTagCtrl.getActorTagList()
       if (ok) {
@@ -219,9 +271,9 @@ export default {
     async setActorCategory(actor_index: number, actor: ActorData) {
       const [ok, new_actor] = await ActorCtrl.changeActorCategory(actor.actor_name, actor.actor_category.value)
       if (ok) {
-        if (this.actor_category === new_actor.actor_category){
+        if (this.actor_category === new_actor.actor_category) {
           this.actor_list[actor_index] = new_actor as ActorData
-        }else {
+        } else {
           this.actor_list.splice(actor_index, 1)
         }
         ElMessage({message: "change category succeed", type: "success"})
@@ -230,34 +282,17 @@ export default {
       }
     },
   },
-  watch: {
-    async actor_category(new_actor_category, old_actor_category) {
-      console.log(`${old_actor_category} -> ${new_actor_category}`)
-      await this.onFilterCategoryChange()
-    }
-  },
+  watch: {},
   async mounted() {
+    this.all_actor_category_list = Object.values(ActorCategory)
     await this.getActorTagList()
-    await this.onFilterCategoryChange()
+    // await this.onFilterConditionChange()
   }
 }
 
 </script>
 
 <style scoped>
-
-.actor_name_column {
-  display: inline-flex;
-  margin: 5px;
-  padding: 5px;
-  align-content: baseline;
-}
-
-.wrapper {
-  display: grid;
-  grid-template-columns: repeat(1fr, 1fr, 1fr, 1fr);
-  grid-auto-rows: minmax(100px, auto);
-}
 
 .actor_all {
   color: sandybrown;

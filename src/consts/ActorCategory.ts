@@ -1,6 +1,5 @@
 export default class ActorCategory {
     // Create new instances of the same class as static attributes
-    static All = new ActorCategory("all", 0, "All actors", false)
     static Init = new ActorCategory("init", 1, "New added, not checked yet")
     static Liked = new ActorCategory("liked", 2, "I like her!")
     static Dislike = new ActorCategory("dislike", 3, "Not my type, bye")
