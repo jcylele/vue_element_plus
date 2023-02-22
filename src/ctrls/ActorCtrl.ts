@@ -1,6 +1,6 @@
 import ActorData from "../data/ActorData";
 import FetchCtrl from "./FetchCtrl";
-import ActorFilterCondition from "../data/ActorFilterCondition";
+import ActorFilterData from "../data/ActorFilterData";
 
 const baseUrl = "http://127.0.0.1:8000/api/actor"
 
@@ -14,7 +14,7 @@ async function getActor(actor_name: string) {
     return [true, actor]
 }
 
-async function getActorCount(filter_condition: ActorFilterCondition) {
+async function getActorCount(filter_condition: ActorFilterData) {
     const url = `${baseUrl}/count`
     const [ok, response] = await FetchCtrl.fetchPost(url, filter_condition)
     if (!ok) {
@@ -24,7 +24,7 @@ async function getActorCount(filter_condition: ActorFilterCondition) {
     return [true, response.value]
 }
 
-async function getActorList(filter_condition: ActorFilterCondition, limit: number = 0, start: number = 0) {
+async function getActorList(filter_condition: ActorFilterData, limit: number = 0, start: number = 0) {
     const url = `${baseUrl}/list?limit=${limit}&start=${start}`
     const [ok, response] = await FetchCtrl.fetchPost(url, filter_condition)
     if (!ok) {

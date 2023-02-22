@@ -5,6 +5,12 @@ export default class ActorCategory {
     static Dislike = new ActorCategory("dislike", 3, "Not my type, bye")
     static Enough = new ActorCategory("enough", 4, "I like her, but later")
 
+    private static _AllCategories = [ActorCategory.Init, ActorCategory.Liked, ActorCategory.Enough, ActorCategory.Dislike]
+
+    public static get AllCategories() {
+        return this._AllCategories;
+    }
+
     readonly name: string
     readonly value: number
     readonly desc: string
