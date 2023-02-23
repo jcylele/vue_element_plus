@@ -3,7 +3,7 @@
     <el-main>
       <ActorFilter :actor_tag_list="actor_tag_list"
                    :filter_condition="filter_condition"
-                   @change="onFilterConditionChange"/>
+                   @change="onFilterChange"/>
       <el-divider/>
       <el-pagination
           v-model:current-page="cur_actor_page"
@@ -48,7 +48,7 @@ export default {
     return {
       filter_condition: new ActorFilterData(),
       actor_tag_list: [] as ActorTagData[],
-      actor_list: [] as IArrayElement[],
+      actor_list: [] as IArrayElement<ActorData>[],
       actor_cards: {} as Map<Number, ActorCard>,
       actor_size: 10,
       cur_actor_page: 1,
@@ -68,7 +68,7 @@ export default {
         ElMessage(actor_list as string)
       }
     },
-    async onFilterConditionChange() {
+    async onFilterChange() {
       this.actor_list = []
 
       this.actor_count = 0
@@ -93,8 +93,8 @@ export default {
     onActorCardAdd(actor_index, actor_card){
       this.actor_cards[actor_index] = actor_card
     },
-    onActorChange(actor_data: IArrayElement) {
-      this.actor_list[actor_data.index] = actor_data
+    onActorChange(actor_data: IArrayElement<ActorData>) {
+      console.log(`actor changed: ${actor_data.index}`)
     },
   },
   watch: {},

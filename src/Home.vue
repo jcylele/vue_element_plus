@@ -3,7 +3,6 @@
     <el-container>
       <el-aside width="200px">
         <el-menu
-            class="el-menu-demo"
             mode="vertical"
             background-color="#545c64"
             text-color="#fff"

@@ -80,7 +80,7 @@
         <el-button type="primary" @click="onAddTag">
           Save
         </el-button>
-        <el-button type="warning" @click="onCancelAddTag(actor_index, actor)">
+        <el-button type="warning" @click="onCancelAddTag">
           Cancel
         </el-button>
       </el-space>
@@ -89,12 +89,12 @@
 </template>
 
 <script lang="ts">
-import ActorData from "../data/ActorData";
 import ActorCategory from "../consts/ActorCategory";
 import ActorCtrl from "../ctrls/ActorCtrl";
 import {ElMessage} from "element-plus";
 import ActorTagData from "../data/ActorTagData";
-import {IArrayElement} from "../data/ArrayElement";
+import ActorData from "../data/ActorData";
+
 export default {
   name: "ActorCard",
   // props from parent
@@ -103,19 +103,17 @@ export default {
     actor_tag_list: Array[ActorTagData],
   },
   computed: {
-    actor(){
+    actor() {
       return this.actor_data.data
     },
-    actor_index(){
-      return this.actor_data.index
+    all_actor_category_list() {
+      return ActorCategory.AllCategories
     }
   },
   // declare emitted events to parent
   emits: ['change'],
   data() {
-    return {
-      all_actor_category_list: ActorCategory.AllCategories,
-    }
+    return {}
   },
   methods: {
     iconActor(actor_name: string) {

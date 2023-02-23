@@ -50,8 +50,8 @@
                 clearable/>
     </el-form-item>
     <el-form-item>
-      <el-button type="primary" @click="onFilterConditionChange">Search</el-button>
-      <el-button>Cancel</el-button>
+      <el-button type="primary" @click="onFilterChange">Search</el-button>
+      <el-button @click="onFilterCancel">Cancel</el-button>
     </el-form-item>
   </el-form>
 </template>
@@ -83,8 +83,12 @@ export default {
       this.filter_condition.onFilterNameChange()
     },
     //
-    async onFilterConditionChange() {
-      this.$emit('change', this.filter_condition)
+    async onFilterChange() {
+      await this.$emit('change')
+    },
+    async onFilterCancel() {
+      this.filter_condition.reset()
+      await this.$emit('change')
     },
     //
     checkNoTag(val: boolean) {

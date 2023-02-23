@@ -23,8 +23,12 @@ export default class ActorFilterData {
     }
 
     constructor() {
+        this.reset()
+    }
+
+    reset() {
         this.name = ""
-        this.category_list = []
+        this.category_list = ActorCategory.AllCategoryValues
         this.tag_list = []
         this.no_tag = false
     }
@@ -32,7 +36,7 @@ export default class ActorFilterData {
     checkAllCategory(val: boolean) {
         // console.log("all", val)
         if (val) {
-            this.category_list = ActorCategory.AllCategories.map((category, _, __) => category.value)
+            this.category_list = ActorCategory.AllCategoryValues
         } else {
             this.category_list = []
         }

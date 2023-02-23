@@ -10,6 +10,9 @@ export default class ActorCategory {
     public static get AllCategories() {
         return this._AllCategories;
     }
+    public static get AllCategoryValues() {
+        return this._AllCategories.map((category, _, __) => category.value)
+    }
 
     readonly name: string
     readonly value: number
