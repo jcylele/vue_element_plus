@@ -1,10 +1,8 @@
 <template>
   <el-container>
     <el-main>
-      <ActorFilter :actor_tag_list="actor_tag_list"
-                   :filter_condition="filter_condition"
-                   @change="onFilterChange"
-                   @actorTagAdded="getActorTagList"/>
+      <ActorFilter :filter_condition="filter_condition"
+                   @change="onFilterChange"/>
       <el-divider/>
       <el-pagination
           v-model:current-page="cur_actor_page"
@@ -21,8 +19,6 @@
                    :actor_index="actor_index"
         -->
         <ActorCard v-for="actor_data in actor_list"
-                   :actor_tag_list="actor_tag_list"
-
                    :actor_data="actor_data"
                    :ref="(card) => { onActorCardAdd(actor_index, card) }"
                    @change="onActorChange"/>
@@ -34,20 +30,19 @@
 <script lang="ts">
 import ActorData from "../data/ActorData";
 import {ElMessage} from "element-plus";
-import ActorTagData from "../data/ActorTagData";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import {IArrayElement, ToElementArray} from "../data/ArrayElement";
 import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
-import {getActorTagList} from "../ctrls/ActorTagCtrl";
+import {mapActions} from "pinia";
+import {ActorTagStore} from "../store/ActorTagStore";
 
 export default {
   components: {ActorCard, ActorFilter},
   data() {
     return {
       filter_condition: new ActorFilterData(),
-      actor_tag_list: [] as ActorTagData[],
       actor_list: [] as IArrayElement<ActorData>[],
       actor_cards: {} as Map<Number, ActorCard>,
       actor_size: 10,
@@ -57,6 +52,10 @@ export default {
   },
   computed: {},
   methods: {
+    ...mapActions(ActorTagStore, {
+      getTagsFromServer: 'getFromServer',
+    }),
+
     async onActorPageChange() {
       console.log(this.cur_actor_page)
       this.actor_cards = {}
@@ -82,14 +81,6 @@ export default {
       this.cur_actor_page = 1
       await this.onActorPageChange()
     },
-    async getActorTagList() {
-      const [ok, tag_list] = await getActorTagList()
-      if (ok) {
-        this.actor_tag_list = tag_list as ActorTagData[]
-      } else {
-        ElMessage(tag_list as string)
-      }
-    },
     onActorCardAdd(actor_index, actor_card) {
       this.actor_cards[actor_index] = actor_card
     },
@@ -99,8 +90,7 @@ export default {
   },
   watch: {},
   async mounted() {
-    await this.getActorTagList()
-    // await this.onFilterConditionChange()
+    await this.getTagsFromServer()
   }
 }
 

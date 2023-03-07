@@ -91,18 +91,19 @@
 <script lang="ts">
 import ActorCategory from "../consts/ActorCategory";
 import {ElMessage} from "element-plus";
-import ActorTagData from "../data/ActorTagData";
 import ActorData from "../data/ActorData";
 import {addTagToActor, changeActorCategory, openActorFolder, removeTagFromActor} from "../ctrls/ActorCtrl";
+import {mapState} from "pinia";
+import {ActorTagStore} from "../store/ActorTagStore";
 
 export default {
   name: "ActorCard",
   // props from parent
   props: {
     actor_data: {data: ActorData, index: Number},
-    actor_tag_list: Array[ActorTagData],
   },
   computed: {
+    ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
     actor() {
       return this.actor_data.data
     },

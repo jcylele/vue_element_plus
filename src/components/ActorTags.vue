@@ -5,7 +5,7 @@
     </el-header>
     <el-main>
       <div>
-        <NewActorTag @actorTagAdded="getActorTagList"/>
+        <NewActorTag />
       </div>
       <div>
         <el-table :data="actor_tag_list" height="512"><!--style="width: 100%" -->
@@ -16,7 +16,7 @@
           </el-table-column>
           <el-table-column label="Priority" prop="tag_priority" sortable>
             <template #default="scope">
-              <el-input-number size="large" v-model="scope.row.tag_priority" :min="0" :max="100"
+              <el-input-number v-model="scope.row.tag_priority" :min="0" :max="100"
                                @change="scope.row.changed = true"/>
             </template>
           </el-table-column>
@@ -45,7 +45,9 @@
 import ActorTagData from "../data/ActorTagData";
 import {ElMessage} from "element-plus";
 import NewActorTag from "./NewActorTag.vue";
-import {delActorTag, editActorTag, getActorTag, getActorTagList} from "../ctrls/ActorTagCtrl";
+import {delActorTag, editActorTag, getActorTag} from "../ctrls/ActorTagCtrl";
+import {mapActions, mapState} from "pinia";
+import {ActorTagStore} from "../store/ActorTagStore";
 
 export default {
   name: "ActorTags",
@@ -53,29 +55,22 @@ export default {
 
   data() {
     return {
-      actor_tag_list: [] as ActorTagData[],
-      new_actor_tag: new ActorTagData(),
-      show_add: false
     }
   },
-  computed: {},
+  computed: {
+    ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
+  },
   methods: {
-    showAdd(val: boolean) {
-      this.show_add = val
-    },
-    async getActorTagList() {
-      const [ok, tag_list] = await getActorTagList()
-      if (ok) {
-        this.actor_tag_list = tag_list as ActorTagData[]
-      } else {
-        ElMessage(tag_list as string)
-      }
-    },
+    ...mapActions(ActorTagStore, {
+      getTagsFromServer: 'getFromServer',
+      removeActorTag: 'remove',
+      updateActorTag: 'update'
+    }),
     async onSaveActorTag(index: number, tag: ActorTagData) {
       console.log("Save", index, tag)
       const [ok, new_tag] = await editActorTag(tag)
       if (ok) {
-        this.actor_tag_list[index] = new_tag as ActorTagData
+        this.updateActorTag(new_tag as ActorTagData, index)
         ElMessage({message: "save succeed", type: "success"})
       } else {
         ElMessage({message: new_tag as string, type: "error"})
@@ -85,7 +80,7 @@ export default {
       console.log("Reset", index, tag)
       const [ok, origin_tag] = await getActorTag(tag.tag_id)
       if (ok) {
-        this.actor_tag_list[index] = origin_tag as ActorTagData
+        this.updateActorTag(origin_tag as ActorTagData, index)
       } else {
         ElMessage(origin_tag as string)
       }
@@ -94,7 +89,7 @@ export default {
       console.log("Delete", index, tag)
       const [ok, ret] = await delActorTag(tag.tag_id)
       if (ok) {
-        this.actor_tag_list.splice(index, 1)
+        this.removeActorTag(index)
         ElMessage({message: `Delete ${ret.value} succeed`, type: "success"})
       } else {
         ElMessage(ret as string)
@@ -103,7 +98,7 @@ export default {
   },
   watch: {},
   async mounted() {
-    await this.getActorTagList()
+    await this.getTagsFromServer()
   }
 }
 </script>

@@ -41,7 +41,7 @@
                    border>
         No Tag
       </el-checkbox>
-      <NewActorTag @actorTagAdded="onActorTagAdded"/>
+      <NewActorTag />
     </el-form-item>
 
     <!-- filter name -->
@@ -62,16 +62,17 @@ import ActorTagData from "../data/ActorTagData";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorCategory from "../consts/ActorCategory";
 import NewActorTag from "./NewActorTag.vue";
+import {mapState} from "pinia";
+import {ActorTagStore} from "../store/ActorTagStore";
 
 export default {
   name: "ActorFilter",
   // props from parent
   props: {
-    actor_tag_list: Array[ActorTagData],
     filter_condition: ActorFilterData
   },
   // declare emitted events to parent
-  emits: ['change', 'actorTagAdded'],
+  emits: ['change'],
   components: {NewActorTag},
   data() {
     return {
@@ -79,10 +80,11 @@ export default {
     }
   },
 
+  computed: {
+    ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
+  },
+
   methods: {
-    onActorTagAdded() {
-      this.$emit('actorTagAdded')
-    },
     //name input changed
     onFilterNameChange() {
       this.filter_condition.onFilterNameChange()

@@ -12,6 +12,7 @@
     "@element-plus/icons-vue": "^2.0.10",
     "element-plus": "^2.2.30",
     "fast-glob": "^3.2.12",
+    "pinia": "^2.0.33",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
   },

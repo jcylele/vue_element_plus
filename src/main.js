@@ -1,4 +1,5 @@
 import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import {createRouter, createWebHashHistory} from "vue-router";
@@ -34,11 +35,16 @@ const router = createRouter({
     routes, // `routes: routes` 的缩写
 })
 
+//data store
+const pinia = createPinia()
+
 // 5. 创建并挂载根实例
 const app = createApp(Home)
 //确保 _use_ 路由实例使
 //整个应用支持路由。
 app.use(router)
+// pinia store
+app.use(pinia)
 //element ui
 app.use(ElementPlus)
 //svg icon component

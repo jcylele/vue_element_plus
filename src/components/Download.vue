@@ -92,22 +92,17 @@ import ActorCategory from "../consts/ActorCategory";
 import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorData from "../data/ActorData";
-import ActorTagData from "../data/ActorTagData";
-import {getActorTagList} from "../ctrls/ActorTagCtrl";
+import {mapActions} from "pinia";
+import {ActorTagStore} from "../store/ActorTagStore";
 
 export default {
-  computed: {
-    ActorCategory() {
-      return ActorCategory
-    }
-  },
+
   components: {DownloadLimit},
   data() {
     return {
       download_limit: new DownloadLimitForm(),
       actor_category: ActorCategory.Init.value,
       actor_count: 0,
-      actor_tag_list: [] as ActorTagData[],
       actor_search_step: 0,
       actor_search_name: "",
       actor_search_list: [] as ActorData[],
@@ -129,20 +124,21 @@ export default {
       }
     }
   },
+  computed: {
+    ActorCategory() {
+      return ActorCategory
+    }
+  },
   methods: {
+    ...mapActions(ActorTagStore, {
+      getTagsFromServer: 'getFromServer',
+      getTagName: 'getName',
+    }),
     AddToNameList(actor: ActorData) {
       this.actor_name_list.push(actor.actor_name)
     },
     formatter(row: ActorData, _) {
       return row.actor_category.name
-    },
-    getTagName(tag_id: number): string {
-      for (const tag of this.actor_tag_list) {
-        if (tag.tag_id === tag_id) {
-          return tag.tag_name
-        }
-      }
-      return `Error(${tag_id})`
     },
     onTabChange(pane_name) {
       console.log(pane_name)
@@ -191,17 +187,9 @@ export default {
         ElMessage({message: ret as string, type: "error"})
       }
     },
-    async getActorTagList() {
-      const [ok, tag_list] = await getActorTagList()
-      if (ok) {
-        this.actor_tag_list = tag_list as ActorTagData[]
-      } else {
-        ElMessage(tag_list as string)
-      }
-    },
   },
   async mounted() {
-    await this.getActorTagList()
+    await this.getTagsFromServer()
   }
 }
 
