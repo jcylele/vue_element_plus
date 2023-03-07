@@ -3,7 +3,8 @@
     <el-main>
       <ActorFilter :actor_tag_list="actor_tag_list"
                    :filter_condition="filter_condition"
-                   @change="onFilterChange"/>
+                   @change="onFilterChange"
+                   @actorTagAdded="getActorTagList"/>
       <el-divider/>
       <el-pagination
           v-model:current-page="cur_actor_page"
@@ -31,16 +32,15 @@
 </template>
 
 <script lang="ts">
-import ActorCategory from '../consts/ActorCategory'
 import ActorData from "../data/ActorData";
-import ActorCtrl from "../ctrls/ActorCtrl";
 import {ElMessage} from "element-plus";
 import ActorTagData from "../data/ActorTagData";
-import ActorTagCtrl from "../ctrls/ActorTagCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import {IArrayElement, ToElementArray} from "../data/ArrayElement";
+import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
+import {getActorTagList} from "../ctrls/ActorTagCtrl";
 
 export default {
   components: {ActorCard, ActorFilter},
@@ -60,7 +60,7 @@ export default {
     async onActorPageChange() {
       console.log(this.cur_actor_page)
       this.actor_cards = {}
-      const [ok, actor_list] = await ActorCtrl.getActorList(this.filter_condition, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
+      const [ok, actor_list] = await getActorList(this.filter_condition, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
       if (ok) {
         this.actor_list = ToElementArray(actor_list)
       } else {
@@ -72,7 +72,7 @@ export default {
       this.actor_list = []
 
       this.actor_count = 0
-      const [ok, actor_count] = await ActorCtrl.getActorCount(this.filter_condition)
+      const [ok, actor_count] = await getActorCount(this.filter_condition)
       if (ok) {
         this.actor_count = actor_count
       } else {
@@ -83,14 +83,14 @@ export default {
       await this.onActorPageChange()
     },
     async getActorTagList() {
-      const [ok, tag_list] = await ActorTagCtrl.getActorTagList()
+      const [ok, tag_list] = await getActorTagList()
       if (ok) {
         this.actor_tag_list = tag_list as ActorTagData[]
       } else {
         ElMessage(tag_list as string)
       }
     },
-    onActorCardAdd(actor_index, actor_card){
+    onActorCardAdd(actor_index, actor_card) {
       this.actor_cards[actor_index] = actor_card
     },
     onActorChange(actor_data: IArrayElement<ActorData>) {

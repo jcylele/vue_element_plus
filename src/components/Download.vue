@@ -35,7 +35,7 @@
               <el-step title="Choose Actors"/>
               <el-step title="Set Download Config"/>
             </el-steps>
-            <el-divider />
+            <el-divider/>
             <el-space direction="horizontal" size="large" wrap>
               <el-tag v-for="actor_name in actor_name_list"
                       :key="actor_name"
@@ -44,7 +44,7 @@
                 {{ actor_name }}
               </el-tag>
             </el-space>
-            <el-divider />
+            <el-divider/>
             <el-space direction="vertical" v-if="actor_search_step == 0">
               <el-space direction="horizontal">
                 <el-input v-model="actor_search_name" size="large" clearable/>
@@ -85,15 +85,15 @@
 <script lang="ts">
 
 import {DownloadLimitForm} from "../data/SimpleForms";
-import DownloadCtrl from "../ctrls/DownloadCtrl";
+import {downloadByCategory, downloadNewActors, restoreRecord} from "../ctrls/DownloadCtrl";
 import {ElMessage} from "element-plus";
 import DownloadLimit from "./DownloadLimit.vue";
 import ActorCategory from "../consts/ActorCategory";
-import ActorCtrl from "../ctrls/ActorCtrl";
+import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorData from "../data/ActorData";
 import ActorTagData from "../data/ActorTagData";
-import ActorTagCtrl from "../ctrls/ActorTagCtrl";
+import {getActorTagList} from "../ctrls/ActorTagCtrl";
 
 export default {
   computed: {
@@ -121,7 +121,7 @@ export default {
       //get corresponding actor count
       const filter_data = new ActorFilterData()
       filter_data.category_list = [new_val]
-      const [ok, actor_count] = await ActorCtrl.getActorCount(filter_data)
+      const [ok, actor_count] = await getActorCount(filter_data)
       if (ok) {
         this.actor_count = actor_count
       } else {
@@ -157,7 +157,7 @@ export default {
     async searchActors() {
       const filter_data = new ActorFilterData()
       filter_data.name = this.actor_search_name
-      const [ok, actor_list] = await ActorCtrl.getActorList(filter_data)
+      const [ok, actor_list] = await getActorList(filter_data)
       if (ok) {
         this.actor_search_list = actor_list
       } else {
@@ -165,7 +165,7 @@ export default {
       }
     },
     async downloadNew() {
-      const [ok, ret] = await DownloadCtrl.downloadNewActors(this.download_limit)
+      const [ok, ret] = await downloadNewActors(this.download_limit)
       if (ok) {
         ElMessage({message: "download started", type: "success"})
       } else {
@@ -173,18 +173,18 @@ export default {
       }
     },
     async downloadByCategory() {
-      const [ok, ret] = await DownloadCtrl.downloadByCategory(this.actor_category, this.download_limit)
+      const [ok, ret] = await downloadByCategory(this.actor_category, this.download_limit)
       if (ok) {
         ElMessage({message: "download started", type: "success"})
       } else {
         ElMessage({message: ret as string, type: "error"})
       }
     },
-    async downloadByName(){
+    async downloadByName() {
       ElMessage({message: "Not Implemented", type: "warning"})
     },
     async restoreRecord() {
-      const [ok, ret] = await DownloadCtrl.restoreRecord()
+      const [ok, ret] = await restoreRecord()
       if (ok) {
         ElMessage({message: "restore record succeed", type: "success"})
       } else {
@@ -192,7 +192,7 @@ export default {
       }
     },
     async getActorTagList() {
-      const [ok, tag_list] = await ActorTagCtrl.getActorTagList()
+      const [ok, tag_list] = await getActorTagList()
       if (ok) {
         this.actor_tag_list = tag_list as ActorTagData[]
       } else {

@@ -41,6 +41,7 @@
                    border>
         No Tag
       </el-checkbox>
+      <NewActorTag @actorTagAdded="onActorTagAdded"/>
     </el-form-item>
 
     <!-- filter name -->
@@ -60,6 +61,7 @@
 import ActorTagData from "../data/ActorTagData";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorCategory from "../consts/ActorCategory";
+import NewActorTag from "./NewActorTag.vue";
 
 export default {
   name: "ActorFilter",
@@ -69,8 +71,8 @@ export default {
     filter_condition: ActorFilterData
   },
   // declare emitted events to parent
-  emits: ['change'],
-
+  emits: ['change', 'actorTagAdded'],
+  components: {NewActorTag},
   data() {
     return {
       all_actor_category_list: ActorCategory.AllCategories,
@@ -78,6 +80,9 @@ export default {
   },
 
   methods: {
+    onActorTagAdded() {
+      this.$emit('actorTagAdded')
+    },
     //name input changed
     onFilterNameChange() {
       this.filter_condition.onFilterNameChange()

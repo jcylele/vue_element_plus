@@ -1,11 +1,11 @@
 import ActorTagData from "../data/ActorTagData";
-import FetchCtrl from "./FetchCtrl";
+import {fetchDelete, fetchGet, fetchPost, fetchPut} from "./FetchCtrl";
 
 const baseUrl = "http://127.0.0.1:8000/api/actor_tag"
 
-async function addActorTag(actor_tag: ActorTagData) {
+export async function addActorTag(actor_tag: ActorTagData) {
     const url = `${baseUrl}/add`
-    const [ok, response] = await FetchCtrl.fetchPost(url, actor_tag)
+    const [ok, response] = await fetchPost(url, actor_tag)
     if (!ok) {
         return [ok, response]
     }
@@ -13,9 +13,9 @@ async function addActorTag(actor_tag: ActorTagData) {
     return [true, tag]
 }
 
-async function editActorTag(actor_tag: ActorTagData): Promise<[boolean, ActorTagData]>  {
+export async function editActorTag(actor_tag: ActorTagData): Promise<[boolean, ActorTagData]> {
     const url = `${baseUrl}/${actor_tag.tag_id}`
-    const [ok, response] = await FetchCtrl.fetchPut(url, actor_tag)
+    const [ok, response] = await fetchPut(url, actor_tag)
     if (!ok) {
         return [ok, response]
     }
@@ -23,9 +23,9 @@ async function editActorTag(actor_tag: ActorTagData): Promise<[boolean, ActorTag
     return [true, tag]
 }
 
-async function getActorTag(tag_id: number) {
+export async function getActorTag(tag_id: number) {
     const url = `${baseUrl}/${tag_id}`
-    const [ok, response] = await FetchCtrl.fetchGet(url)
+    const [ok, response] = await fetchGet(url)
     if (!ok) {
         return [ok, response]
     }
@@ -33,9 +33,9 @@ async function getActorTag(tag_id: number) {
     return [true, tag]
 }
 
-async function getActorTagList() {
+export async function getActorTagList() {
     const url = `${baseUrl}/list`
-    const [ok, response] = await FetchCtrl.fetchGet(url)
+    const [ok, response] = await fetchGet(url)
     if (!ok) {
         return [ok, response]
     }
@@ -43,23 +43,13 @@ async function getActorTagList() {
     for (const json_data of response) {
         list.push(new ActorTagData(json_data))
     }
+    // list.sort(compareActorTag)
     return [true, list]
 }
 
-function compareActorTag(a: ActorTagData, b: ActorTagData) : number {
-    return b.tag_priority - a.tag_priority;
-}
 
-async function delActorTag(tag_id: number) {
+
+export async function delActorTag(tag_id: number) {
     const url = `${baseUrl}/${tag_id}`
-    return await FetchCtrl.fetchDelete(url)
-}
-
-export default {
-    getActorTag,
-    addActorTag,
-    editActorTag,
-    delActorTag,
-    getActorTagList,
-    compareActorTag,
+    return await fetchDelete(url)
 }

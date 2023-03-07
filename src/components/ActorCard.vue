@@ -90,10 +90,10 @@
 
 <script lang="ts">
 import ActorCategory from "../consts/ActorCategory";
-import ActorCtrl from "../ctrls/ActorCtrl";
 import {ElMessage} from "element-plus";
 import ActorTagData from "../data/ActorTagData";
 import ActorData from "../data/ActorData";
+import {addTagToActor, changeActorCategory, openActorFolder, removeTagFromActor} from "../ctrls/ActorCtrl";
 
 export default {
   name: "ActorCard",
@@ -127,7 +127,7 @@ export default {
       window.open(url, '_blank', 'noreferrer');
     },
     openFolder(actor_name: string) {
-      ActorCtrl.openActorFolder(actor_name)
+      openActorFolder(actor_name)
     },
     getTagName(tag_id: number): string {
       for (const tag of this.actor_tag_list) {
@@ -138,7 +138,7 @@ export default {
       return `Error(${tag_id})`
     },
     async setActorCategory() {
-      const [ok, new_actor] = await ActorCtrl.changeActorCategory(this.actor.actor_name, this.actor.actor_category.value)
+      const [ok, new_actor] = await changeActorCategory(this.actor.actor_name, this.actor.actor_category.value)
       if (ok) {
         this.actor_data.data = new_actor
         this.$emit('change', this.actor_data)
@@ -148,7 +148,7 @@ export default {
       }
     },
     async removeActorFromTag(tag_id: number) {
-      const [ok, new_actor] = await ActorCtrl.removeTagFromActor(this.actor.actor_name, tag_id)
+      const [ok, new_actor] = await removeTagFromActor(this.actor.actor_name, tag_id)
       if (ok) {
         this.actor_data.data = new_actor
         this.$emit('change', this.actor_data)
@@ -158,7 +158,7 @@ export default {
       }
     },
     async onAddTag() {
-      const [ok, new_actor] = await ActorCtrl.addTagToActor(this.actor.actor_name, this.actor._new_tag_list)
+      const [ok, new_actor] = await addTagToActor(this.actor.actor_name, this.actor._new_tag_list)
       if (ok) {
         this.actor_data.data = new_actor
         this.$emit('change', this.actor_data)
