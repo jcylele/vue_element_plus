@@ -118,7 +118,7 @@ export default {
   },
   methods: {
     iconActor(actor_name: string) {
-      return `https://coomer.party/icons/onlyfans/${actor_name}`
+      return `http://localhost:1314/_icon/${actor_name}.jfif`
     },
     styleActor(category: ActorCategory) {
       return `actor_${category.name}`
