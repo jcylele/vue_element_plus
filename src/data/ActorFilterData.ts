@@ -28,7 +28,7 @@ export default class ActorFilterData {
 
     reset() {
         this.name = ""
-        this.category_list = []
+        this.category_list = ActorCategory.AllCategoryValues
         this.tag_list = []
         this.no_tag = false
     }

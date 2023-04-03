@@ -85,7 +85,7 @@
 <script lang="ts">
 
 import {DownloadLimitForm} from "../data/SimpleForms";
-import {downloadByCategory, downloadNewActors, restoreRecord} from "../ctrls/DownloadCtrl";
+import {downloadByCategory, downloadByNames, downloadNewActors, restoreRecord} from "../ctrls/DownloadCtrl";
 import {ElMessage} from "element-plus";
 import DownloadLimit from "./DownloadLimit.vue";
 import ActorCategory from "../consts/ActorCategory";
@@ -177,7 +177,13 @@ export default {
       }
     },
     async downloadByName() {
-      ElMessage({message: "Not Implemented", type: "warning"})
+      const [ok, ret] = await downloadByNames(this.download_limit, this.actor_name_list)
+      if (ok) {
+        this.actor_name_list = []
+        ElMessage({message: "download started", type: "success"})
+      } else {
+        ElMessage({message: ret as string, type: "error"})
+      }
     },
     async restoreRecord() {
       const [ok, ret] = await restoreRecord()

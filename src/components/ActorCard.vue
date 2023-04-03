@@ -67,6 +67,7 @@
         <el-select v-if="actor._edit_tags"
                    v-model="actor._new_tag_list"
                    placeholder="+ New Tag"
+                   :reserve-keyword="false"
                    multiple filterable clearable>
           <el-option
               v-for="actor_tag in actor_tag_list"

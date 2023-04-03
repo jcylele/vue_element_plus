@@ -14,6 +14,18 @@ export async function restoreRecord() {
     return [true, response.value]
 }
 
+export async function downloadByNames(download_limit: DownloadLimitForm, actor_names: string[]) {
+    let url = `${baseUrl}/specific`
+    const params = actor_names.map(name => `name=${name}`).join("&")
+    url = `${url}?${params}`
+    const [ok, response] = await fetchPost(url, download_limit)
+    if (!ok) {
+        return [ok, response]
+    }
+
+    return [true, response.value]
+}
+
 export async function downloadNewActors(download_limit: DownloadLimitForm) {
     const url = `${baseUrl}/new`
     const [ok, response] = await fetchPost(url, download_limit)
