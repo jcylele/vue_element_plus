@@ -15,7 +15,7 @@
             <el-button type="primary" @click="downloadNew">Download</el-button>
           </el-space>
         </el-tab-pane>
-        <el-tab-pane label="Download By Category">
+        <el-tab-pane label="Download By Category" name="tab_category">
           <el-space direction="vertical">
             <DownloadLimit :download_limit="download_limit"/>
             <el-radio-group v-model="actor_category" size="large">
@@ -29,7 +29,7 @@
             <el-button type="primary" @click="downloadByCategory">Download</el-button>
           </el-space>
         </el-tab-pane>
-        <el-tab-pane label="Download By Names">
+        <el-tab-pane label="Download By Names" name="tab_name">
           <el-space direction="vertical">
             <el-steps :active="actor_search_step" finish-status="success" align-center>
               <el-step title="Choose Actors"/>
@@ -49,6 +49,7 @@
               <el-space direction="horizontal">
                 <el-input v-model="actor_search_name" size="large" clearable/>
                 <el-button @click="searchActors">Search</el-button>
+                <el-button type="primary" @click="AddToNameList(actor_search_name)">Add Actor</el-button>
               </el-space>
               <el-table :data="actor_search_list" border>
                 <el-table-column type="selection" width="55"/>
@@ -65,7 +66,7 @@
                 </el-table-column>
                 <el-table-column label="Tags" min-width="100px">
                   <template #default="scope">
-                    <el-button type="primary" @click="AddToNameList(scope.row)">Add</el-button>
+                    <el-button type="primary" @click="AddToNameList(scope.row.actor_name)">Add</el-button>
                   </template>
                 </el-table-column>
               </el-table>
@@ -134,8 +135,8 @@ export default {
       getTagsFromServer: 'getFromServer',
       getTagName: 'getName',
     }),
-    AddToNameList(actor: ActorData) {
-      this.actor_name_list.push(actor.actor_name)
+    AddToNameList(actor_name: string) {
+      this.actor_name_list.push(actor_name)
     },
     formatter(row: ActorData, _) {
       return row.actor_category.name
@@ -147,6 +148,12 @@ export default {
           break
         case 'tab_new':
           this.download_limit.resetDefaultValue(ActorCategory.Init.value)
+          break
+        case 'tab_name':
+          this.download_limit.resetDefaultValue(ActorCategory.Enough.value)
+          break
+        case 'tab_category':
+          this.download_limit.resetDefaultValue(this.actor_category)
           break
       }
     },

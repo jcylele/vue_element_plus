@@ -69,7 +69,17 @@ export async function openActorFolder(actor_name: string) {
 }
 
 export async function changeActorCategory(actor_name: string, actor_category: number) {
-    const url = `${baseUrl}/${actor_name}?category=${actor_category}`;
+    const url = `${baseUrl}/${actor_name}/category?val=${actor_category}`;
+    const [ok, response] = await fetchPatch(url)
+    if (!ok) {
+        return [false, response]
+    }
+    const actor = new ActorData(response)
+    return [true, actor]
+}
+
+export async function changeActorStar(actor_name: string, actor_star: boolean) {
+    const url = `${baseUrl}/${actor_name}/star?val=${actor_star}`;
     const [ok, response] = await fetchPatch(url)
     if (!ok) {
         return [false, response]

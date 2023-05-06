@@ -1,5 +1,14 @@
 <template>
-  <el-space direction="vertical">
+  <el-space direction="vertical" border>
+    <el-space direction="horizontal">
+      <el-radio-group v-model="cur_actor_category">
+        <el-radio v-for="category in all_actor_category_list"
+                  :label="category.value"
+                  :key="category.value">
+          {{ category.name }}
+        </el-radio>
+      </el-radio-group>
+    </el-space>
     <el-space direction="horizontal">
               <span class="limit-label">
                 New Actor Count
@@ -10,19 +19,23 @@
               <span class="limit-label">
                 Post Count
               </span>
-      <el-input-number v-model="download_limit.post_count"  :max="9999" :step="25"/>
+      <el-input-number v-model="download_limit.post_count" :max="9999" :step="25"/>
     </el-space>
     <el-space direction="horizontal">
               <span class="limit-label">
                 File Size Limit(MB)
               </span>
-      <el-input-number v-model="download_limit.file_size"  :max="1024" :step="10"/>
+      <el-input-number v-model="download_limit.file_size" :max="1024" :step="10"/>
     </el-space>
   </el-space>
 </template>
 
 <script lang="ts">
 import {DownloadLimitForm} from "../data/SimpleForms";
+import ActorCategory from "../consts/ActorCategory";
+import ActorFilterData from "../data/ActorFilterData";
+import {getActorCount} from "../ctrls/ActorCtrl";
+import {ElMessage} from "element-plus";
 
 export default {
   name: "DownloadLimit",
@@ -30,7 +43,15 @@ export default {
     download_limit: DownloadLimitForm
   },
   data() {
-    return {}
+    return {
+      cur_actor_category: ActorCategory.Init.value,
+      all_actor_category_list: ActorCategory.AllCategories,
+    }
+  },
+  watch: {
+    async cur_actor_category(new_val, old_val) {
+      this.download_limit.resetDefaultValue(new_val)
+    }
   },
 }
 </script>

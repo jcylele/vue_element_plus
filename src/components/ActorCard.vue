@@ -7,7 +7,16 @@
     <el-space direction="vertical" alignment="center" :fill="true">
 
       <!-- actor avatar -->
-      <el-image :src="iconActor(actor.actor_name)" style="height: 180px"/>
+      <div style="position: relative;">
+        <el-image :src="iconActor(actor.actor_name)" style="height: 180px"/>
+        <svg-icon v-if="!actor.star" size="40px" name="star_empty"
+                  @click="changeStar(true)"
+                  style="color: whitesmoke;position: absolute; top: 0; right: 0;"/>
+        <svg-icon v-if="actor.star" size="40px" name="star_filled"
+                  @click="changeStar(false)"
+                  style="color: gold;position: absolute; top: 0; right: 0;"/>
+      </div>
+
 
       <!-- actor name -->
       <el-popover trigger="click" placement="top"
@@ -93,7 +102,13 @@
 import ActorCategory from "../consts/ActorCategory";
 import {ElMessage} from "element-plus";
 import ActorData from "../data/ActorData";
-import {addTagToActor, changeActorCategory, openActorFolder, removeTagFromActor} from "../ctrls/ActorCtrl";
+import {
+  addTagToActor,
+  changeActorCategory,
+  changeActorStar,
+  openActorFolder,
+  removeTagFromActor
+} from "../ctrls/ActorCtrl";
 import {mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 
@@ -173,6 +188,16 @@ export default {
       this.actor._new_tag_list = []
       this.actor._edit_tags = false
     },
+    async changeStar(star: boolean) {
+      const [ok, new_actor] = await changeActorStar(this.actor.actor_name, star)
+      if (ok) {
+        this.actor_data.data = new_actor
+        this.$emit('change', this.actor_data)
+        ElMessage({message: "change star succeed", type: "success"})
+      } else {
+        ElMessage(new_actor as string)
+      }
+    }
   },
 }
 </script>

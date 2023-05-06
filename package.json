@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node cleanJsFiles.cjs C:\\Users\\wangle\\Documents\\PythonCrawler\\assets",
     "build": "vite build",
     "postbuild": "copyfiles -f -u 1 ./dist/**/*.* C:\\Users\\wangle\\Documents\\PythonCrawler\\assets",
     "preview": "vite preview"

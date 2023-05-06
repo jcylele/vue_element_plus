@@ -6,6 +6,7 @@ export default class ActorData extends EditableData {
     rel_tags: number[]
     actor_category: ActorCategory
     readonly completed: boolean
+    star: boolean
     _new_tag_list: number[] = []
     _edit_tags: boolean = false
 
