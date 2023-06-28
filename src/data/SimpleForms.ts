@@ -25,4 +25,10 @@ export class DownloadLimitForm {
                 break
         }
     }
+
+    public static NewForm(category_value:number) {
+        const form = new DownloadLimitForm()
+        form.resetDefaultValue(category_value)
+        return form
+    }
 }

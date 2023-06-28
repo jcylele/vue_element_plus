@@ -5,7 +5,7 @@
     </el-header>
     <el-main>
       <div>
-        <NewActorTag />
+        <NewActorTag/>
       </div>
       <div>
         <el-table :data="actor_tag_list" height="512"><!--style="width: 100%" -->
@@ -17,6 +17,12 @@
           <el-table-column label="Priority" prop="tag_priority" sortable>
             <template #default="scope">
               <el-input-number v-model="scope.row.tag_priority" :min="0" :max="100"
+                               @change="scope.row.changed = true"/>
+            </template>
+          </el-table-column>
+          <el-table-column label="Color" prop="tag_color">
+            <template #default="scope">
+              <el-color-picker v-model="scope.row.tag_color" size="large"
                                @change="scope.row.changed = true"/>
             </template>
           </el-table-column>
@@ -54,8 +60,7 @@ export default {
   components: {NewActorTag},
 
   data() {
-    return {
-    }
+    return {}
   },
   computed: {
     ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),

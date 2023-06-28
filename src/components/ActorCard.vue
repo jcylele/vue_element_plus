@@ -30,16 +30,29 @@
         </template>
         <template #default>
           <el-space direction="vertical" :fill="true">
-            <el-button @click="gotoActorPage(actor.actor_name)" :class="styleActor(actor.actor_category)">
+            <el-button @click="gotoActorPage(actor.href)" :class="styleActor(actor.actor_category)">
               Go To Page
             </el-button>
             <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)"
                        :class="styleActor(actor.actor_category)">
               Open Folder
             </el-button>
+            <el-button v-if="actor.hasFolder()" @click="downloadAll(actor.actor_name)"
+                       :class="styleActor(actor.actor_category)">
+              Download All
+            </el-button>
           </el-space>
         </template>
       </el-popover>
+
+      <el-space v-if="actor.hasFolder()" direction="horizontal" alignment="center" wrap>
+        <el-text style="font-size: 20px; color: sandybrown;" tag="ins">
+          {{ `${actor.fileSize()}MB` }}
+        </el-text>
+        <el-text style="font-size: 16px; color: darkorange;" tag="ins">
+          {{ actor.fileList() }}
+        </el-text>
+      </el-space>
 
       <!--actor complete mark + category -->
       <el-space direction="horizontal" alignment="center">
@@ -60,21 +73,20 @@
             {{ `[${category.name}] (${category.desc})` }}
           </el-option>
         </el-select>
-        <svg-icon @click="actor._edit_tags = true"
+        <svg-icon @click="onStartEditTag()"
                   size="20px" name="edit"/>
       </el-space>
 
       <!--actor tags -->
-      <el-space wrap>
+      <el-space wrap v-if="!actor._edit_tags">
         <el-tag v-for="tag_id in actor.rel_tags"
-                @close="removeActorFromTag(tag_id)"
-                :closable="actor._edit_tags"
-                style="font-size: 18px;background: lightblue;color: hotpink"
+                :style="{'font-size': '18px','background': 'lightblue','color': getTagColor(tag_id)}"
                 round>
           {{ getTagName(tag_id) }}
         </el-tag>
-        <el-select v-if="actor._edit_tags"
-                   v-model="actor._new_tag_list"
+      </el-space>
+      <el-space wrap v-if="actor._edit_tags">
+        <el-select v-model="actor._new_tag_list"
                    placeholder="+ New Tag"
                    :reserve-keyword="false"
                    multiple filterable clearable>
@@ -87,7 +99,7 @@
         </el-select>
       </el-space>
       <el-space v-if="actor._edit_tags" direction="horizontal" alignment="center">
-        <el-button type="primary" @click="onAddTag">
+        <el-button type="primary" @click="onSubmitTag">
           Save
         </el-button>
         <el-button type="warning" @click="onCancelAddTag">
@@ -103,14 +115,15 @@ import ActorCategory from "../consts/ActorCategory";
 import {ElMessage} from "element-plus";
 import ActorData from "../data/ActorData";
 import {
-  addTagToActor,
+  ChangeActorTag,
   changeActorCategory,
   changeActorStar,
-  openActorFolder,
-  removeTagFromActor
+  openActorFolder
 } from "../ctrls/ActorCtrl";
-import {mapState} from "pinia";
+import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
+import {downloadByNames} from "../ctrls/DownloadCtrl";
+import {DownloadLimitForm} from "../data/SimpleForms";
 
 export default {
   name: "ActorCard",
@@ -119,7 +132,9 @@ export default {
     actor_data: {data: ActorData, index: Number},
   },
   computed: {
-    ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
+    ...mapState(ActorTagStore, {
+      actor_tag_list: 'sorted_list'
+    }),
     actor() {
       return this.actor_data.data
     },
@@ -132,27 +147,33 @@ export default {
   data() {
     return {}
   },
+  mounted() {
+
+  },
   methods: {
+    ...mapActions(ActorTagStore, {
+      getTagName: 'getName',
+      getTagColor: 'getColor',
+    }),
     iconActor(actor_name: string) {
       return `http://localhost:1314/_icon/${actor_name}.jfif`
     },
     styleActor(category: ActorCategory) {
       return `actor_${category.name}`
     },
-    gotoActorPage(actor_name: string) {
-      const url = `https://coomer.party/onlyfans/user/${actor_name}`
-      window.open(url, '_blank', 'noreferrer');
+    gotoActorPage(href: string) {
+      window.open(href, '_blank', 'noreferrer');
     },
     openFolder(actor_name: string) {
       openActorFolder(actor_name)
     },
-    getTagName(tag_id: number): string {
-      for (const tag of this.actor_tag_list) {
-        if (tag.tag_id === tag_id) {
-          return tag.tag_name
-        }
+    async downloadAll(actor_name: string) {
+      const [ok, ret] = await downloadByNames(DownloadLimitForm.NewForm(ActorCategory.Enough.value), [actor_name])
+      if (ok) {
+        ElMessage({message: "download started", type: "success"})
+      } else {
+        ElMessage({message: ret as string, type: "error"})
       }
-      return `Error(${tag_id})`
     },
     async setActorCategory() {
       const [ok, new_actor] = await changeActorCategory(this.actor.actor_name, this.actor.actor_category.value)
@@ -164,29 +185,21 @@ export default {
         ElMessage(new_actor as string)
       }
     },
-    async removeActorFromTag(tag_id: number) {
-      const [ok, new_actor] = await removeTagFromActor(this.actor.actor_name, tag_id)
-      if (ok) {
-        this.actor_data.data = new_actor
-        this.$emit('change', this.actor_data)
-        ElMessage({message: "remove tag succeed", type: "success"})
-      } else {
-        ElMessage(new_actor as string)
-      }
+    onStartEditTag() {
+      this.actor.editTags(true)
     },
-    async onAddTag() {
-      const [ok, new_actor] = await addTagToActor(this.actor.actor_name, this.actor._new_tag_list)
+    async onSubmitTag() {
+      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, this.actor._new_tag_list)
       if (ok) {
         this.actor_data.data = new_actor
         this.$emit('change', this.actor_data)
-        ElMessage({message: "add tags succeed", type: "success"})
+        ElMessage({message: "change tags succeed", type: "success"})
       } else {
         ElMessage(new_actor as string)
       }
     },
     async onCancelAddTag() {
-      this.actor._new_tag_list = []
-      this.actor._edit_tags = false
+      this.actor.editTags(false)
     },
     async changeStar(star: boolean) {
       const [ok, new_actor] = await changeActorStar(this.actor.actor_name, star)
@@ -197,7 +210,7 @@ export default {
       } else {
         ElMessage(new_actor as string)
       }
-    }
+    },
   },
 }
 </script>

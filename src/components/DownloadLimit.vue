@@ -33,9 +33,6 @@
 <script lang="ts">
 import {DownloadLimitForm} from "../data/SimpleForms";
 import ActorCategory from "../consts/ActorCategory";
-import ActorFilterData from "../data/ActorFilterData";
-import {getActorCount} from "../ctrls/ActorCtrl";
-import {ElMessage} from "element-plus";
 
 export default {
   name: "DownloadLimit",

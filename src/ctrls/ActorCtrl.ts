@@ -1,5 +1,5 @@
 import ActorData from "../data/ActorData";
-import {fetchDelete, fetchGet, fetchPatch, fetchPost} from "./FetchCtrl";
+import {fetchGet, fetchPatch, fetchPost} from "./FetchCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 
 const baseUrl = "http://127.0.0.1:8000/api/actor"
@@ -37,17 +37,7 @@ export async function getActorList(filter_condition: ActorFilterData, limit: num
     return [true, list]
 }
 
-export async function removeTagFromActor(actor_name: string, tag_id: number) {
-    const url = `${baseUrl}/${actor_name}/${tag_id}`
-    const [ok, response] = await fetchDelete(url)
-    if (!ok) {
-        return [false, response]
-    }
-    const actor = new ActorData(response)
-    return [true, actor]
-}
-
-export async function addTagToActor(actor_name: string, tag_list: number[]) {
+export async function ChangeActorTag(actor_name: string, tag_list: number[]) {
     let url = `${baseUrl}/${actor_name}/tag?`;
     const query_list = []
     for (const tag_id of tag_list) {

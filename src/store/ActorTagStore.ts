@@ -55,5 +55,13 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             }
             return `Error(${tag_id})`
         },
+        getColor(tag_id: number): string {
+            for (const tag of this.list) {
+                if (tag.tag_id === tag_id) {
+                    return tag.tag_color
+                }
+            }
+            return "#000000"
+        },
     },
 })
