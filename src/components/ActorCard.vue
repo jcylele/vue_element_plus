@@ -19,9 +19,7 @@
 
 
       <!-- actor name -->
-      <el-popover trigger="click" placement="top"
-                  popper-style="box-shadow: rgb(14 18 22 / 35%) 0px 10px 38px -10px, rgb(14 18 22 / 20%) 0px 10px 20px -15px; padding: 20px;"
-      >
+      <el-popover trigger="click" placement="top" width="180">
         <template #reference>
           <div :class="styleActor(actor.actor_category)"
                style="font-size: 20px; word-wrap: anywhere; text-align: center;">
@@ -37,10 +35,16 @@
                        :class="styleActor(actor.actor_category)">
               Open Folder
             </el-button>
-            <el-button v-if="actor.hasFolder()" @click="downloadAll(actor.actor_name)"
-                       :class="styleActor(actor.actor_category)">
-              Download All
-            </el-button>
+            <el-space direction="horizontal">
+              <el-button v-if="actor.hasFolder()" @click="downloadAll(actor.actor_name, 1)"
+                         :class="styleActor(actor.actor_category)">
+                Page 1
+              </el-button>
+              <el-button v-if="actor.hasFolder()" @click="downloadAll(actor.actor_name, 0)"
+                         :class="styleActor(actor.actor_category)">
+                All
+              </el-button>
+            </el-space>
           </el-space>
         </template>
       </el-popover>
@@ -167,8 +171,10 @@ export default {
     openFolder(actor_name: string) {
       openActorFolder(actor_name)
     },
-    async downloadAll(actor_name: string) {
-      const [ok, ret] = await downloadByNames(DownloadLimitForm.NewForm(ActorCategory.Enough.value), [actor_name])
+    async downloadAll(actor_name: string, page_limit:number) {
+      let limit = DownloadLimitForm.NewForm(ActorCategory.Enough.value)
+      limit.setPageLimit(page_limit)
+      const [ok, ret] = await downloadByNames(limit, [actor_name])
       if (ok) {
         ElMessage({message: "download started", type: "success"})
       } else {

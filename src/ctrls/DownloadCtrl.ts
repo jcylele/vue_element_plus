@@ -1,4 +1,4 @@
-import {fetchGet, fetchPost} from "./FetchCtrl";
+import {fetchDelete, fetchGet, fetchPost} from "./FetchCtrl";
 import {DownloadLimitForm} from "../data/SimpleForms";
 import ActorCategory from "../consts/ActorCategory";
 
@@ -39,6 +39,26 @@ export async function downloadNewActors(download_limit: DownloadLimitForm) {
 export async function downloadByCategory(category: ActorCategory, download_limit: DownloadLimitForm) {
     const url = `${baseUrl}/category/${category}`
     const [ok, response] = await fetchPost(url, download_limit)
+    if (!ok) {
+        return [ok, response]
+    }
+
+    return [true, response.value]
+}
+
+export async function getAllTasks() {
+    const url = `${baseUrl}/list`
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [ok, response]
+    }
+
+    return [true, response]
+}
+
+export async function stopTask(task_id: number) {
+    const url = `${baseUrl}/${task_id}`
+    const [ok, response] = await fetchDelete(url)
     if (!ok) {
         return [ok, response]
     }

@@ -6,6 +6,8 @@ interface FileInfo {
     count: Map<string, number>
 }
 
+const _img_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
+
 export default class ActorData extends EditableData {
     readonly actor_name: string
     rel_tags: number[]
@@ -47,7 +49,7 @@ export default class ActorData extends EditableData {
         if (this.file_info && this.file_info.size && this.file_info.size > 0) {
             let img = 0, video = 0
             for (const key in this.file_info.count) {
-                if (key === ".jpg" || key === ".jpeg") {
+                if (_img_extensions.indexOf(key) >= 0) {
                     img += this.file_info.count[key]
                 } else {
                     video += this.file_info.count[key]

@@ -49,6 +49,12 @@
       <el-input v-model="filter_condition.name"
                 @change="onFilterNameChange"
                 clearable/>
+      <el-switch
+          v-model="filter_condition.star"
+          class="mb-2"
+          active-text="star"
+          inactive-text="all"
+      />
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onFilterChange">Search</el-button>

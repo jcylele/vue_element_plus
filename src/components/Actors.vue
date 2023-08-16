@@ -35,8 +35,9 @@ import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import {IArrayElement, ToElementArray} from "../data/ArrayElement";
 import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
-import {mapActions} from "pinia";
+import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
+import {ActorFilterStore} from "../store/ActorFilterStore";
 
 export default {
   components: {ActorCard, ActorFilter},
@@ -50,10 +51,15 @@ export default {
       actor_count: 0
     }
   },
-  computed: {},
+  computed: {
+    ...mapState(ActorFilterStore, {cached_filter_condition: 'filter_condition'}),
+  },
   methods: {
     ...mapActions(ActorTagStore, {
       getTagsFromServer: 'getFromServer',
+    }),
+    ...mapActions(ActorFilterStore, {
+      saveFilterCondition: 'setFilterCondition',
     }),
 
     async onActorPageChange() {
@@ -68,8 +74,9 @@ export default {
       }
     },
     async onFilterChange() {
-      this.actor_list = []
+      this.saveFilterCondition(this.filter_condition)
 
+      this.actor_list = []
       this.actor_count = 0
       const [ok, actor_count] = await getActorCount(this.filter_condition)
       if (ok) {
@@ -90,6 +97,7 @@ export default {
   },
   watch: {},
   async mounted() {
+    this.filter_condition = this.cached_filter_condition
     await this.getTagsFromServer()
   }
 }

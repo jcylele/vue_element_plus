@@ -1,6 +1,6 @@
 async function _fetch(url: string, init?: RequestInit) {
     try {
-        console.log(url, init)
+        // console.log(url, init)
         const response = await fetch(url, init);
         const text = await response.text();
         // console.log(text)

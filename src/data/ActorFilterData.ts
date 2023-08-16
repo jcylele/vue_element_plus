@@ -5,6 +5,7 @@ export default class ActorFilterData {
     category_list: number[]
     tag_list: number[]
     no_tag: boolean
+    star: boolean
 
     private _is_category_partial: boolean
     public get is_category_partial() {
@@ -31,6 +32,7 @@ export default class ActorFilterData {
         this.category_list = ActorCategory.AllCategoryValues
         this.tag_list = []
         this.no_tag = false
+        this.star = false
     }
 
     checkAllCategory(val: boolean) {

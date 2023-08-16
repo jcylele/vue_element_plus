@@ -31,4 +31,12 @@ export class DownloadLimitForm {
         form.resetDefaultValue(category_value)
         return form
     }
+
+    public setPageLimit(page_limit:number) {
+        if (page_limit < 1) {
+            this.post_count = 9999
+        }else {
+            this.post_count = page_limit * 50
+        }
+    }
 }
