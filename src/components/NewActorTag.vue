@@ -13,9 +13,6 @@
         <el-form-item label="Priority">
           <el-input-number v-model="new_actor_tag.tag_priority" :min="0" :max="100"/>
         </el-form-item>
-        <el-form-item label="Color">
-          <el-color-picker v-model="new_actor_tag.tag_color" size="large"/>
-        </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onAddActorTag">Add</el-button>
         </el-form-item>

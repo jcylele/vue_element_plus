@@ -7,9 +7,11 @@
       <el-pagination
           v-model:current-page="cur_actor_page"
           :page-size="actor_size"
+          :page-sizes="[10, 14]"
           :total="actor_count"
           @current-change="onActorPageChange"
-          layout="total, prev, pager, next"
+          @size-change="handleSizeChange"
+          layout="sizes, total, prev, pager, next"
           background
           style="margin-bottom: 20px"
       />
@@ -61,6 +63,12 @@ export default {
     ...mapActions(ActorFilterStore, {
       saveFilterCondition: 'setFilterCondition',
     }),
+
+    async handleSizeChange (val: number) {
+      this.actor_size = val
+      this.cur_actor_page = 1
+      await this.onActorPageChange()
+    },
 
     async onActorPageChange() {
       console.log(this.cur_actor_page)

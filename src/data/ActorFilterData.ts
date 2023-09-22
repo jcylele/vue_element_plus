@@ -27,12 +27,14 @@ export default class ActorFilterData {
         this.reset()
     }
 
-    reset() {
+    reset(excludeCategory: boolean = false) {
         this.name = ""
-        this.category_list = ActorCategory.AllCategoryValues
         this.tag_list = []
         this.no_tag = false
         this.star = false
+        if (!excludeCategory){
+            this.category_list = ActorCategory.AllCategoryValues
+        }
     }
 
     checkAllCategory(val: boolean) {
@@ -43,6 +45,7 @@ export default class ActorFilterData {
             this.category_list = []
         }
         this.is_category_partial = false
+        this.reset(true)
     }
 
     onCheckedCategoryChange(val: number[]) {
@@ -50,6 +53,7 @@ export default class ActorFilterData {
         const length = this.category_list.length
         this.is_category_all = length === ActorCategory.AllCategories.length
         this.is_category_partial = length > 0 && length < ActorCategory.AllCategories.length
+        this.reset(true)
     }
 
     onCheckedTagChange() {

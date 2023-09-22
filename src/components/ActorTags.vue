@@ -20,12 +20,6 @@
                                @change="scope.row.changed = true"/>
             </template>
           </el-table-column>
-          <el-table-column label="Color" prop="tag_color">
-            <template #default="scope">
-              <el-color-picker v-model="scope.row.tag_color" size="large"
-                               @change="scope.row.changed = true"/>
-            </template>
-          </el-table-column>
           <el-table-column label="Operations">
             <template #default="scope">
               <el-button v-if="scope.row.changed" type="primary" size="large"

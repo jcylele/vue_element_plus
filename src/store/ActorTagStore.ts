@@ -8,10 +8,6 @@ interface ActorTagState {
     dirty: boolean,
 }
 
-function compareActorTag(a: ActorTagData, b: ActorTagData): number {
-    return b.tag_priority - a.tag_priority;
-}
-
 export const ActorTagStore = defineStore('ActorTagStore', {
     state: (): ActorTagState => ({
         list: [] as ActorTagData[],
@@ -21,7 +17,7 @@ export const ActorTagStore = defineStore('ActorTagStore', {
         sorted_list: (state: ActorTagState) => {
             if (state.dirty) {
                 state.dirty = false
-                state.list.sort(compareActorTag)
+                state.list.sort(state.compareActorTag)
             }
             return state.list
         },
@@ -47,21 +43,51 @@ export const ActorTagStore = defineStore('ActorTagStore', {
                 ElMessage(tag_list as string)
             }
         },
-        getName(tag_id: number): string {
+        getTag(tag_id: number): ActorTagData {
             for (const tag of this.list) {
                 if (tag.tag_id === tag_id) {
-                    return tag.tag_name
+                    return tag
                 }
+            }
+            return null;
+        },
+        getName(tag_id: number): string {
+            const tag = this.getTag(tag_id)
+            if (tag) {
+                return tag.tag_name
             }
             return `Error(${tag_id})`
         },
-        getColor(tag_id: number): string {
-            for (const tag of this.list) {
-                if (tag.tag_id === tag_id) {
-                    return tag.tag_color
-                }
+
+        getColorStyleName(tag_id: number): string {
+            const tag = this.getTag(tag_id)
+            if (tag) {
+                const num = Math.floor(tag.tag_priority / 10)
+                return `tag_${num}`
             }
-            return "#000000"
+            return "tag_error"
         },
+
+        sortTagIds(tag_ids: number[]): number[] {
+            const tag_list = this.list.slice()
+            tag_list.sort(this.compareActorTagId)
+        },
+
+        compareActorTag(a: ActorTagData, b: ActorTagData): number {
+            return b.tag_priority - a.tag_priority;
+        },
+
+        compareActorTagId(a: number, b: number): number {
+            const tag_a = this.getTag(a)
+            const tag_b = this.getTag(b)
+            if (tag_a && tag_b) {
+                const ret = this.compareActorTag(tag_a, tag_b)
+                if (ret === 0) {
+                    return a - b
+                }
+                return ret
+            }
+            return 0
+        }
     },
 })

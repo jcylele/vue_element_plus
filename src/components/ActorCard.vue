@@ -35,28 +35,25 @@
                        :class="styleActor(actor.actor_category)">
               Open Folder
             </el-button>
-            <el-space direction="horizontal">
-              <el-button v-if="actor.hasFolder()" @click="downloadAll(actor.actor_name, 1)"
-                         :class="styleActor(actor.actor_category)">
-                Page 1
-              </el-button>
-              <el-button v-if="actor.hasFolder()" @click="downloadAll(actor.actor_name, 0)"
-                         :class="styleActor(actor.actor_category)">
-                All
-              </el-button>
+            <el-space direction="horizontal" v-if="actor.hasFolder()">
+              <el-link v-for="page in download_pages"
+                       @click="downloadAll(actor.actor_name, page)"
+                       :class="styleActor(actor.actor_category)">
+                {{ page == 0 ? "All" : page.toString() }}
+              </el-link>
             </el-space>
           </el-space>
         </template>
       </el-popover>
 
-      <el-space v-if="actor.hasFolder()" direction="horizontal" alignment="center" wrap>
-        <el-text style="font-size: 20px; color: sandybrown;" tag="ins">
-          {{ `${actor.fileSize()}MB` }}
-        </el-text>
-        <el-text style="font-size: 16px; color: darkorange;" tag="ins">
-          {{ actor.fileList() }}
-        </el-text>
-      </el-space>
+      <!--      <el-space direction="horizontal" alignment="center" wrap>-->
+      <el-text style="font-size: 16px; color: black;" tag="ins">
+        {{ `[${actor.post_info[0]} / ${actor.post_info[1]}]` }}
+      </el-text>
+      <el-text v-if="actor.hasFolder()" style="font-size: 14px; color: darkorange;" tag="ins">
+        {{ `${actor.fileSize()}GB(${actor.fileList()})` }}
+      </el-text>
+      <!--      </el-space>-->
 
       <!--actor complete mark + category -->
       <el-space direction="horizontal" alignment="center">
@@ -84,7 +81,8 @@
       <!--actor tags -->
       <el-space wrap v-if="!actor._edit_tags">
         <el-tag v-for="tag_id in actor.rel_tags"
-                :style="{'font-size': '18px','background': 'lightblue','color': getTagColor(tag_id)}"
+                :class="getColorStyleName(tag_id)"
+                :style="{'font-size': '18px'}"
                 round>
           {{ getTagName(tag_id) }}
         </el-tag>
@@ -149,15 +147,18 @@ export default {
   // declare emitted events to parent
   emits: ['change'],
   data() {
-    return {}
+    return {
+      download_pages: [0, 1, 5, 10, 20]
+    }
   },
   mounted() {
-
+    this.actor.sortTags(this.compareActorTagId)
   },
   methods: {
     ...mapActions(ActorTagStore, {
       getTagName: 'getName',
-      getTagColor: 'getColor',
+      getColorStyleName: 'getColorStyleName',
+      compareActorTagId: 'compareActorTagId',
     }),
     iconActor(actor_name: string) {
       return `http://localhost:1314/_icon/${actor_name}.jfif`
@@ -171,7 +172,7 @@ export default {
     openFolder(actor_name: string) {
       openActorFolder(actor_name)
     },
-    async downloadAll(actor_name: string, page_limit:number) {
+    async downloadAll(actor_name: string, page_limit: number) {
       let limit = DownloadLimitForm.NewForm(ActorCategory.Enough.value)
       limit.setPageLimit(page_limit)
       const [ok, ret] = await downloadByNames(limit, [actor_name])
@@ -242,4 +243,50 @@ export default {
 .actor_enough {
   color: orangered;
 }
+
+.tag_9 {
+  background: lightgreen;
+  color: #ffffff;
+}
+.tag_8 {
+  background: lightgreen;
+  color: #FF007F;
+}
+.tag_7 {
+  background: lightgreen;
+  color: #FFC0CB;
+}
+.tag_6 {
+  background: lightgreen;
+  color: #FFEE00;
+}
+.tag_5 {
+  background: lightgray;
+  color: #1EFF00;
+}
+.tag_4 {
+  background: lightgray;
+  color: #00FFFF;
+}
+.tag_3 {
+  background: lightgray;
+  color: #7F8EFF;
+}
+.tag_2 {
+  background: lightgray;
+  color: #7F8EFF;
+}
+.tag_1 {
+  background: lightgray;
+  color: #0000FF;
+}
+.tag_0 {
+  background: lightgray;
+  color: #0000FF;
+}
+.tag_error{
+  background: #000000;
+  color: #000000;
+}
+
 </style>

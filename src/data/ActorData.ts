@@ -15,6 +15,7 @@ export default class ActorData extends EditableData {
     readonly completed: boolean
     star: boolean
     file_info: FileInfo
+    post_info: number[]
     href: string
     _new_tag_list: number[] = []
     _edit_tags: boolean = false
@@ -22,6 +23,10 @@ export default class ActorData extends EditableData {
     constructor(json_data?) {
         super(json_data);
         this.actor_category = ActorCategory.getByValue(json_data.actor_category)
+    }
+
+    sortTags(compareFn?: (a: number, b: number) => number) {
+        this.rel_tags.sort(compareFn)
     }
 
     editTags(edit: boolean) {
@@ -40,7 +45,8 @@ export default class ActorData extends EditableData {
 
     fileSize(): number {
         if (this.file_info && this.file_info.size && this.file_info.size > 0) {
-            return Math.floor(this.file_info.size / (1024 * 1024));
+            let size = this.file_info.size / (1024 * 1024 * 1024)
+            return Math.floor(size * 100) / 100
         }
         return 0
     }
