@@ -11,7 +11,7 @@ export class DownloadLimitForm {
             case ActorCategory.Enough.value:
                 this.actor_count = 0
                 this.post_count = 9999
-                this.file_size = 1024
+                this.file_size = 0
                 break
             case ActorCategory.Liked.value:
                 this.actor_count = 0

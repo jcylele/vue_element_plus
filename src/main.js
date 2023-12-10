@@ -3,14 +3,17 @@ import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import {createRouter, createWebHashHistory} from "vue-router";
+
 import Home from "./Home.vue";
 import Actors from "./components/Actors.vue";
 import Download from "./components/Download.vue";
 import Welcome from "./components/Welcome.vue";
 import ActorTags from "./components/ActorTags.vue";
+import Tasks from "./components/Tasks.vue";
 
 import svgIcon from "./components/SvgIcon/index.vue";
 import 'virtual:svg-icons-register'
+
 
 // 1. 定义路由组件.
 // 也可以从其他文件导入
@@ -24,6 +27,7 @@ const routes = [
     { path: '/actor_tags', component: ActorTags },
     // 动态字段以冒号开始
     { path: '/download', component: Download },
+    {path: '/tasks', component: Tasks}
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置

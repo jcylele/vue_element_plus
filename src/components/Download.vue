@@ -3,12 +3,6 @@
     <el-main>
       <el-tabs tab-position="left" style="flex: fit-content" class="demo-tabs"
                @tab-change="onTabChange">
-        <el-tab-pane label="Restore Record" name="tab_restore">
-          <el-space direction="vertical" alignment="left">
-            <span>It may take a while...</span>
-            <el-button type="primary" @click="restoreRecord">Restore Record</el-button>
-          </el-space>
-        </el-tab-pane>
         <el-tab-pane label="Download New Actors" name="tab_new">
           <el-space direction="vertical">
             <DownloadLimit :download_limit="download_limit"/>
@@ -78,17 +72,6 @@
             </el-space>
           </el-space>
         </el-tab-pane>
-        <el-tab-pane label="Downloading..." name="tab_task">
-          <el-table :data="task_list" border>
-            <el-table-column prop="desc" label="task" min-width="200px"/>
-            <el-table-column prop="downloadLimit" label="limit" :formatter="formatLimit" min-width="100px"/>
-            <el-table-column label="Op" min-width="100px">
-              <template #default="scope">
-                <el-button type="danger" @click="stopTask(scope.row.uid)">Stop</el-button>
-              </template>
-            </el-table-column>
-          </el-table>
-        </el-tab-pane>
       </el-tabs>
     </el-main>
   </el-container>
@@ -101,8 +84,6 @@ import {
   downloadByCategory,
   downloadByNames,
   downloadNewActors,
-  getAllTasks,
-  restoreRecord, stopTask
 } from "../ctrls/DownloadCtrl";
 import {ElMessage} from "element-plus";
 import DownloadLimit from "./DownloadLimit.vue";
@@ -126,7 +107,6 @@ export default {
       actor_search_list: [] as ActorData[],
       actor_name_list: [] as string[],
       actor_category_list: [ActorCategory.Init, ActorCategory.Liked],
-      task_list: [] as any[],
     }
   },
   watch: {
@@ -161,13 +141,24 @@ export default {
     },
     formatLimit(row: any, _) {
       const limit = row.downloadLimit
-      return `${limit.actor_count}/${limit.post_count}/${limit.file_size / (1024*1024)}`
+      return `${limit.actor_count}/${limit.post_count}/${limit.file_size / (1024 * 1024)}`
     },
+    formatWorkers(row: any, _) {
+      const map = row.worker_count
+      return Object.keys(map).reduce((a, b, i) => {
+        return `${a} ${i ? '\n' : ''}${b}:${map[b]}`
+      }, "")
+    },
+    formatQueues(row: any, _) {
+      const map = row.queue_count
+      return Object.keys(map).reduce((a, b, i) => {
+        return `${a} ${i ? '\n' : ''}${b}:${map[b]}`
+      }, "")
+    },
+
     onTabChange(pane_name) {
       console.log(pane_name)
       switch (pane_name) {
-        case 'tab_restore':
-          break
         case 'tab_new':
           this.download_limit.resetDefaultValue(ActorCategory.Init.value)
           break
@@ -176,9 +167,6 @@ export default {
           break
         case 'tab_category':
           this.download_limit.resetDefaultValue(this.actor_category)
-          break
-        case 'tab_task':
-          this.getAllTasks()
           break
       }
     },
@@ -217,31 +205,6 @@ export default {
         ElMessage({message: ret as string, type: "error"})
       }
     },
-    async restoreRecord() {
-      const [ok, ret] = await restoreRecord()
-      if (ok) {
-        ElMessage({message: "restore record succeed", type: "success"})
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
-    },
-    async stopTask(uid: number) {
-      const [ok, ret] = await stopTask(uid)
-      if (ok) {
-        ElMessage({message: "stop task succeed", type: "success"})
-        this.task_list.splice(this.task_list.findIndex((task: any) => task.uid === uid), 1)
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
-    },
-    async getAllTasks() {
-      const [ok, ret] = await getAllTasks()
-      if (ok) {
-        this.task_list = ret
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
-    },
   },
   async mounted() {
     await this.getTagsFromServer()
@@ -256,6 +219,10 @@ export default {
   color: #6b778c;
   font-size: 32px;
   font-weight: 600;
+}
+
+.wrap_line {
+  white-space: pre-line;
 }
 
 </style>

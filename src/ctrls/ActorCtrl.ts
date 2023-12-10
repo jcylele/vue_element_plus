@@ -77,3 +77,13 @@ export async function changeActorStar(actor_name: string, actor_star: boolean) {
     const actor = new ActorData(response)
     return [true, actor]
 }
+
+export async function changeActorRemark(actor_name: string, remark: string) {
+    const url = `${baseUrl}/${actor_name}/remark?val=${remark}`;
+    const [ok, response] = await fetchPatch(url)
+    if (!ok) {
+        return [false, response]
+    }
+    const actor = new ActorData(response)
+    return [true, actor]
+}

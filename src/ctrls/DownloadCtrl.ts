@@ -4,9 +4,11 @@ import ActorCategory from "../consts/ActorCategory";
 
 const baseUrl = "http://127.0.0.1:8000/api/download"
 
-export async function restoreRecord() {
-    const url = `${baseUrl}/restore`
-    const [ok, response] = await fetchGet(url)
+export async function downloadByNames(download_limit: DownloadLimitForm, actor_names: string[]) {
+    let url = `${baseUrl}/specific`
+    const params = actor_names.map(name => `name=${name}`).join("&")
+    url = `${url}?${params}`
+    const [ok, response] = await fetchPost(url, download_limit)
     if (!ok) {
         return [ok, response]
     }
@@ -14,10 +16,8 @@ export async function restoreRecord() {
     return [true, response.value]
 }
 
-export async function downloadByNames(download_limit: DownloadLimitForm, actor_names: string[]) {
-    let url = `${baseUrl}/specific`
-    const params = actor_names.map(name => `name=${name}`).join("&")
-    url = `${url}?${params}`
+export async function downloadAllPosts(download_limit: DownloadLimitForm, actor_name: string){
+    const url = `${baseUrl}/all_posts/${actor_name}`
     const [ok, response] = await fetchPost(url, download_limit)
     if (!ok) {
         return [ok, response]

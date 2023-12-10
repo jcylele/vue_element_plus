@@ -19,7 +19,7 @@
 
 
       <!-- actor name -->
-      <el-popover trigger="click" placement="top" width="180">
+      <el-popover trigger="click" placement="top">
         <template #reference>
           <div :class="styleActor(actor.actor_category)"
                style="font-size: 20px; word-wrap: anywhere; text-align: center;">
@@ -28,20 +28,44 @@
         </template>
         <template #default>
           <el-space direction="vertical" :fill="true">
-            <el-button @click="gotoActorPage(actor.href)" :class="styleActor(actor.actor_category)">
-              Go To Page
-            </el-button>
-            <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)"
-                       :class="styleActor(actor.actor_category)">
-              Open Folder
-            </el-button>
-            <el-space direction="horizontal" v-if="actor.hasFolder()">
+            <el-space direction="horizontal" alignment="center">
+              <el-button @click="gotoActorPage(actor.href)" :class="styleActor(actor.actor_category)">
+                Go To Page
+              </el-button>
+              <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)"
+                         :class="styleActor(actor.actor_category)">
+                Open Folder
+              </el-button>
+            </el-space>
+            <el-space direction="horizontal" v-if="actor.hasFolder()"  alignment="center">
               <el-link v-for="page in download_pages"
-                       @click="downloadAll(actor.actor_name, page)"
+                       @click="startDownload(actor.actor_name, page)"
                        :class="styleActor(actor.actor_category)">
-                {{ page == 0 ? "All" : page.toString() }}
+                {{ formatPageCount(page) }}
               </el-link>
             </el-space>
+          </el-space>
+        </template>
+      </el-popover>
+
+      <!-- actor remark -->
+      <el-popover trigger="click" placement="top" width="180">
+        <template #reference>
+          <el-text style="font-size: 16px; color: black;" tag="ins">
+            {{ actor.remark ? actor.remark : "No Remark" }}
+          </el-text>
+        </template>
+        <template #default>
+          <el-space direction="vertical" :fill="true">
+            <el-input v-model="actor.remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"/>
+            <el-button type="primary" size="large"
+                       @click="setActorRemark()">
+              Save
+            </el-button>
+            <el-button type="warning" size="large"
+                       @click="resetActor()">
+              Reset
+            </el-button>
           </el-space>
         </template>
       </el-popover>
@@ -50,8 +74,12 @@
       <el-text style="font-size: 16px; color: black;" tag="ins">
         {{ `[${actor.post_info[0]} / ${actor.post_info[1]}]` }}
       </el-text>
-      <el-text v-if="actor.hasFolder()" style="font-size: 14px; color: darkorange;" tag="ins">
-        {{ `${actor.fileSize()}GB(${actor.fileList()})` }}
+      <!--      <el-text v-if="actor.hasFolder()" style="font-size: 14px; color: darkorange;" tag="ins">-->
+      <!--                {{ `${actor.fileSize()}GB(${actor.fileList()})` }}-->
+      <!--      </el-text>-->
+      <el-text v-for="res_str in actor.resSizeList()"
+               style="font-size: 12px; color: hotpink;">
+        {{ res_str }}
       </el-text>
       <!--      </el-space>-->
 
@@ -120,11 +148,11 @@ import {
   ChangeActorTag,
   changeActorCategory,
   changeActorStar,
-  openActorFolder
+  openActorFolder, changeActorRemark, getActor
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
-import {downloadByNames} from "../ctrls/DownloadCtrl";
+import {downloadAllPosts, downloadByNames} from "../ctrls/DownloadCtrl";
 import {DownloadLimitForm} from "../data/SimpleForms";
 
 export default {
@@ -148,7 +176,7 @@ export default {
   emits: ['change'],
   data() {
     return {
-      download_pages: [0, 1, 5, 10, 20]
+      download_pages: [-1, 1, 2, 5, 10, 20, 0]
     }
   },
   mounted() {
@@ -160,6 +188,17 @@ export default {
       getColorStyleName: 'getColorStyleName',
       compareActorTagId: 'compareActorTagId',
     }),
+
+    onRecvUpdateMsg(ok: boolean, new_actor: ActorData, msg: string) {
+      if (ok) {
+        this.actor_data.data = new_actor
+        this.$emit('change', this.actor_data)
+        ElMessage({message: msg, type: "success"})
+      } else {
+        ElMessage(new_actor as string)
+      }
+    },
+
     iconActor(actor_name: string) {
       return `http://localhost:1314/_icon/${actor_name}.jfif`
     },
@@ -172,10 +211,25 @@ export default {
     openFolder(actor_name: string) {
       openActorFolder(actor_name)
     },
-    async downloadAll(actor_name: string, page_limit: number) {
+    formatPageCount(page: number) {
+      if (page == 0) {
+        return "All"
+      }
+      if (page == -1) {
+        return "Posts"
+      }
+
+      return page.toString()
+    },
+    async startDownload(actor_name: string, page_limit: number) {
       let limit = DownloadLimitForm.NewForm(ActorCategory.Enough.value)
       limit.setPageLimit(page_limit)
-      const [ok, ret] = await downloadByNames(limit, [actor_name])
+      let [ok, ret] = [false, null]
+      if (page_limit == -1) {
+        [ok, ret] = await downloadAllPosts(limit, actor_name)
+      } else {
+        [ok, ret] = await downloadByNames(limit, [actor_name])
+      }
       if (ok) {
         ElMessage({message: "download started", type: "success"})
       } else {
@@ -184,39 +238,29 @@ export default {
     },
     async setActorCategory() {
       const [ok, new_actor] = await changeActorCategory(this.actor.actor_name, this.actor.actor_category.value)
-      if (ok) {
-        this.actor_data.data = new_actor
-        this.$emit('change', this.actor_data)
-        ElMessage({message: "change category succeed", type: "success"})
-      } else {
-        ElMessage(new_actor as string)
-      }
+      this.onRecvUpdateMsg(ok, new_actor, "change category succeed")
     },
     onStartEditTag() {
       this.actor.editTags(true)
     },
     async onSubmitTag() {
       const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, this.actor._new_tag_list)
-      if (ok) {
-        this.actor_data.data = new_actor
-        this.$emit('change', this.actor_data)
-        ElMessage({message: "change tags succeed", type: "success"})
-      } else {
-        ElMessage(new_actor as string)
-      }
+      this.onRecvUpdateMsg(ok, new_actor, "change tags succeed")
     },
     async onCancelAddTag() {
       this.actor.editTags(false)
     },
     async changeStar(star: boolean) {
       const [ok, new_actor] = await changeActorStar(this.actor.actor_name, star)
-      if (ok) {
-        this.actor_data.data = new_actor
-        this.$emit('change', this.actor_data)
-        ElMessage({message: "change star succeed", type: "success"})
-      } else {
-        ElMessage(new_actor as string)
-      }
+      this.onRecvUpdateMsg(ok, new_actor, "change star succeed")
+    },
+    async setActorRemark() {
+      const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, this.actor.remark)
+      this.onRecvUpdateMsg(ok, new_actor, "change remark succeed")
+    },
+    async resetActor() {
+      const [ok, new_actor] = await getActor(this.actor.actor_name)
+      this.onRecvUpdateMsg(ok, new_actor, "reset actor succeed")
     },
   },
 }
@@ -248,43 +292,53 @@ export default {
   background: lightgreen;
   color: #ffffff;
 }
+
 .tag_8 {
   background: lightgreen;
   color: #FF007F;
 }
+
 .tag_7 {
   background: lightgreen;
   color: #FFC0CB;
 }
+
 .tag_6 {
   background: lightgreen;
   color: #FFEE00;
 }
+
 .tag_5 {
   background: lightgray;
   color: #1EFF00;
 }
+
 .tag_4 {
   background: lightgray;
   color: #00FFFF;
 }
+
 .tag_3 {
   background: lightgray;
   color: #7F8EFF;
 }
+
 .tag_2 {
   background: lightgray;
   color: #7F8EFF;
 }
+
 .tag_1 {
   background: lightgray;
   color: #0000FF;
 }
+
 .tag_0 {
   background: lightgray;
   color: #0000FF;
 }
-.tag_error{
+
+.tag_error {
   background: #000000;
   color: #000000;
 }

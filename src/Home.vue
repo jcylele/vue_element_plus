@@ -11,6 +11,7 @@
         >
           <el-menu-item index="/download">Download More</el-menu-item>
           <el-menu-item index="/actors">Show Actors</el-menu-item>
+          <el-menu-item index="/tasks">Download Tasks</el-menu-item>
           <el-menu-item index="/actor_tags">Show Actor Tags</el-menu-item>
         </el-menu>
 
@@ -22,6 +23,8 @@
 
 <script lang="ts">
 export default {
+  components: {},
+
   data() {
     return {}
   },
