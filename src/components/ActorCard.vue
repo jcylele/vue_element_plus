@@ -19,7 +19,7 @@
 
 
       <!-- actor name -->
-      <el-popover trigger="click" placement="top">
+      <el-popover trigger="click" placement="top" :width="actor.hasFolder() ? 240 : 120">
         <template #reference>
           <div :class="styleActor(actor.actor_category)"
                style="font-size: 20px; word-wrap: anywhere; text-align: center;">
@@ -27,8 +27,8 @@
           </div>
         </template>
         <template #default>
-          <el-space direction="vertical" :fill="true">
-            <el-space direction="horizontal" alignment="center">
+          <el-space direction="vertical">
+            <el-space direction="horizontal" alignment="stretch">
               <el-button @click="gotoActorPage(actor.href)" :class="styleActor(actor.actor_category)">
                 Go To Page
               </el-button>
@@ -77,9 +77,10 @@
       <!--      <el-text v-if="actor.hasFolder()" style="font-size: 14px; color: darkorange;" tag="ins">-->
       <!--                {{ `${actor.fileSize()}GB(${actor.fileList()})` }}-->
       <!--      </el-text>-->
-      <el-text v-for="res_str in actor.resSizeList()"
-               style="font-size: 12px; color: hotpink;">
-        {{ res_str }}
+      <el-text v-for="res_file_info in actor.res_info"
+               :class="'res' + res_file_info.res_state"
+               style="font-size: 12px; ">
+        {{ actor.formatResFileInfo(res_file_info) }}
       </el-text>
       <!--      </el-space>-->
 
@@ -286,6 +287,22 @@ export default {
 
 .actor_enough {
   color: orangered;
+}
+
+.res1 {
+  color: darkgreen;
+}
+
+.res2 {
+  color: hotpink;
+}
+
+.res3 {
+  color: orangered;
+}
+
+.res4 {
+  color: blue;
 }
 
 .tag_9 {

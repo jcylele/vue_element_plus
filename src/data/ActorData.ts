@@ -2,13 +2,14 @@ import ActorCategory from "../consts/ActorCategory";
 import EditableData from "./EditableData";
 import {List} from "@element-plus/icons-vue";
 
-interface FileInfo {
-    size: number,
-    count: Map<string, number>
-}
-
-const _img_extensions = [".jpg", ".jpeg", ".png", ".gif", ".bmp"]
 const res_state = ["未下载", "已下载", "大文件", "已删除"]
+
+interface ResFileInfo {
+    res_state: number,
+    res_size: number,
+    img_count: number,
+    video_count: number,
+}
 
 export default class ActorData extends EditableData {
     readonly actor_name: string
@@ -19,7 +20,7 @@ export default class ActorData extends EditableData {
     remark: string
     // file_info: FileInfo
     post_info: number[]
-    res_info: number[]
+    res_info: ResFileInfo[]
     href: string
     _new_tag_list: number[] = []
     _edit_tags: boolean = false
@@ -59,6 +60,12 @@ export default class ActorData extends EditableData {
             }
         }
         return ret
+    }
+
+    formatResFileInfo(rfi: ResFileInfo): string {
+        let size = rfi.res_size / (1024 * 1024 * 1024)
+        size = Math.floor(size * 100) / 100
+        return `${res_state[rfi.res_state - 1]}: ${size}G(${rfi.img_count}P${rfi.video_count}V)`
     }
 
     // fileSize(): number {
