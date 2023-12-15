@@ -16,13 +16,11 @@
           style="margin-bottom: 20px"
       />
       <el-space wrap size="large" alignment="stretch">
-        <!-- :actor_index="actor_index"
-        :actor="actor"
-                   :actor_index="actor_index"
-        -->
+        <!-- TODO change is not triggered, why   -->
+        <!-- specify a key is essential when using v-for, or mounted may not be called when data is changed   -->
         <ActorCard v-for="actor_data in actor_list"
                    :actor_data="actor_data"
-                   :ref="(card) => { onActorCardAdd(actor_index, card) }"
+                   :key="actor_data.data.actor_name"
                    @change="onActorChange"/>
       </el-space>
     </el-main>
@@ -47,7 +45,7 @@ export default {
     return {
       filter_condition: new ActorFilterData(),
       actor_list: [] as IArrayElement<ActorData>[],
-      actor_cards: {} as Map<Number, ActorCard>,
+      // actor_cards: {} as Map<Number, ActorCard>,
       actor_size: 10,
       cur_actor_page: 1,
       actor_count: 0
@@ -64,15 +62,14 @@ export default {
       saveFilterCondition: 'setFilterCondition',
     }),
 
-    async handleSizeChange (val: number) {
+    async handleSizeChange(val: number) {
       this.actor_size = val
       this.cur_actor_page = 1
       await this.onActorPageChange()
     },
 
     async onActorPageChange() {
-      console.log(this.cur_actor_page)
-      this.actor_cards = {}
+      // console.log(this.cur_actor_page)
       const [ok, actor_list] = await getActorList(this.filter_condition, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
       if (ok) {
         this.actor_list = ToElementArray(actor_list)
@@ -95,9 +92,6 @@ export default {
 
       this.cur_actor_page = 1
       await this.onActorPageChange()
-    },
-    onActorCardAdd(actor_index, actor_card) {
-      this.actor_cards[actor_index] = actor_card
     },
     onActorChange(actor_data: IArrayElement<ActorData>) {
       console.log(`actor changed: ${actor_data.index}`)

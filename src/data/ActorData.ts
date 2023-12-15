@@ -1,6 +1,5 @@
 import ActorCategory from "../consts/ActorCategory";
 import EditableData from "./EditableData";
-import {List} from "@element-plus/icons-vue";
 
 const res_state = ["未下载", "已下载", "大文件", "已删除"]
 
@@ -22,8 +21,6 @@ export default class ActorData extends EditableData {
     post_info: number[]
     res_info: ResFileInfo[]
     href: string
-    _new_tag_list: number[] = []
-    _edit_tags: boolean = false
 
     constructor(json_data?) {
         super(json_data);
@@ -34,13 +31,8 @@ export default class ActorData extends EditableData {
         this.rel_tags.sort(compareFn)
     }
 
-    editTags(edit: boolean) {
-        this._edit_tags = edit
-        if (edit) {
-            this._new_tag_list = this.rel_tags.slice()
-        } else {
-            this._new_tag_list = []
-        }
+    hasTag(tag_id: number) {
+        return this.rel_tags.indexOf(tag_id) >= 0
     }
 
     hasFolder() {
@@ -48,46 +40,9 @@ export default class ActorData extends EditableData {
             || this.actor_category.value === ActorCategory.Liked.value;
     }
 
-    resSizeList(): string[] {
-        let ret = []
-        if (this.res_info) {
-            for (let i = 0; i < this.res_info.length; i++) {
-                let size = this.res_info[i] / (1024 * 1024 * 1024)
-                size = Math.floor(size * 100) / 100
-                if (size > 0) {
-                    ret.push(`${res_state[i]}: ${size}G`)
-                }
-            }
-        }
-        return ret
-    }
-
     formatResFileInfo(rfi: ResFileInfo): string {
         let size = rfi.res_size / (1024 * 1024 * 1024)
         size = Math.floor(size * 100) / 100
-        return `${res_state[rfi.res_state - 1]}: ${size}G(${rfi.img_count}P${rfi.video_count}V)`
+        return `${res_state[rfi.res_state - 1]}: ${size}G(${rfi.img_count}P,${rfi.video_count}V)`
     }
-
-    // fileSize(): number {
-    //     if (this.file_info && this.file_info.size && this.file_info.size > 0) {
-    //         let size = this.file_info.size / (1024 * 1024 * 1024)
-    //         return Math.floor(size * 100) / 100
-    //     }
-    //     return 0
-    // }
-    //
-    // fileList(): string {
-    //     if (this.file_info && this.file_info.size && this.file_info.size > 0) {
-    //         let img = 0, video = 0
-    //         for (const key in this.file_info.count) {
-    //             if (_img_extensions.indexOf(key) >= 0) {
-    //                 img += this.file_info.count[key]
-    //             } else {
-    //                 video += this.file_info.count[key]
-    //             }
-    //         }
-    //         return `${img}P ${video}V`
-    //     }
-    //     return ""
-    // }
 }

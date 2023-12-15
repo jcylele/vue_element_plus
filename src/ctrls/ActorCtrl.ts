@@ -87,3 +87,12 @@ export async function changeActorRemark(actor_name: string, remark: string) {
     const actor = new ActorData(response)
     return [true, actor]
 }
+
+export async function getFileInfo(actor_name: string) {
+    const url = `${baseUrl}/${actor_name}/file_info`;
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [false, response]
+    }
+    return [true, response]
+}

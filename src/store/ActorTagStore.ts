@@ -21,6 +21,17 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             }
             return state.list
         },
+        grouped_list: (state: ActorTagState) => {
+            const group_list = []
+            for (let i = 0; i < 10; i++) {
+                group_list.push([])
+            }
+            for (const tag of state.sorted_list) {
+                const num = Math.floor(tag.tag_priority / 10)
+                group_list[num].push(tag)
+            }
+            return group_list
+        }
     },
     actions: {
         add(actorTag: ActorTagData) {
@@ -57,6 +68,14 @@ export const ActorTagStore = defineStore('ActorTagStore', {
                 return tag.tag_name
             }
             return `Error(${tag_id})`
+        },
+
+        getTagPriority(tag_id: number): number {
+            const tag = this.getTag(tag_id)
+            if (tag) {
+                return tag.tag_priority
+            }
+            return 0
         },
 
         getColorStyleName(tag_id: number): string {

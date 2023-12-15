@@ -17,8 +17,7 @@
                   style="color: gold;position: absolute; top: 0; right: 0;"/>
       </div>
 
-
-      <!-- actor name -->
+      <!-- actor name, click to open menu items -->
       <el-popover trigger="click" placement="top" :width="actor.hasFolder() ? 240 : 120">
         <template #reference>
           <div :class="styleActor(actor.actor_category)"
@@ -37,7 +36,7 @@
                 Open Folder
               </el-button>
             </el-space>
-            <el-space direction="horizontal" v-if="actor.hasFolder()"  alignment="center">
+            <el-space direction="horizontal" v-if="actor.hasFolder()" alignment="center">
               <el-link v-for="page in download_pages"
                        @click="startDownload(actor.actor_name, page)"
                        :class="styleActor(actor.actor_category)">
@@ -48,46 +47,44 @@
         </template>
       </el-popover>
 
-      <!-- actor remark -->
-      <el-popover trigger="click" placement="top" width="180">
-        <template #reference>
-          <el-text style="font-size: 16px; color: black;" tag="ins">
-            {{ actor.remark ? actor.remark : "No Remark" }}
-          </el-text>
-        </template>
-        <template #default>
-          <el-space direction="vertical" :fill="true">
-            <el-input v-model="actor.remark" type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"/>
-            <el-button type="primary" size="large"
-                       @click="setActorRemark()">
-              Save
-            </el-button>
-            <el-button type="warning" size="large"
-                       @click="resetActor()">
-              Reset
-            </el-button>
-          </el-space>
-        </template>
-      </el-popover>
-
-      <!--      <el-space direction="horizontal" alignment="center" wrap>-->
+      <!-- actor post info -->
       <el-text style="font-size: 16px; color: black;" tag="ins">
         {{ `[${actor.post_info[0]} / ${actor.post_info[1]}]` }}
       </el-text>
-      <!--      <el-text v-if="actor.hasFolder()" style="font-size: 14px; color: darkorange;" tag="ins">-->
-      <!--                {{ `${actor.fileSize()}GB(${actor.fileList()})` }}-->
-      <!--      </el-text>-->
+      <!-- actor res info -->
       <el-text v-for="res_file_info in actor.res_info"
                :class="'res' + res_file_info.res_state"
                style="font-size: 12px; ">
         {{ actor.formatResFileInfo(res_file_info) }}
       </el-text>
-      <!--      </el-space>-->
 
-      <!--actor complete mark + category -->
+      <!--actor remark + category + edit button -->
       <el-space direction="horizontal" alignment="center">
-        <svg-icon v-if="actor.completed" size="20px" name="completed"
-                  style="color: lightgreen;"/>
+        <!-- actor remark -->
+        <el-popover placement="right" trigger="click" :width="160">
+          <template #reference>
+            <svg-icon size="20px" :name="actor.remark ? 'remark' : 'remark_empty'"/>
+          </template>
+          <template #default>
+            <el-space direction="vertical" :fill="true">
+              <el-space direction="horizontal" :fill="true">
+                <el-input v-model="actor.remark"
+                          type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"/>
+              </el-space>
+              <el-space direction="horizontal" alignment="center">
+                <el-button type="primary" size="default"
+                           @click="setActorRemark()">
+                  Save
+                </el-button>
+                <el-button type="warning" size="default"
+                           @click="resetActor()">
+                  Reset
+                </el-button>
+              </el-space>
+            </el-space>
+          </template>
+        </el-popover>
+        <!-- actor category -->
         <el-select v-model="actor.actor_category"
                    @change="setActorCategory"
         >
@@ -103,12 +100,42 @@
             {{ `[${category.name}] (${category.desc})` }}
           </el-option>
         </el-select>
+        <!-- click to edit tags -->
         <svg-icon @click="onStartEditTag()"
                   size="20px" name="edit"/>
       </el-space>
 
-      <!--actor tags -->
-      <el-space wrap v-if="!actor._edit_tags">
+      <!-- actor tags editing dialog-->
+      <el-dialog v-model="is_editing_tags" title="Edit Tags" width="50%">
+
+        <el-space direction="vertical" size="large" :fill="true">
+          <el-space v-for="tag_group in editing_tags.slice().reverse()"
+                    style="border: 1px solid ; border-radius: 4px; padding: 2px"
+                    direction="horizontal" :wrap="true" :size="3" alignment="stretch">
+
+            <el-checkbox-button v-for="tag_info in tag_group"
+                                v-model="tag_info.selected">
+              {{ tag_info.tag.tag_name }}
+
+            </el-checkbox-button>
+
+          </el-space>
+          <!-- buttons -->
+          <el-space direction="horizontal" alignment="center">
+            <el-button type="primary" @click="onSubmitTag">
+              Save
+            </el-button>
+            <el-button type="warning" @click="onCancelAddTag">
+              Cancel
+            </el-button>
+          </el-space>
+
+        </el-space>
+
+      </el-dialog>
+
+      <!--actor tags-->
+      <el-space wrap>
         <el-tag v-for="tag_id in actor.rel_tags"
                 :class="getColorStyleName(tag_id)"
                 :style="{'font-size': '18px'}"
@@ -116,27 +143,7 @@
           {{ getTagName(tag_id) }}
         </el-tag>
       </el-space>
-      <el-space wrap v-if="actor._edit_tags">
-        <el-select v-model="actor._new_tag_list"
-                   placeholder="+ New Tag"
-                   :reserve-keyword="false"
-                   multiple filterable clearable>
-          <el-option
-              v-for="actor_tag in actor_tag_list"
-              :key="actor_tag.tag_id"
-              :label="actor_tag.tag_name"
-              :value="actor_tag.tag_id"
-          />
-        </el-select>
-      </el-space>
-      <el-space v-if="actor._edit_tags" direction="horizontal" alignment="center">
-        <el-button type="primary" @click="onSubmitTag">
-          Save
-        </el-button>
-        <el-button type="warning" @click="onCancelAddTag">
-          Cancel
-        </el-button>
-      </el-space>
+
     </el-space>
   </el-card>
 </template>
@@ -149,12 +156,18 @@ import {
   ChangeActorTag,
   changeActorCategory,
   changeActorStar,
-  openActorFolder, changeActorRemark, getActor
+  openActorFolder, changeActorRemark, getActor, getFileInfo
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {downloadAllPosts, downloadByNames} from "../ctrls/DownloadCtrl";
 import {DownloadLimitForm} from "../data/SimpleForms";
+import ActorTagData from "../data/ActorTagData";
+
+interface TagInfo {
+  tag: ActorTagData,
+  selected: boolean,
+}
 
 export default {
   name: "ActorCard",
@@ -164,7 +177,8 @@ export default {
   },
   computed: {
     ...mapState(ActorTagStore, {
-      actor_tag_list: 'sorted_list'
+      actor_tag_list: 'sorted_list',
+      actor_tag_grouped_list: 'grouped_list',
     }),
     actor() {
       return this.actor_data.data
@@ -177,20 +191,31 @@ export default {
   emits: ['change'],
   data() {
     return {
-      download_pages: [-1, 1, 2, 5, 10, 20, 0]
+      download_pages: [-1, 1, 2, 5, 10, 20, 0],
+      is_editing_tags: false,
+      editing_tags: [] as TagInfo[][],
     }
   },
   mounted() {
+    // console.log(`mounted[${this.actor_data.index}]: ${this.actor.actor_name}`)
     this.actor.sortTags(this.compareActorTagId)
+    this.getFileInfo()
   },
   methods: {
     ...mapActions(ActorTagStore, {
       getTagName: 'getName',
       getColorStyleName: 'getColorStyleName',
       compareActorTagId: 'compareActorTagId',
+      getTagPriority: 'getTagPriority',
     }),
 
-    onRecvUpdateMsg(ok: boolean, new_actor: ActorData, msg: string) {
+    // onCardAdd(){
+    //   console.log(`onCardAdd[${this.actor_data.index}]: ${this.actor.actor_name}`)
+    //   this.actor.sortTags(this.compareActorTagId)
+    //   this.getFileInfo()
+    // },
+
+    onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
       if (ok) {
         this.actor_data.data = new_actor
         this.$emit('change', this.actor_data)
@@ -242,27 +267,65 @@ export default {
       this.onRecvUpdateMsg(ok, new_actor, "change category succeed")
     },
     onStartEditTag() {
-      this.actor.editTags(true)
+      for (const group_id in this.actor_tag_grouped_list) {
+        this.editing_tags[group_id] = []
+        for (const tag_data of this.actor_tag_grouped_list[group_id]) {
+          const group = Math.floor(tag_data.tag_priority / 10)
+          const hasTag = this.actor.hasTag(tag_data.tag_id)
+          this.editing_tags[group].push({tag: tag_data, selected: hasTag})
+        }
+      }
+
+      // console.log(this.editing_tags)
+
+      this.is_editing_tags = true
+
     },
     async onSubmitTag() {
-      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, this.actor._new_tag_list)
-      this.onRecvUpdateMsg(ok, new_actor, "change tags succeed")
+      this.is_editing_tags = false
+      // merge all selected tags
+      let new_tag_list = []
+      for (const group of this.editing_tags) {
+        for (const tag_info of group) {
+          if (tag_info.selected) {
+            new_tag_list.push(tag_info.tag.tag_id)
+          }
+        }
+      }
+      this.editing_tags = []
+      console.log(new_tag_list)
+
+      //request
+      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, new_tag_list)
+      this.onRecvActorMsg(ok, new_actor, "change tags succeed")
+      if (ok) {
+        this.actor.sortTags(this.compareActorTagId)
+      }
     },
     async onCancelAddTag() {
-      this.actor.editTags(false)
+      this.is_editing_tags = false
+      this.editing_tags = []
     },
     async changeStar(star: boolean) {
       const [ok, new_actor] = await changeActorStar(this.actor.actor_name, star)
-      this.onRecvUpdateMsg(ok, new_actor, "change star succeed")
+      this.onRecvActorMsg(ok, new_actor, "change star succeed")
     },
     async setActorRemark() {
       const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, this.actor.remark)
-      this.onRecvUpdateMsg(ok, new_actor, "change remark succeed")
+      this.onRecvActorMsg(ok, new_actor, "change remark succeed")
     },
     async resetActor() {
       const [ok, new_actor] = await getActor(this.actor.actor_name)
-      this.onRecvUpdateMsg(ok, new_actor, "reset actor succeed")
+      this.onRecvActorMsg(ok, new_actor, "reset actor succeed")
     },
+    async getFileInfo() {
+      const [ok, file_info] = await getFileInfo(this.actor.actor_name)
+      if (ok) {
+        this.actor.res_info = file_info
+      } else {
+        ElMessage({message: file_info as string, type: "error"})
+      }
+    }
   },
 }
 </script>
