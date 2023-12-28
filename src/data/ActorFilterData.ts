@@ -37,6 +37,24 @@ export default class ActorFilterData {
         }
     }
 
+    clone() {
+        const data = new ActorFilterData()
+        data.name = this.name
+        data.category_list = this.category_list.slice()
+        data.tag_list = this.tag_list.slice()
+        data.no_tag = this.no_tag
+        data.star = this.star
+        return data
+    }
+
+    copy(data: ActorFilterData) {
+        this.name = data.name
+        this.category_list = data.category_list.slice()
+        this.tag_list = data.tag_list.slice()
+        this.no_tag = data.no_tag
+        this.star = data.star
+    }
+
     checkAllCategory(val: boolean) {
         // console.log("all", val)
         if (val) {

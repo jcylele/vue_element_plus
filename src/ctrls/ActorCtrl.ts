@@ -96,3 +96,32 @@ export async function getFileInfo(actor_name: string) {
     }
     return [true, response]
 }
+
+export async function linkSameActors(actor_names: string[]) {
+    const url = `${baseUrl}/link`;
+    const [ok, response] = await fetchPost(url, actor_names)
+    if (!ok) {
+        return [false, response]
+    }
+
+    const map = {}
+    for (const json_data of response) {
+        const actor = new ActorData(json_data)
+        map[actor.actor_name] = actor
+    }
+    return [true, map]
+}
+
+export async function getLinkedActors(actor_name: string) {
+    const url = `${baseUrl}/${actor_name}/link`;
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [false, response]
+    }
+
+    const list = []
+    for (const json_data of response) {
+        list.push(new ActorData(json_data))
+    }
+    return [true, list]
+}

@@ -1,8 +1,5 @@
 <template>
   <el-container>
-    <el-header>
-      List of Actors
-    </el-header>
     <el-main>
       <div>
         <NewActorTag/>
@@ -18,6 +15,11 @@
             <template #default="scope">
               <el-input-number v-model="scope.row.tag_priority" :min="0" :max="100"
                                @change="scope.row.changed = true"/>
+            </template>
+          </el-table-column>
+          <el-table-column label="Used Count" prop="used_count" sortable>
+            <template #default="scope">
+              <el-text>{{ scope.row.used_count }}</el-text>
             </template>
           </el-table-column>
           <el-table-column label="Operations">

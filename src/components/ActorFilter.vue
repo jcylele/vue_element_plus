@@ -36,35 +36,35 @@
       </el-select>
       <el-checkbox v-model="filter_condition.no_tag"
                    @change="checkNoTag"
-                   style="margin-left: 10px"
+                   style="margin-left: 10px;font-size: 24px;"
                    size="large"
                    border>
         No Tag
       </el-checkbox>
-      <NewActorTag />
+      <NewActorTag/>
     </el-form-item>
 
     <!-- filter name -->
-    <el-form-item label="Name" style="width: 320px">
+    <el-form-item label="Name">
       <el-input v-model="filter_condition.name"
                 @change="onFilterNameChange"
+                style="width: 200px; font-size: 24px; margin-right: 20px"
                 clearable/>
       <el-switch
           v-model="filter_condition.star"
           class="mb-2"
           active-text="star"
-          inactive-text="all"
-      />
+          border/>
     </el-form-item>
     <el-form-item>
       <el-button type="primary" @click="onFilterChange">Search</el-button>
-      <el-button @click="onFilterCancel">Cancel</el-button>
+      <el-button @click="onFilterCancel">Reset</el-button>
+      <el-button v-if="history.length > 0" type="success" @click="toPreviousFilter">Previous</el-button>
     </el-form-item>
   </el-form>
 </template>
 
 <script lang="ts">
-import ActorTagData from "../data/ActorTagData";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorCategory from "../consts/ActorCategory";
 import NewActorTag from "./NewActorTag.vue";
@@ -83,6 +83,7 @@ export default {
   data() {
     return {
       all_actor_category_list: ActorCategory.AllCategories,
+      history: [] as ActorFilterData[]
     }
   },
 
@@ -97,11 +98,18 @@ export default {
     },
     //
     async onFilterChange() {
+      this.history.push(this.filter_condition.clone())
       await this.$emit('change')
     },
     async onFilterCancel() {
       this.filter_condition.reset()
-      await this.$emit('change')
+      // await this.$emit('change')
+    },
+    async toPreviousFilter() {
+      if (this.history.length > 0) {
+        this.filter_condition.copy(this.history.pop())
+        await this.$emit('change')
+      }
     },
     //
     checkNoTag(val: boolean) {

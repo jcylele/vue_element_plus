@@ -15,6 +15,9 @@
         <svg-icon v-if="actor.star" size="40px" name="star_filled"
                   @click="changeStar(false)"
                   style="color: gold;position: absolute; top: 0; right: 0;"/>
+        <svg-icon v-if="actor.main_actor" size="30px" name="friend"
+                  @click="findLinkedActor"
+                  style="color: hotpink;position: absolute; top: 0; left: 0;"/>
       </div>
 
       <!-- actor name, click to open menu items -->
@@ -188,7 +191,7 @@ export default {
     }
   },
   // declare emitted events to parent
-  emits: ['change'],
+  emits: ['refresh', 'link'],
   data() {
     return {
       download_pages: [-1, 1, 2, 5, 10, 20, 0],
@@ -218,8 +221,11 @@ export default {
     onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
       if (ok) {
         this.actor_data.data = new_actor
-        this.$emit('change', this.actor_data)
+        this.$emit('refresh', this.actor_data)
         ElMessage({message: msg, type: "success"})
+
+        // request file info
+        this.getFileInfo()
       } else {
         ElMessage(new_actor as string)
       }
@@ -264,7 +270,7 @@ export default {
     },
     async setActorCategory() {
       const [ok, new_actor] = await changeActorCategory(this.actor.actor_name, this.actor.actor_category.value)
-      this.onRecvUpdateMsg(ok, new_actor, "change category succeed")
+      this.onRecvActorMsg(ok, new_actor, "change category succeed")
     },
     onStartEditTag() {
       for (const group_id in this.actor_tag_grouped_list) {
@@ -293,7 +299,7 @@ export default {
         }
       }
       this.editing_tags = []
-      console.log(new_tag_list)
+      // console.log(new_tag_list)
 
       //request
       const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, new_tag_list)
@@ -309,6 +315,9 @@ export default {
     async changeStar(star: boolean) {
       const [ok, new_actor] = await changeActorStar(this.actor.actor_name, star)
       this.onRecvActorMsg(ok, new_actor, "change star succeed")
+    },
+    async findLinkedActor() {
+      this.$emit('link', this.actor_data)
     },
     async setActorRemark() {
       const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, this.actor.remark)

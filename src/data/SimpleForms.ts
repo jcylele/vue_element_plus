@@ -6,11 +6,11 @@ export class DownloadLimitForm {
     // MB
     file_size: number
 
-    resetDefaultValue(category_value:number) {
+    resetDefaultValue(category_value: number) {
         switch (category_value) {
             case ActorCategory.Enough.value:
                 this.actor_count = 0
-                this.post_count = 9999
+                this.post_count = 0
                 this.file_size = 0
                 break
             case ActorCategory.Liked.value:
@@ -26,16 +26,16 @@ export class DownloadLimitForm {
         }
     }
 
-    public static NewForm(category_value:number) {
+    public static NewForm(category_value: number) {
         const form = new DownloadLimitForm()
         form.resetDefaultValue(category_value)
         return form
     }
 
-    public setPageLimit(page_limit:number) {
+    public setPageLimit(page_limit: number) {
         if (page_limit < 1) {
-            this.post_count = 9999
-        }else {
+            this.post_count = 0
+        } else {
             this.post_count = page_limit * 50
         }
     }

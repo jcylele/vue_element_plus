@@ -7,12 +7,24 @@
             background-color="#545c64"
             text-color="#fff"
             active-text-color="#ffd04b"
-            @select="onMenuItemSelect"
-        >
-          <el-menu-item index="/download">Download More</el-menu-item>
-          <el-menu-item index="/actors">Show Actors</el-menu-item>
-          <el-menu-item index="/tasks">Download Tasks</el-menu-item>
-          <el-menu-item index="/actor_tags">Show Actor Tags</el-menu-item>
+            @select="onMenuItemSelect">
+          <el-sub-menu index="1">
+            <template #title>
+              <svg-icon size="20px" name="friend"/>
+              <span>Actors</span>
+            </template>
+            <el-menu-item index="/actors">Actors</el-menu-item>
+<!--            <el-menu-item index="/actor_links">Actor Links</el-menu-item>-->
+            <el-menu-item index="/actor_tags">Actor Tags</el-menu-item>
+          </el-sub-menu>
+          <el-sub-menu index="2">
+            <template  #title>
+              <svg-icon size="20px" name="download"/>
+              <span>Download</span>
+            </template>
+            <el-menu-item index="/download">Download</el-menu-item>
+            <el-menu-item index="/tasks">Tasks</el-menu-item>
+          </el-sub-menu>
         </el-menu>
 
       </el-aside>

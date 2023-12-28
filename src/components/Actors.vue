@@ -1,9 +1,35 @@
 <template>
   <el-container>
     <el-main>
-      <ActorFilter :filter_condition="filter_condition"
-                   @change="onFilterChange"/>
-      <el-divider/>
+      <el-collapse v-model="active_parts">
+        <el-collapse-item title="Linked Actors" name="link">
+          <el-space direction="vertical" :fill="true">
+            <el-space direction="horizontal">
+              <!-- buttons -->
+              <el-space direction="vertical">
+                <el-button type="primary" @click="linkActors">Link</el-button>
+                <el-button type="danger" @click="clearLinkedActors">Clear</el-button>
+              </el-space>
+              <!-- linked actors -->
+              <draggable v-model="linked_list"
+                         :group="{ name: 'actors', pull: false, put: true }"
+                         class="card_row">
+                <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
+                <ActorCard v-for="actor_data in linked_list"
+                           :actor_data="actor_data"
+                           :key="actor_data.data.actor_name"
+                           class="card"/>
+              </draggable>
+            </el-space>
+          </el-space>
+        </el-collapse-item>
+
+        <el-collapse-item title="Actor Filter" name="filter">
+          <ActorFilter :filter_condition="filter_condition"
+                       @change="onFilterChange"/>
+        </el-collapse-item>
+      </el-collapse>
+      <!--      <el-divider/>-->
       <el-pagination
           v-model:current-page="cur_actor_page"
           :page-size="actor_size"
@@ -13,16 +39,22 @@
           @size-change="handleSizeChange"
           layout="sizes, total, prev, pager, next"
           background
-          style="margin-bottom: 20px"
+          style="margin-bottom: 10px"
       />
-      <el-space wrap size="large" alignment="stretch">
+      <!--      <el-space wrap size="large" alignment="stretch">-->
+      <draggable v-model="actor_list"
+                 :group="{ name: 'actors', pull: 'clone', put: false }"
+                 class="card_row">
         <!-- TODO change is not triggered, why   -->
-        <!-- specify a key is essential when using v-for, or mounted may not be called when data is changed   -->
+        <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
         <ActorCard v-for="actor_data in actor_list"
                    :actor_data="actor_data"
                    :key="actor_data.data.actor_name"
-                   @change="onActorChange"/>
-      </el-space>
+                   @refresh="onActorChange"
+                   @link="onActorLinkClick"
+                   class="card"/>
+      </draggable>
+      <!--      </el-space>-->
     </el-main>
   </el-container>
 </template>
@@ -34,13 +66,14 @@ import ActorFilterData from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import {IArrayElement, ToElementArray} from "../data/ArrayElement";
-import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
+import {getActorCount, getActorList, getLinkedActors, linkSameActors} from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {ActorFilterStore} from "../store/ActorFilterStore";
+import {VueDraggableNext} from "vue-draggable-next";
 
 export default {
-  components: {ActorCard, ActorFilter},
+  components: {ActorCard, ActorFilter, draggable: VueDraggableNext},
   data() {
     return {
       filter_condition: new ActorFilterData(),
@@ -48,7 +81,9 @@ export default {
       // actor_cards: {} as Map<Number, ActorCard>,
       actor_size: 10,
       cur_actor_page: 1,
-      actor_count: 0
+      actor_count: 0,
+      active_parts: ['filter'],
+      linked_list: [] as IArrayElement<ActorData>[],
     }
   },
   computed: {
@@ -94,7 +129,40 @@ export default {
       await this.onActorPageChange()
     },
     onActorChange(actor_data: IArrayElement<ActorData>) {
-      console.log(`actor changed: ${actor_data.index}`)
+      console.log(`actor changed: ${actor_data.data.actor_name}`)
+    },
+    async onActorLinkClick(actor_data: IArrayElement<ActorData>) {
+      console.log(`actor link clicked: ${actor_data.data.actor_name}`)
+      const [ok, actor_list] = await getLinkedActors(actor_data.data.actor_name)
+      if (ok) {
+        this.actor_list = ToElementArray(actor_list)
+      } else {
+        this.actor_list = []
+        ElMessage(actor_list as string)
+      }
+    },
+    async linkActors() {
+      if (this.linked_list.length < 2) {
+        ElMessage.warning("No actor to link")
+        return
+      }
+
+      const actor_name_list = this.linked_list.map((actor) => actor.data.actor_name)
+      const [ok, actor_map] = await linkSameActors(actor_name_list)
+      if (ok) {
+        for (const actor_data of this.linked_list) {
+          if (actor_data.data.actor_name in actor_map) {
+            actor_data.data = actor_map[actor_data.data.actor_name]
+          }
+        }
+      } else {
+        this.linked_list = []
+        ElMessage.error(actor_map as string)
+      }
+    },
+
+    clearLinkedActors() {
+      this.linked_list = []
     },
   },
   watch: {},
@@ -107,5 +175,15 @@ export default {
 </script>
 
 <style scoped>
+.card {
+  display: table-cell;
+  margin: 10px;
+}
 
+.card_row {
+  min-height: 100px;
+  min-width: 300px;
+  display: flex;
+  flex-wrap: wrap;
+}
 </style>

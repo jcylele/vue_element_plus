@@ -1,6 +1,6 @@
 import {defineStore} from "pinia";
 import ActorTagData from "../data/ActorTagData";
-import {getActorTagList} from "../ctrls/ActorTagCtrl";
+import {getActorTagList, getTagUsedCount} from "../ctrls/ActorTagCtrl";
 import {ElMessage} from "element-plus";
 
 interface ActorTagState {

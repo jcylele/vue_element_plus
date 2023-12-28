@@ -47,6 +47,14 @@ export async function getActorTagList() {
     return [true, list]
 }
 
+export async function getTagUsedCount() {
+    const url = `${baseUrl}/used_count`
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [ok, response]
+    }
+    return [true, response]
+}
 
 
 export async function delActorTag(tag_id: number) {

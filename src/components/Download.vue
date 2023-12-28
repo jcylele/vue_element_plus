@@ -1,15 +1,14 @@
 <template>
   <el-container>
     <el-main>
-      <el-tabs tab-position="left" style="flex: fit-content" class="demo-tabs"
-               @tab-change="onTabChange">
-        <el-tab-pane label="Download New Actors" name="tab_new">
+      <el-tabs type="border-card" @tab-change="onTabChange">
+        <el-tab-pane label="New Actors" name="tab_new">
           <el-space direction="vertical">
             <DownloadLimit :download_limit="download_limit"/>
             <el-button type="primary" @click="downloadNew">Download</el-button>
           </el-space>
         </el-tab-pane>
-        <el-tab-pane label="Download By Category" name="tab_category">
+        <el-tab-pane label="By Category" name="tab_category">
           <el-space direction="vertical">
             <DownloadLimit :download_limit="download_limit"/>
             <el-radio-group v-model="actor_category" size="large">
@@ -23,7 +22,7 @@
             <el-button type="primary" @click="downloadByCategory">Download</el-button>
           </el-space>
         </el-tab-pane>
-        <el-tab-pane label="Download By Names" name="tab_name">
+        <el-tab-pane label="By Names" name="tab_name">
           <el-space direction="vertical">
             <el-steps :active="actor_search_step" finish-status="success" align-center>
               <el-step title="Choose Actors"/>

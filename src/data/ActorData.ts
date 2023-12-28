@@ -17,6 +17,7 @@ export default class ActorData extends EditableData {
     readonly completed: boolean
     star: boolean
     remark: string
+    main_actor: string
     // file_info: FileInfo
     post_info: number[]
     res_info: ResFileInfo[]

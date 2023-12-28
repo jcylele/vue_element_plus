@@ -1,5 +1,5 @@
-import { createApp } from 'vue'
-import { createPinia } from 'pinia'
+import {createApp} from 'vue'
+import {createPinia} from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import {createRouter, createWebHashHistory} from "vue-router";
@@ -22,11 +22,12 @@ import 'virtual:svg-icons-register'
 // 每个路由都需要映射到一个组件。
 // 我们后面再讨论嵌套路由。
 const routes = [
-    { path: '/',  component: Welcome},
-    { path: '/actors', component: Actors },
-    { path: '/actor_tags', component: ActorTags },
+    {path: '/', component: Welcome},
+    {path: '/actors', component: Actors},
+    // {path: '/actor_links', component: ActorLink},
+    {path: '/actor_tags', component: ActorTags},
     // 动态字段以冒号开始
-    { path: '/download', component: Download },
+    {path: '/download', component: Download},
     {path: '/tasks', component: Tasks}
 ]
 

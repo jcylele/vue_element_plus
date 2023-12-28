@@ -1,46 +1,67 @@
 <template>
-  <el-table :data="task_list" border class="wrap_line">
-    <el-table-column prop="desc" label="task" min-width="200px"/>
-    <el-table-column prop="downloadLimit" label="limit" :formatter="formatLimit" min-width="100px">
-      <template #default="scope">
-        <el-space direction="horizontal" >
-          <el-tag type="success" size="small">{{scope.row.downloadLimit.actor_count}}</el-tag>
-          <el-tag type="success" size="small">{{scope.row.downloadLimit.post_count}}</el-tag>
-          <el-tag type="success" size="small">{{scope.row.downloadLimit.file_size / (1024 * 1024)}}</el-tag>
-        </el-space>
-      </template>
-    </el-table-column>
-    <el-table-column prop="worker_count" label="workers" :formatter="formatWorkers" min-width="100px">
-      <template #default="scope">
-        <el-space direction="vertical" >
-          <el-tag type="success" size="small" v-for="(count, name) in scope.row.worker_count" :key="name">{{name}}:{{count}}</el-tag>
-        </el-space>
-      </template>
-    </el-table-column>
-    <el-table-column prop="queue_count" label="queues" :formatter="formatQueues" min-width="100px">
-      <template #default="scope">
-        <el-space direction="vertical" >
-          <el-tag type="success" size="small" v-for="(count, name) in scope.row.queue_count" :key="name">{{name}}:{{count}}</el-tag>
-        </el-space>
-      </template>
-    </el-table-column>
-    <el-table-column label="Op" min-width="100px">
-      <template #default="scope">
-        <el-button type="danger" @click="stopTask(scope.row.uid)">Stop</el-button>
-      </template>
-    </el-table-column>
-    </el-table>
+  <el-space direction="horizontal" :fill="true">
+    <el-space direction="vertical">
+      <el-table :data="task_list" border class="wrap_line">
+        <el-table-column prop="desc" label="task" min-width="300px"/>
+        <el-table-column prop="download_limit" label="limit" min-width="200px">
+          <template #default="scope">
+            <el-space direction="horizontal">
+              <el-tag v-if="scope.row.download_limit.actor_count > 0" type="success" size="small" effect="dark">
+                {{ scope.row.download_limit.actor_count }} actors
+              </el-tag>
+              <el-tag v-if="scope.row.download_limit.post_count > 0" type="success" size="small" effect="dark">
+                {{ scope.row.download_limit.post_count }} posts
+              </el-tag>
+              <el-tag v-if="scope.row.download_limit.file_size > 0" type="success" size="small" effect="dark">
+                {{ scope.row.download_limit.file_size / (1024 * 1024) }}G
+              </el-tag>
+            </el-space>
+          </template>
+        </el-table-column>
+        <el-table-column prop="worker_count" label="workers" min-width="200px">
+          <template #default="scope">
+            <el-space direction="vertical">
+              <el-tag size="small" effect="dark" v-for="(count, name) in scope.row.worker_count" :key="name">
+                {{ name }}:{{ count }}
+              </el-tag>
+            </el-space>
+          </template>
+        </el-table-column>
+        <el-table-column prop="queue_count" label="queues" min-width="200px">
+          <template #default="scope">
+            <el-space direction="vertical">
+              <el-tag size="small" effect="dark" v-for="(count, name) in scope.row.queue_count" :key="name">
+                {{ name }}:{{ count }}
+              </el-tag>
+            </el-space>
+          </template>
+        </el-table-column>
+        <el-table-column label="Op" min-width="100px">
+          <template #default="scope">
+            <el-button type="danger" @click="stopTask(scope.row.uid)">Stop</el-button>
+          </template>
+        </el-table-column>
+      </el-table>
+
+      <el-space direction="horizontal" :fill="true">
+        <el-button type="danger" size="large" @click="stopAllTask()">Stop All</el-button>
+        <el-button type="primary" @click="restore">Remove Outdated Downloading Files</el-button>
+      </el-space>
+
+    </el-space>
+  </el-space>
 </template>
 
 <script lang="ts">
-import {getAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
+import {getAllTasks, restoreFiles, stopAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
 import {ElMessage} from "element-plus";
+import TaskData from "../data/TaskData";
 
 export default {
   name: "Tasks",
   data() {
     return {
-      task_list: [],
+      task_list: [] as TaskData[],
       timer: null,
     }
   },
@@ -55,6 +76,16 @@ export default {
       }
     },
 
+    async stopAllTask() {
+      const [ok, ret] = await stopAllTasks()
+      if (ok) {
+        ElMessage({message: "stop all task succeed", type: "success"})
+        this.task_list = []
+      } else {
+        ElMessage({message: ret as string, type: "error"})
+      }
+    },
+
     async getAllTasks() {
       const [ok, ret] = await getAllTasks()
       if (ok) {
@@ -64,22 +95,14 @@ export default {
       }
     },
 
-    formatLimit(row: any, _) {
-      const limit = row.downloadLimit
-      return `${limit.actor_count}/${limit.post_count}/${limit.file_size / (1024 * 1024)}`
-    },
-    formatWorkers(row: any, _) {
-      const map = row.worker_count
-      return Object.keys(map).reduce((a, b, i) => {
-        return `${a} ${i ? '\n' : ''}${b}:${map[b]}`
-      }, "")
-    },
-    formatQueues(row: any, _) {
-      const map = row.queue_count
-      return Object.keys(map).reduce((a, b, i) => {
-        return `${a} ${i ? '\n' : ''}${b}:${map[b]}`
-      }, "")
-    },
+    async restore() {
+      const [ok, ret] = await restoreFiles()
+      if (ok) {
+        ElMessage({message: "restore succeed", type: "success"})
+      } else {
+        ElMessage({message: ret as string, type: "error"})
+      }
+    }
   },
   mounted() {
     this.getAllTasks()
