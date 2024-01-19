@@ -1,5 +1,6 @@
 import ActorCategory from "../consts/ActorCategory";
 import EditableData from "./EditableData";
+import {Base64} from "js-base64";
 
 const res_state = ["未下载", "已下载", "大文件", "已删除"]
 
@@ -15,17 +16,30 @@ export default class ActorData extends EditableData {
     rel_tags: number[]
     actor_category: ActorCategory
     readonly completed: boolean
-    star: boolean
     remark: string
     main_actor: string
     // file_info: FileInfo
     post_info: number[]
     res_info: ResFileInfo[]
     href: string
+    score: number
+
+    get show_score() {
+        return this.score / 2
+    }
+
+    set show_score(val: number) {
+        this.score = val * 2
+    }
 
     constructor(json_data?) {
         super(json_data);
         this.actor_category = ActorCategory.getByValue(json_data.actor_category)
+        if (json_data.remark) {
+            this.remark = Base64.decode(json_data.remark)
+            console.log(json_data.remark)
+            console.log(this.remark)
+        }
     }
 
     sortTags(compareFn?: (a: number, b: number) => number) {

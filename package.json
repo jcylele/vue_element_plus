@@ -14,11 +14,11 @@
     "@element-plus/icons-vue": "^2.0.10",
     "element-plus": "^2.2.30",
     "fast-glob": "^3.2.12",
+    "js-base64": "^3.7.5",
     "pinia": "^2.0.33",
     "vue": "^3.2.45",
     "vue-draggable-next": "^2.2.1",
-    "vue-router": "^4.1.6",
-    "vuedraggable": "^4.1.0"
+    "vue-router": "^4.1.6"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^4.0.0",

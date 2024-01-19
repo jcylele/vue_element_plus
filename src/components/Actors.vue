@@ -2,31 +2,31 @@
   <el-container>
     <el-main>
       <el-collapse v-model="active_parts">
-        <el-collapse-item title="Linked Actors" name="link">
-          <el-space direction="vertical" :fill="true">
-            <el-space direction="horizontal">
-              <!-- buttons -->
-              <el-space direction="vertical">
-                <el-button type="primary" @click="linkActors">Link</el-button>
-                <el-button type="danger" @click="clearLinkedActors">Clear</el-button>
-              </el-space>
-              <!-- linked actors -->
-              <draggable v-model="linked_list"
-                         :group="{ name: 'actors', pull: false, put: true }"
-                         class="card_row">
-                <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
-                <ActorCard v-for="actor_data in linked_list"
-                           :actor_data="actor_data"
-                           :key="actor_data.data.actor_name"
-                           class="card"/>
-              </draggable>
+        <el-collapse-item name="link" title="Linked Actors">
+          <el-space direction="horizontal">
+
+            <el-space direction="vertical" :alignment="'stretch'">
+              <el-button type="primary" @click="linkActors">Link</el-button>
+              <el-button type="danger" @click="clearLinkedActors">Clear</el-button>
             </el-space>
+
+            <!-- linked actors -->
+            <draggable v-model="linked_list"
+                       :group="{ name: 'actors', pull: false, put: true }"
+                       class="card_row">
+              <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
+              <ActorCard v-for="actor_data in linked_list"
+                         :actor_data="actor_data"
+                         :key="actor_data.data.actor_name"
+                         class="card"/>
+            </draggable>
           </el-space>
         </el-collapse-item>
 
-        <el-collapse-item title="Actor Filter" name="filter">
-          <ActorFilter :filter_condition="filter_condition"
-                       @change="onFilterChange"/>
+        <el-collapse-item name="filter" title="Actor Filter">
+          <el-space direction="vertical">
+            <ActorFilter :filter_condition="filter_condition" @change="onFilterChange"/>
+          </el-space>
         </el-collapse-item>
       </el-collapse>
       <!--      <el-divider/>-->
@@ -39,7 +39,7 @@
           @size-change="handleSizeChange"
           layout="sizes, total, prev, pager, next"
           background
-          style="margin-bottom: 10px"
+          style="margin: 10px"
       />
       <!--      <el-space wrap size="large" alignment="stretch">-->
       <draggable v-model="actor_list"
@@ -164,6 +164,7 @@ export default {
     clearLinkedActors() {
       this.linked_list = []
     },
+
   },
   watch: {},
   async mounted() {

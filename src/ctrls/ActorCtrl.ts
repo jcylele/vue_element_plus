@@ -1,6 +1,7 @@
 import ActorData from "../data/ActorData";
 import {fetchGet, fetchPatch, fetchPost} from "./FetchCtrl";
 import ActorFilterData from "../data/ActorFilterData";
+import {Base64} from "js-base64";
 
 const baseUrl = "http://127.0.0.1:8000/api/actor"
 
@@ -78,8 +79,19 @@ export async function changeActorStar(actor_name: string, actor_star: boolean) {
     return [true, actor]
 }
 
+export async function changeActorScore(actor_name: string, score: number) {
+    const url = `${baseUrl}/${actor_name}/score?val=${score}`;
+    const [ok, response] = await fetchPatch(url)
+    if (!ok) {
+        return [false, response]
+    }
+    const actor = new ActorData(response)
+    return [true, actor]
+}
+
 export async function changeActorRemark(actor_name: string, remark: string) {
-    const url = `${baseUrl}/${actor_name}/remark?val=${remark}`;
+    const encoded_remark = Base64.encode(remark)
+    const url = `${baseUrl}/${actor_name}/remark?val=${encoded_remark}`;
     const [ok, response] = await fetchPatch(url)
     if (!ok) {
         return [false, response]

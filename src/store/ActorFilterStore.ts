@@ -19,7 +19,7 @@ export const ActorFilterStore = defineStore('ActorFilterStore', {
     },
     actions: {
         setFilterCondition(filter: ActorFilterData) {
-            this.filter = filter
+            this.filter = filter.clone()
         }
     },
 })

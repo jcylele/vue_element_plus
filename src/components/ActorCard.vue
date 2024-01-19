@@ -1,7 +1,6 @@
 <template>
   <el-card class="box-card"
            :key="actor.actor_name"
-           :body-style="{ padding: '10px' }"
            shadow="always"
            style="width: 200px;">
     <el-space direction="vertical" alignment="center" :fill="true">
@@ -9,19 +8,20 @@
       <!-- actor avatar -->
       <div style="position: relative;">
         <el-image :src="iconActor(actor.actor_name)" style="height: 180px"/>
-        <svg-icon v-if="!actor.star" size="40px" name="star_empty"
-                  @click="changeStar(true)"
-                  style="color: whitesmoke;position: absolute; top: 0; right: 0;"/>
-        <svg-icon v-if="actor.star" size="40px" name="star_filled"
-                  @click="changeStar(false)"
-                  style="color: gold;position: absolute; top: 0; right: 0;"/>
         <svg-icon v-if="actor.main_actor" size="30px" name="friend"
                   @click="findLinkedActor"
                   style="color: hotpink;position: absolute; top: 0; left: 0;"/>
+        <el-rate v-model="actor.show_score"
+                 :colors="star_colors"
+                 void-color="#FFFFFF"
+                 size="large"
+                 style="position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);"
+                 @change="changeScore"
+                 allow-half/>
       </div>
 
       <!-- actor name, click to open menu items -->
-      <el-popover trigger="click" placement="top" :width="actor.hasFolder() ? 240 : 120">
+      <el-popover trigger="click" placement="top">
         <template #reference>
           <div :class="styleActor(actor.actor_category)"
                style="font-size: 20px; word-wrap: anywhere; text-align: center;">
@@ -29,26 +29,45 @@
           </div>
         </template>
         <template #default>
-          <el-space direction="vertical">
-            <el-space direction="horizontal" alignment="stretch">
-              <el-button @click="gotoActorPage(actor.href)" :class="styleActor(actor.actor_category)">
-                Go To Page
-              </el-button>
-              <el-button v-if="actor.hasFolder()" @click="openFolder(actor.actor_name)"
-                         :class="styleActor(actor.actor_category)">
-                Open Folder
-              </el-button>
-            </el-space>
-            <el-space direction="horizontal" v-if="actor.hasFolder()" alignment="center">
-              <el-link v-for="page in download_pages"
-                       @click="startDownload(actor.actor_name, page)"
+          <el-space direction="vertical" alignment="stretch">
+
+            <el-button @click="gotoActorPage(actor.href)"
                        :class="styleActor(actor.actor_category)">
-                {{ formatPageCount(page) }}
-              </el-link>
-            </el-space>
+              Go To Page
+            </el-button>
+
+            <el-button v-if="actor.hasFolder()"
+                       @click="openFolder(actor.actor_name)"
+                       :class="styleActor(actor.actor_category)">
+              Open Folder
+            </el-button>
+
+            <el-button v-if="actor.hasFolder()"
+                       @click="showDownloadLimit"
+                       :class="styleActor(actor.actor_category)">
+              Download
+            </el-button>
+
           </el-space>
         </template>
       </el-popover>
+
+      <!-- download limit -->
+      <el-dialog v-model="to_download"
+                 title="Download"
+                 width="500px">
+        <el-space direction="vertical">
+          <DownloadLimit :download_limit="download_limit"/>
+          <el-space direction="horizontal" alignment="center">
+            <el-button type="primary" @click="onSubmitDownload">
+              Download
+            </el-button>
+            <el-button type="warning" @click="onCancelDownload">
+              Cancel
+            </el-button>
+          </el-space>
+        </el-space>
+      </el-dialog>
 
       <!-- actor post info -->
       <el-text style="font-size: 16px; color: black;" tag="ins">
@@ -64,27 +83,14 @@
       <!--actor remark + category + edit button -->
       <el-space direction="horizontal" alignment="center">
         <!-- actor remark -->
-        <el-popover placement="right" trigger="click" :width="160">
+        <el-popover placement="right" trigger="click" :width="600">
           <template #reference>
             <svg-icon size="20px" :name="actor.remark ? 'remark' : 'remark_empty'"/>
           </template>
           <template #default>
-            <el-space direction="vertical" :fill="true">
-              <el-space direction="horizontal" :fill="true">
-                <el-input v-model="actor.remark"
-                          type="textarea" :autosize="{ minRows: 2, maxRows: 4 }"/>
-              </el-space>
-              <el-space direction="horizontal" alignment="center">
-                <el-button type="primary" size="default"
-                           @click="setActorRemark()">
-                  Save
-                </el-button>
-                <el-button type="warning" size="default"
-                           @click="resetActor()">
-                  Reset
-                </el-button>
-              </el-space>
-            </el-space>
+            <RemarkEditor :remark="actor.remark"
+                          @submit="onSubmitRemark"
+            />
           </template>
         </el-popover>
         <!-- actor category -->
@@ -109,33 +115,15 @@
       </el-space>
 
       <!-- actor tags editing dialog-->
-      <el-dialog v-model="is_editing_tags" title="Edit Tags" width="50%">
-
-        <el-space direction="vertical" size="large" :fill="true">
-          <el-space v-for="tag_group in editing_tags.slice().reverse()"
-                    style="border: 1px solid ; border-radius: 4px; padding: 2px"
-                    direction="horizontal" :wrap="true" :size="3" alignment="stretch">
-
-            <el-checkbox-button v-for="tag_info in tag_group"
-                                v-model="tag_info.selected">
-              {{ tag_info.tag.tag_name }}
-
-            </el-checkbox-button>
-
-          </el-space>
-          <!-- buttons -->
-          <el-space direction="horizontal" alignment="center">
-            <el-button type="primary" @click="onSubmitTag">
-              Save
-            </el-button>
-            <el-button type="warning" @click="onCancelAddTag">
-              Cancel
-            </el-button>
-          </el-space>
-
-        </el-space>
-
+      <el-dialog v-model="is_editing_tags"
+                 title="Edit Tags"
+                 width="50%">
+        <ActorTagChooser :editing_tags="editing_tags"
+                         @submit="onSubmitTag"
+                         @cancel="onCancelAddTag"
+        />
       </el-dialog>
+
 
       <!--actor tags-->
       <el-space wrap>
@@ -159,13 +147,17 @@ import {
   ChangeActorTag,
   changeActorCategory,
   changeActorStar,
-  openActorFolder, changeActorRemark, getActor, getFileInfo
+  openActorFolder, changeActorRemark, getActor, getFileInfo, changeActorScore
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {downloadAllPosts, downloadByNames} from "../ctrls/DownloadCtrl";
 import {DownloadLimitForm} from "../data/SimpleForms";
 import ActorTagData from "../data/ActorTagData";
+import SvgIcon from "./SvgIcon/index.vue";
+import ActorTagChooser from "./ActorTagChooser.vue";
+import DownloadLimit from "./DownloadLimit.vue";
+import RemarkEditor from "./RemarkEditor.vue";
 
 interface TagInfo {
   tag: ActorTagData,
@@ -174,6 +166,7 @@ interface TagInfo {
 
 export default {
   name: "ActorCard",
+  components: {DownloadLimit, ActorTagChooser, SvgIcon, RemarkEditor},
   // props from parent
   props: {
     actor_data: {data: ActorData, index: Number},
@@ -183,7 +176,7 @@ export default {
       actor_tag_list: 'sorted_list',
       actor_tag_grouped_list: 'grouped_list',
     }),
-    actor() {
+    actor(): ActorData {
       return this.actor_data.data
     },
     all_actor_category_list() {
@@ -197,6 +190,16 @@ export default {
       download_pages: [-1, 1, 2, 5, 10, 20, 0],
       is_editing_tags: false,
       editing_tags: [] as TagInfo[][],
+      to_download: false,
+      download_limit: null as DownloadLimitForm,
+      star_colors: {
+        0: '#0000FF',
+        1: '#7F8EFF',
+        2: '#1EFF00',
+        3: '#FFEE00',
+        4: '#FFA0AB',
+        5: '#FF007F',
+      }
     }
   },
   mounted() {
@@ -221,6 +224,7 @@ export default {
     onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
       if (ok) {
         this.actor_data.data = new_actor
+        this.actor.sortTags(this.compareActorTagId)
         this.$emit('refresh', this.actor_data)
         ElMessage({message: msg, type: "success"})
 
@@ -253,29 +257,23 @@ export default {
 
       return page.toString()
     },
-    async startDownload(actor_name: string, page_limit: number) {
-      let limit = DownloadLimitForm.NewForm(ActorCategory.Enough.value)
-      limit.setPageLimit(page_limit)
-      let [ok, ret] = [false, null]
-      if (page_limit == -1) {
-        [ok, ret] = await downloadAllPosts(limit, actor_name)
-      } else {
-        [ok, ret] = await downloadByNames(limit, [actor_name])
-      }
-      if (ok) {
-        ElMessage({message: "download started", type: "success"})
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
-    },
     async setActorCategory() {
+      if (this.actor.rel_tags.length == 0) {
+        ElMessage({message: "no tags, can't set category", type: "warning"})
+        return
+      }
+      if (this.actor.actor_category.value == ActorCategory.Enough.value
+          && this.actor.score == 0) {
+        ElMessage({message: "must set score before set category to enough", type: "warning"})
+        return
+      }
       const [ok, new_actor] = await changeActorCategory(this.actor.actor_name, this.actor.actor_category.value)
       this.onRecvActorMsg(ok, new_actor, "change category succeed")
     },
     onStartEditTag() {
       for (const group_id in this.actor_tag_grouped_list) {
         this.editing_tags[group_id] = []
-        for (const tag_data of this.actor_tag_grouped_list[group_id]) {
+        for (const tag_data: ActorTagData of this.actor_tag_grouped_list[group_id]) {
           const group = Math.floor(tag_data.tag_priority / 10)
           const hasTag = this.actor.hasTag(tag_data.tag_id)
           this.editing_tags[group].push({tag: tag_data, selected: hasTag})
@@ -304,28 +302,52 @@ export default {
       //request
       const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, new_tag_list)
       this.onRecvActorMsg(ok, new_actor, "change tags succeed")
-      if (ok) {
-        this.actor.sortTags(this.compareActorTagId)
-      }
     },
     async onCancelAddTag() {
       this.is_editing_tags = false
       this.editing_tags = []
     },
+
+    showDownloadLimit() {
+      if (this.download_limit === null) {
+        this.download_limit = new DownloadLimitForm()
+        this.download_limit.resetDefaultValue(ActorCategory.Enough.value)
+      }
+      this.to_download = true
+    },
+
+    async onSubmitDownload() {
+      this.to_download = false
+
+      let [ok, ret] = await downloadByNames(this.download_limit, [this.actor.actor_name])
+      if (ok) {
+        ElMessage({message: "download started", type: "success"})
+      } else {
+        ElMessage({message: ret as string, type: "error"})
+      }
+    },
+
+    onCancelDownload() {
+      this.to_download = false
+    },
+
     async changeStar(star: boolean) {
       const [ok, new_actor] = await changeActorStar(this.actor.actor_name, star)
       this.onRecvActorMsg(ok, new_actor, "change star succeed")
     },
+    async changeScore() {
+      const [ok, new_actor] = await changeActorScore(this.actor.actor_name, this.actor.score)
+      this.onRecvActorMsg(ok, new_actor, "change score succeed")
+    },
     async findLinkedActor() {
       this.$emit('link', this.actor_data)
     },
-    async setActorRemark() {
-      const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, this.actor.remark)
+    async onSubmitRemark(new_remark: string) {
+      if (new_remark == this.actor.remark) {
+        return
+      }
+      const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, new_remark)
       this.onRecvActorMsg(ok, new_actor, "change remark succeed")
-    },
-    async resetActor() {
-      const [ok, new_actor] = await getActor(this.actor.actor_name)
-      this.onRecvActorMsg(ok, new_actor, "reset actor succeed")
     },
     async getFileInfo() {
       const [ok, file_info] = await getFileInfo(this.actor.actor_name)
