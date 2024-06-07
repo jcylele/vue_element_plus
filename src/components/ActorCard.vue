@@ -1,5 +1,6 @@
 <template>
   <el-card class="box-card"
+           :class="styleActorCard(actor.actor_category)"
            :key="actor.actor_name"
            shadow="always"
            style="width: 200px;">
@@ -23,7 +24,7 @@
       <!-- actor name, click to open menu items -->
       <el-popover trigger="click" placement="top">
         <template #reference>
-          <div :class="styleActor(actor.actor_category)"
+          <div :class="styleActorText(actor.actor_category)"
                style="font-size: 20px; word-wrap: anywhere; text-align: center;">
             {{ actor.actor_name }}
           </div>
@@ -32,19 +33,19 @@
           <el-space direction="vertical" alignment="stretch">
 
             <el-button @click="gotoActorPage(actor.href)"
-                       :class="styleActor(actor.actor_category)">
+                       :class="styleActorText(actor.actor_category)">
               Go To Page
             </el-button>
 
             <el-button v-if="actor.hasFolder()"
                        @click="openFolder(actor.actor_name)"
-                       :class="styleActor(actor.actor_category)">
+                       :class="styleActorText(actor.actor_category)">
               Open Folder
             </el-button>
 
             <el-button v-if="actor.hasFolder()"
                        @click="showDownloadLimit"
-                       :class="styleActor(actor.actor_category)">
+                       :class="styleActorText(actor.actor_category)">
               Download
             </el-button>
 
@@ -55,7 +56,7 @@
       <!-- download limit -->
       <el-dialog v-model="to_download"
                  title="Download"
-                 width="500px">
+                 width="640px">
         <el-space direction="vertical">
           <DownloadLimit :download_limit="download_limit"/>
           <el-space direction="horizontal" alignment="center">
@@ -71,7 +72,7 @@
 
       <!-- actor post info -->
       <el-text style="font-size: 16px; color: black;" tag="ins">
-        {{ `[${actor.post_info[0]} / ${actor.post_info[1]}]` }}
+        {{ actor.post_desc }}
       </el-text>
       <!-- actor res info -->
       <el-text v-for="res_file_info in actor.res_info"
@@ -96,6 +97,7 @@
         <!-- actor category -->
         <el-select v-model="actor.actor_category"
                    @change="setActorCategory"
+                   :class="styleActorText(actor.actor_category)"
         >
           <el-option
               style="width: fit-content"
@@ -105,7 +107,7 @@
               :value="category"
               :fit-input-width="true"
               :disabled="!category.selectable"
-              :class="styleActor(category)">
+              :class="styleActorText(category)">
             {{ `[${category.name}] (${category.desc})` }}
           </el-option>
         </el-select>
@@ -116,9 +118,9 @@
 
       <!-- actor tags editing dialog-->
       <el-dialog v-model="is_editing_tags"
-                 title="Edit Tags"
+                 :title="actor.actor_name"
                  width="50%">
-        <ActorTagChooser :editing_tags="editing_tags"
+        <ActorTagChooser :actor="actor"
                          @submit="onSubmitTag"
                          @cancel="onCancelAddTag"
         />
@@ -147,17 +149,18 @@ import {
   ChangeActorTag,
   changeActorCategory,
   changeActorStar,
-  openActorFolder, changeActorRemark, getActor, getFileInfo, changeActorScore
+  openActorFolder, changeActorRemark, getFileInfo, changeActorScore
 } from "../ctrls/ActorCtrl";
-import {mapActions, mapState} from "pinia";
+import {mapActions} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
-import {downloadAllPosts, downloadByNames} from "../ctrls/DownloadCtrl";
-import {DownloadLimitForm} from "../data/SimpleForms";
+import {downloadByNames} from "../ctrls/DownloadCtrl";
+import {DownloadLimitForm, LimitPreset} from "../data/SimpleForms";
 import ActorTagData from "../data/ActorTagData";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagChooser from "./ActorTagChooser.vue";
 import DownloadLimit from "./DownloadLimit.vue";
 import RemarkEditor from "./RemarkEditor.vue";
+import {ActorElement} from "../data/ArrayElement";
 
 interface TagInfo {
   tag: ActorTagData,
@@ -169,13 +172,9 @@ export default {
   components: {DownloadLimit, ActorTagChooser, SvgIcon, RemarkEditor},
   // props from parent
   props: {
-    actor_data: {data: ActorData, index: Number},
+    actor_data: ActorElement
   },
   computed: {
-    ...mapState(ActorTagStore, {
-      actor_tag_list: 'sorted_list',
-      actor_tag_grouped_list: 'grouped_list',
-    }),
     actor(): ActorData {
       return this.actor_data.data
     },
@@ -203,7 +202,7 @@ export default {
     }
   },
   mounted() {
-    // console.log(`mounted[${this.actor_data.index}]: ${this.actor.actor_name}`)
+    // console.log(`mounted[${this.actor_data.id}]: ${this.actor.actor_name}`)
     this.actor.sortTags(this.compareActorTagId)
     this.getFileInfo()
   },
@@ -238,8 +237,11 @@ export default {
     iconActor(actor_name: string) {
       return `http://localhost:1314/_icon/${actor_name}.jfif`
     },
-    styleActor(category: ActorCategory) {
-      return `actor_${category.name}`
+    styleActorText(category: ActorCategory) {
+      return `actor_${category.name}_text`
+    },
+    styleActorCard(category: ActorCategory) {
+      return `actor_${category.name}_card`
     },
     gotoActorPage(href: string) {
       window.open(href, '_blank', 'noreferrer');
@@ -271,33 +273,10 @@ export default {
       this.onRecvActorMsg(ok, new_actor, "change category succeed")
     },
     onStartEditTag() {
-      for (const group_id in this.actor_tag_grouped_list) {
-        this.editing_tags[group_id] = []
-        for (const tag_data: ActorTagData of this.actor_tag_grouped_list[group_id]) {
-          const group = Math.floor(tag_data.tag_priority / 10)
-          const hasTag = this.actor.hasTag(tag_data.tag_id)
-          this.editing_tags[group].push({tag: tag_data, selected: hasTag})
-        }
-      }
-
-      // console.log(this.editing_tags)
-
       this.is_editing_tags = true
-
     },
-    async onSubmitTag() {
+    async onSubmitTag(new_tag_list: number[]) {
       this.is_editing_tags = false
-      // merge all selected tags
-      let new_tag_list = []
-      for (const group of this.editing_tags) {
-        for (const tag_info of group) {
-          if (tag_info.selected) {
-            new_tag_list.push(tag_info.tag.tag_id)
-          }
-        }
-      }
-      this.editing_tags = []
-      // console.log(new_tag_list)
 
       //request
       const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, new_tag_list)
@@ -311,7 +290,7 @@ export default {
     showDownloadLimit() {
       if (this.download_limit === null) {
         this.download_limit = new DownloadLimitForm()
-        this.download_limit.resetDefaultValue(ActorCategory.Enough.value)
+        this.download_limit.resetDefaultValue(LimitPreset.All)
       }
       this.to_download = true
     },
@@ -352,7 +331,10 @@ export default {
     async getFileInfo() {
       const [ok, file_info] = await getFileInfo(this.actor.actor_name)
       if (ok) {
-        this.actor.res_info = file_info
+        this.actor.res_info = file_info.res_info
+        this.actor.total_post_count = file_info.total_post_count
+        this.actor.unfinished_post_count = file_info.unfinished_post_count
+        this.actor.finished_post_count = file_info.finished_post_count
       } else {
         ElMessage({message: file_info as string, type: "error"})
       }
@@ -367,19 +349,43 @@ export default {
   color: sandybrown;
 }
 
-.actor_init {
+.actor_init_card {
+  border: 1px solid green;
+  padding: 2px;
+  box-shadow: 2px 2px #008000aa;
+}
+
+.actor_init_text {
   color: darkgreen;
 }
 
-.actor_liked {
+.actor_liked_card {
+  border: 1px solid pink;
+  padding: 2px;
+  box-shadow: 2px 2px #ffc0cbaa;
+}
+
+.actor_liked_text {
   color: hotpink;
 }
 
-.actor_dislike {
+.actor_dislike_card {
+  border: 1px solid dodgerblue;
+  padding: 2px;
+  box-shadow: 2px 2px #1e90ffaa;
+}
+
+.actor_dislike_text {
   color: blue;
 }
 
-.actor_enough {
+.actor_enough_card {
+  border: 1px solid orange;
+  padding: 2px;
+  box-shadow: 2px 2px #ffa500aa;
+}
+
+.actor_enough_text {
   color: orangered;
 }
 

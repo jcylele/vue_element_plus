@@ -33,6 +33,7 @@ import {ActorTagStore} from "../store/ActorTagStore";
 
 export default {
   name: "NewActorTag",
+  emits: ['tag_added'],
   data() {
     return {
       new_actor_tag: new ActorTagData(),
@@ -55,6 +56,7 @@ export default {
         this.show_add = false
         this.addActorTag(tag)
         ElMessage({message: "add succeed", type: "success"})
+        this.$emit("tag_added")
       } else {
         ElMessage({message: tag, type: "error"})
       }

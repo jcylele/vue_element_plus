@@ -6,15 +6,18 @@
           <el-table-column prop="desc" label="task" min-width="300px"/>
           <el-table-column prop="download_limit" label="limit" min-width="200px">
             <template #default="scope">
-              <el-space direction="horizontal">
+              <el-space direction="vertical">
                 <el-tag v-if="scope.row.download_limit.actor_count > 0" type="success" size="small" effect="dark">
                   {{ scope.row.download_limit.actor_count }} actors
                 </el-tag>
                 <el-tag type="success" size="small" effect="dark">
-                  {{ post_desc(scope.row.download_limit) }}
+                  {{ scope.row.download_limit.post_desc() }}
+                </el-tag>
+                <el-tag v-if="scope.row.download_limit.total_file_size > 0" type="success" size="small" effect="dark">
+                  Total {{ scope.row.download_limit.total_file_size_desc() }}
                 </el-tag>
                 <el-tag v-if="scope.row.download_limit.file_size > 0" type="success" size="small" effect="dark">
-                  {{ scope.row.download_limit.file_size / (1024 * 1024 * 1024) }}G
+                  Single {{ scope.row.download_limit.file_size_desc() }}
                 </el-tag>
                 <el-tag v-if="scope.row.download_limit.allow_img" type="success" size="small" effect="dark">
                   images
@@ -112,10 +115,6 @@ export default {
         ElMessage({message: ret as string, type: "error"})
       }
     },
-
-    post_desc(limit: DownloadLimitForm) {
-      return limit.post_desc
-    }
   },
   mounted() {
     this.getAllTasks()

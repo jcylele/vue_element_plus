@@ -1,18 +1,17 @@
 <template>
   <el-space direction="vertical" border>
     <!-- Presets -->
-    <el-space direction="horizontal">
-      <el-radio-group v-model="cur_actor_category">
-        <el-radio v-for="category in all_actor_category_list"
-                  :label="category.value"
-                  :key="category.value">
-          {{ category.name }}
+    <el-space direction="horizontal" wrap>
+      <el-radio-group v-model="cur_preset">
+        <el-radio v-for="preset in preset_names"
+                  :label="preset.value">
+          {{ preset.name }}
         </el-radio>
       </el-radio-group>
     </el-space>
 
     <el-form :model="download_limit"
-             label-width="100px" label-position="left">
+             label-width="200px" label-position="left">
       <el-form-item label="Actor Count">
         <el-input-number v-model="download_limit.actor_count" :max="200" :step="5"/>
       </el-form-item>
@@ -24,10 +23,13 @@
         </el-radio-group>
       </el-form-item>
       <el-form-item label="Post Count">
-        <el-input-number v-model="download_limit.post_count" :max="9999" :step="25"/>
+        <el-input-number v-model="download_limit.post_count" :max="9999" :step="50"/>
       </el-form-item>
-      <el-form-item label="File Size(MB)">
-        <el-input-number v-model="download_limit.file_size" :max="1024" :step="10"/>
+      <el-form-item label="Total File Size(MB)">
+        <el-input-number v-model="download_limit.show_total_file_size" :max="10240" :step="512"/>
+      </el-form-item>
+      <el-form-item label="Single File Size(MB)">
+        <el-input-number v-model="download_limit.show_file_size" :max="1024" :step="20"/>
       </el-form-item>
       <el-form-item label="File Types">
         <el-checkbox v-model="download_limit.allow_img" label="Images" size="large"/>
@@ -38,7 +40,7 @@
 </template>
 
 <script lang="ts">
-import {DownloadLimitForm, PostFilter} from "../data/SimpleForms";
+import {DownloadLimitForm, LimitPreset, PostFilter} from "../data/SimpleForms";
 import ActorCategory from "../consts/ActorCategory";
 
 export default {
@@ -48,13 +50,18 @@ export default {
   },
   data() {
     return {
-      cur_actor_category: ActorCategory.Init.value,
-      all_actor_category_list: ActorCategory.AllCategories,
-      post_filter: PostFilter
+      cur_preset: LimitPreset.All,
+      post_filter: PostFilter,
+      preset_names: [
+        {name: "Init", value: LimitPreset.Init},
+        {name: "All", value: LimitPreset.All},
+        {name: "Current_Video", value: LimitPreset.Current_Video},
+        {name: "Only_Info", value: LimitPreset.Only_Info}
+      ],
     }
   },
   watch: {
-    async cur_actor_category(new_val, old_val) {
+    async cur_preset(new_val, old_val) {
       this.download_limit.resetDefaultValue(new_val)
     }
   },

@@ -8,7 +8,7 @@ async function _fetch(url: string, init?: RequestInit) {
             const json_data = JSON.parse(text)
             return [true, json_data]
         }
-        console.log(text)
+        // console.log(text)
         return [false, text]
     } catch (e) {
         console.log(e)

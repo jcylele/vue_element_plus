@@ -90,7 +90,7 @@ export async function changeActorScore(actor_name: string, score: number) {
 }
 
 export async function changeActorRemark(actor_name: string, remark: string) {
-    const encoded_remark = Base64.encode(remark)
+    const encoded_remark = Base64.encodeURI(remark)
     const url = `${baseUrl}/${actor_name}/remark?val=${encoded_remark}`;
     const [ok, response] = await fetchPatch(url)
     if (!ok) {

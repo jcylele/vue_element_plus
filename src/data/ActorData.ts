@@ -19,10 +19,21 @@ export default class ActorData extends EditableData {
     remark: string
     main_actor: string
     // file_info: FileInfo
-    post_info: number[]
+    total_post_count: number
+    unfinished_post_count: number
+    finished_post_count: number
     res_info: ResFileInfo[]
     href: string
     score: number
+
+    get post_desc(){
+        let desc = `[${this.finished_post_count}`
+        if (this.unfinished_post_count > 0) {
+            desc += `(+${this.unfinished_post_count})`
+        }
+        desc += `/${this.total_post_count}]`
+        return desc
+    }
 
     get show_score() {
         return this.score / 2

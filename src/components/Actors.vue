@@ -49,7 +49,7 @@
         <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
         <ActorCard v-for="actor_data in actor_list"
                    :actor_data="actor_data"
-                   :key="actor_data.data.actor_name"
+                   :key="actor_data.id"
                    @refresh="onActorChange"
                    @link="onActorLinkClick"
                    class="card"/>
@@ -65,7 +65,7 @@ import {ElMessage} from "element-plus";
 import ActorFilterData from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
-import {IArrayElement, ToElementArray} from "../data/ArrayElement";
+import {ActorElement, ToActorElements} from "../data/ArrayElement";
 import {getActorCount, getActorList, getLinkedActors, linkSameActors} from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -77,13 +77,13 @@ export default {
   data() {
     return {
       filter_condition: new ActorFilterData(),
-      actor_list: [] as IArrayElement<ActorData>[],
+      actor_list: [] as ActorElement[],
       // actor_cards: {} as Map<Number, ActorCard>,
       actor_size: 10,
       cur_actor_page: 1,
       actor_count: 0,
       active_parts: ['filter'],
-      linked_list: [] as IArrayElement<ActorData>[],
+      linked_list: [] as ActorElement[],
     }
   },
   computed: {
@@ -107,7 +107,7 @@ export default {
       // console.log(this.cur_actor_page)
       const [ok, actor_list] = await getActorList(this.filter_condition, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
       if (ok) {
-        this.actor_list = ToElementArray(actor_list)
+        this.actor_list = ToActorElements(actor_list)
       } else {
         this.actor_list = []
         ElMessage(actor_list as string)
@@ -128,14 +128,14 @@ export default {
       this.cur_actor_page = 1
       await this.onActorPageChange()
     },
-    onActorChange(actor_data: IArrayElement<ActorData>) {
+    onActorChange(actor_data: ActorElement) {
       console.log(`actor changed: ${actor_data.data.actor_name}`)
     },
-    async onActorLinkClick(actor_data: IArrayElement<ActorData>) {
+    async onActorLinkClick(actor_data: ActorElement) {
       console.log(`actor link clicked: ${actor_data.data.actor_name}`)
       const [ok, actor_list] = await getLinkedActors(actor_data.data.actor_name)
       if (ok) {
-        this.actor_list = ToElementArray(actor_list)
+        this.actor_list = ToActorElements(actor_list)
       } else {
         this.actor_list = []
         ElMessage(actor_list as string)

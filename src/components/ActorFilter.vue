@@ -55,7 +55,6 @@
                      border>
           No Tag
         </el-checkbox>
-        <NewActorTag/>
       </el-form-item>
 
       <!-- score -->

@@ -21,17 +21,6 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             }
             return state.list
         },
-        grouped_list: (state: ActorTagState) => {
-            const group_list = []
-            for (let i = 0; i < 10; i++) {
-                group_list.push([])
-            }
-            for (const tag of state.sorted_list) {
-                const num = Math.floor(tag.tag_priority / 10)
-                group_list[num].push(tag)
-            }
-            return group_list
-        }
     },
     actions: {
         add(actorTag: ActorTagData) {

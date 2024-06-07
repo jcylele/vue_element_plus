@@ -78,7 +78,7 @@
 
 <script lang="ts">
 
-import {DownloadLimitForm} from "../data/SimpleForms";
+import {DownloadLimitForm, LimitPreset} from "../data/SimpleForms";
 import {
   downloadByCategory,
   downloadByNames,
@@ -110,7 +110,11 @@ export default {
   },
   watch: {
     async actor_category(new_val, old_val) {
-      this.download_limit.resetDefaultValue(new_val)
+      let preset = LimitPreset.All
+      if (new_val == ActorCategory.Init.value) {
+        preset = LimitPreset.Init
+      }
+      this.download_limit.resetDefaultValue(preset)
       //get corresponding actor count
       const filter_data = new ActorFilterData()
       filter_data.category_list = [new_val]
@@ -138,34 +142,18 @@ export default {
     formatter(row: ActorData, _) {
       return row.actor_category.name
     },
-    formatLimit(row: any, _) {
-      const limit = row.downloadLimit
-      return `${limit.actor_count}/${limit.post_count}/${limit.file_size / (1024 * 1024)}`
-    },
-    formatWorkers(row: any, _) {
-      const map = row.worker_count
-      return Object.keys(map).reduce((a, b, i) => {
-        return `${a} ${i ? '\n' : ''}${b}:${map[b]}`
-      }, "")
-    },
-    formatQueues(row: any, _) {
-      const map = row.queue_count
-      return Object.keys(map).reduce((a, b, i) => {
-        return `${a} ${i ? '\n' : ''}${b}:${map[b]}`
-      }, "")
-    },
 
     onTabChange(pane_name) {
       console.log(pane_name)
       switch (pane_name) {
         case 'tab_new':
-          this.download_limit.resetDefaultValue(ActorCategory.Init.value)
+          this.download_limit.resetDefaultValue(LimitPreset.Init)
           break
         case 'tab_name':
-          this.download_limit.resetDefaultValue(ActorCategory.Enough.value)
+          this.download_limit.resetDefaultValue(LimitPreset.All)
           break
         case 'tab_category':
-          this.download_limit.resetDefaultValue(this.actor_category)
+          this.download_limit.resetDefaultValue(LimitPreset.Init)
           break
       }
     },
