@@ -1,6 +1,7 @@
+let _next_uuid = 0
 
 export default class EditableData {
-
+    public readonly uuid: number
     private _changed: boolean
 
     public get changed() {
@@ -12,6 +13,8 @@ export default class EditableData {
     }
 
     constructor(json_data?) {
+        this.uuid = ++_next_uuid
+        console.log("uuid", this.uuid)
         Object.assign(this, json_data)
     }
 }

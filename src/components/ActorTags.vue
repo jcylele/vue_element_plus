@@ -1,62 +1,63 @@
 <template>
   <el-container>
     <el-main>
-      <div>
-        <NewActorTag/>
-      </div>
-      <div>
-        <el-table :data="actor_tag_list" height="512"><!--style="width: 100%" -->
-          <el-table-column label="Tag" prop="tag_name" sortable>
-            <template #default="scope">
-              <el-input v-model="scope.row.tag_name" @change="scope.row.changed = true"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="Priority" prop="tag_priority" sortable>
-            <template #default="scope">
-              <el-input-number v-model="scope.row.tag_priority" :min="0" :max="100"
-                               @change="scope.row.changed = true"/>
-            </template>
-          </el-table-column>
-          <el-table-column label="Used Count" prop="used_count" sortable>
-            <template #default="scope">
-              <el-text>{{ scope.row.used_count }}</el-text>
-            </template>
-          </el-table-column>
-          <el-table-column label="Operations">
-            <template #default="scope">
-              <el-button v-if="scope.row.changed" type="primary" size="large"
-                         @click="onSaveActorTag(scope.$index, scope.row)">
-                Save
-              </el-button>
-              <el-button v-if="scope.row.changed" type="warning" size="large"
-                         @click="onResetActorTag(scope.$index, scope.row)">
-                Reset
-              </el-button>
-              <el-button type="danger" size="large" @click="onDeleteActorTag(scope.$index, scope.row)">
-                Delete
-              </el-button>
-            </template>
-          </el-table-column>
-        </el-table>
-      </div>
+      <el-space direction="vertical" :fill="true">
+        <NewActorTag @tag_added="refreshTags"/>
+        <el-space direction="vertical">
+          <el-space direction="horizontal"
+                    v-for="tag_group in editing_tags"
+                    style="border: 1px solid ; border-radius: 4px; padding: 2px"
+                    :wrap="true"
+                    alignment="stretch">
+            <draggable
+                :list="tag_group"
+                :group="{ name: 'tags', pull: true, put: true }"
+                class="card_row">
+              <ActorTagEditor v-for="tag_info in tag_group"
+                              :tag_edit_info="tag_info"
+                              :key="tag_info.tag.tag_id"
+                              @delete="onDeleteActorTag"
+                              class="card"/>
+            </draggable>
+          </el-space>
+
+        </el-space>
+        <el-space direction="horizontal">
+          <el-button type="primary" size="large"
+                     @click="onSubmitPriority">
+            Save
+          </el-button>
+          <el-button type="warning" size="large"
+                     @click="onCancel">
+            Reset
+          </el-button>
+        </el-space>
+      </el-space>
     </el-main>
   </el-container>
 </template>
 
 <script lang="ts">
 import ActorTagData from "../data/ActorTagData";
-import {ElMessage} from "element-plus";
 import NewActorTag from "./NewActorTag.vue";
-import {delActorTag, editActorTag, getActorTag} from "../ctrls/ActorTagCtrl";
+import ActorTagEditor from "./ActorTagEditor.vue"
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
+import {TagEditInfo} from "../data/WebData";
+import {VueDraggableNext} from "vue-draggable-next";
+import AllActorTagPriorities from "../data/ActorTagPriority";
+import {updatePriorities} from "../ctrls/ActorTagCtrl";
+import {logInfo} from "../ctrls/FetchCtrl";
+
 
 export default {
   name: "ActorTags",
-  components: {NewActorTag},
+  components: {NewActorTag, ActorTagEditor, draggable: VueDraggableNext},
 
   data() {
-    return {}
+    return {
+      editing_tags: [] as TagEditInfo[][]
+    }
   },
   computed: {
     ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
@@ -64,46 +65,71 @@ export default {
   methods: {
     ...mapActions(ActorTagStore, {
       getTagsFromServer: 'getFromServer',
-      removeActorTag: 'remove',
-      updateActorTag: 'update'
     }),
-    async onSaveActorTag(index: number, tag: ActorTagData) {
-      console.log("Save", index, tag)
-      const [ok, new_tag] = await editActorTag(tag)
-      if (ok) {
-        this.updateActorTag(new_tag as ActorTagData, index)
-        ElMessage({message: "save succeed", type: "success"})
-      } else {
-        ElMessage({message: new_tag as string, type: "error"})
+    onDeleteActorTag(tag_id: number) {
+      for (const group of this.editing_tags) {
+        for (let i = 0; i < group.length; i++) {
+          if (group[i].tag.tag_id == tag_id) {
+            group.splice(i, 1)
+            return
+          }
+        }
       }
     },
-    async onResetActorTag(index: number, tag: ActorTagData) {
-      console.log("Reset", index, tag)
-      const [ok, origin_tag] = await getActorTag(tag.tag_id)
+    async onSubmitPriority() {
+      let changed_priorities = new AllActorTagPriorities()
+      for (let i = 0; i < 10; i++) {
+        const group = this.editing_tags[i]
+        for (let j = 0; j < group.length; j++) {
+          const tag = group[j].tag
+          const new_tag_priority = (10 - i) * 100 - j - 1
+          if (tag.tag_priority != new_tag_priority) {
+            changed_priorities.push(tag.tag_id, new_tag_priority)
+          }
+        }
+      }
+      if (changed_priorities.length() == 0) return
+
+      let [ok, ret] = await updatePriorities(changed_priorities)
       if (ok) {
-        this.updateActorTag(origin_tag as ActorTagData, index)
-      } else {
-        ElMessage(origin_tag as string)
+        logInfo("priorities of tags saved")
       }
     },
-    async onDeleteActorTag(index: number, tag: ActorTagData) {
-      console.log("Delete", index, tag)
-      const [ok, ret] = await delActorTag(tag.tag_id)
-      if (ok) {
-        this.removeActorTag(index)
-        ElMessage({message: `Delete ${ret.value} succeed`, type: "success"})
-      } else {
-        ElMessage(ret as string)
-      }
+    async onCancel() {
+      await this.refreshTags()
     },
+    initTags() {
+      this.editing_tags = []
+      for (let i = 0; i < 10; i++) {
+        this.editing_tags.push([])
+      }
+      for (const tag: ActorTagData of this.actor_tag_list) {
+        const group_id = Math.floor(tag.tag_priority / 100)
+        this.editing_tags[group_id].push({tag: tag, is_editing: false})
+      }
+      this.editing_tags.reverse()
+    },
+    async refreshTags() {
+      await this.getTagsFromServer()
+      this.initTags()
+    }
   },
-  watch: {},
   async mounted() {
-    await this.getTagsFromServer()
+    await this.refreshTags()
   }
 }
 </script>
 
 <style scoped>
+.card {
+  display: table-cell;
+  margin: 2px;
+}
 
+.card_row {
+  min-height: 25px;
+  min-width: 100px;
+  display: flex;
+  flex-wrap: wrap;
+}
 </style>

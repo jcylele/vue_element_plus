@@ -72,33 +72,24 @@ export default {
       console.log("onSearchTextChange", this.search_text)
     },
     searchClass(tag_info: TagInfo) {
-      let filtered = this.search_text != "" && !tag_info.tag.tag_name.includes(this.search_text)
-      return filtered ? "filtered-text" : "normal-text"
+      if (this.search_text == "") return "normal-text"
+      if (tag_info.tag.tag_name.includes(this.search_text)){
+        return "filtered-text"
+      }else{
+        return "failed-text"
+      }
     },
     initTags() {
       this.editing_tags = []
-
-      let tags_map: Map<number, TagInfo[]> = new Map<number, TagInfo[]>();
+      for (let i = 0; i < 10; i++) {
+        this.editing_tags.push([])
+      }
       for (const tag: ActorTagData of this.actor_tag_list) {
-        const group_id = Math.floor(tag.tag_priority / 10)
-        let group = tags_map.get(group_id)
-        if (!group) {
-          group = []
-          tags_map.set(group_id, group)
-        }
+        const group_id = Math.floor(tag.tag_priority / 100)
         const hasTag = this.actor.hasTag(tag.tag_id)
-        group.push({tag: tag, selected: hasTag})
+        this.editing_tags[group_id].push({tag: tag, selected: hasTag})
       }
-      let map_keys = Array.from(tags_map.keys());
-      // console.log(map_keys)
-      map_keys.sort()
-      map_keys.reverse()
-      for (const key of map_keys) {
-        let tag_list = tags_map.get(key)
-        // console.log(`${key} len ${tag_list.length}`)
-        this.editing_tags.push(tag_list)
-      }
-      // console.log(this.editing_tags)
+      this.editing_tags.reverse()
     },
     onSubmit() {
       // merge all selected tags
@@ -125,10 +116,17 @@ export default {
 
 .normal-text {
   opacity: 1.0;
+  color: black;
 }
 
 .filtered-text {
-  opacity: 0.3;
+  opacity: 1.0;
+  color: hotpink;
+}
+
+.failed-text{
+  opacity: 0.67;
+  color: dimgray;
 }
 
 </style>

@@ -1,16 +1,21 @@
 import {fetchDelete, fetchGet, fetchPost} from "./FetchCtrl";
-import {DownloadLimitForm} from "../data/SimpleForms";
-import ActorCategory from "../consts/ActorCategory";
-import ActorTagData from "../data/ActorTagData";
+import {
+    ActorUrl,
+    CategoryDownloadForm,
+    DownloadLimitForm,
+    NameDownloadForm,
+    UrlDownloadForm
+} from "../data/SimpleForms";
 import TaskData from "../data/TaskData";
 
 const baseUrl = "http://127.0.0.1:8000/api/download"
 
 export async function downloadByNames(download_limit: DownloadLimitForm, actor_names: string[]) {
     let url = `${baseUrl}/specific`
-    const params = actor_names.map(name => `name=${name}`).join("&")
-    url = `${url}?${params}`
-    const [ok, response] = await fetchPost(url, download_limit)
+    const nameDownForm = new NameDownloadForm()
+    nameDownForm.download_limit = download_limit
+    nameDownForm.actor_names = actor_names
+    const [ok, response] = await fetchPost(url, nameDownForm)
     if (!ok) {
         return [ok, response]
     }
@@ -18,9 +23,14 @@ export async function downloadByNames(download_limit: DownloadLimitForm, actor_n
     return [true, response.value]
 }
 
-export async function downloadAllPosts(download_limit: DownloadLimitForm, actor_name: string) {
-    const url = `${baseUrl}/all_posts/${actor_name}`
-    const [ok, response] = await fetchPost(url, download_limit)
+export async function downloadByUrls(category: number, download_limit: DownloadLimitForm, urls: ActorUrl[]) {
+    let url = `${baseUrl}/urls`
+    const urlDownForm = new UrlDownloadForm()
+    urlDownForm.actor_category = category
+    urlDownForm.download_limit = download_limit
+    urlDownForm.urls = urls
+
+    const [ok, response] = await fetchPost(url, urlDownForm)
     if (!ok) {
         return [ok, response]
     }
@@ -28,9 +38,12 @@ export async function downloadAllPosts(download_limit: DownloadLimitForm, actor_
     return [true, response.value]
 }
 
-export async function downloadNewActors(download_limit: DownloadLimitForm) {
+export async function downloadNewActors(category: number, download_limit: DownloadLimitForm) {
     const url = `${baseUrl}/new`
-    const [ok, response] = await fetchPost(url, download_limit)
+    const downForm = new CategoryDownloadForm()
+    downForm.actor_category = category
+    downForm.download_limit = download_limit
+    const [ok, response] = await fetchPost(url, downForm)
     if (!ok) {
         return [ok, response]
     }
@@ -38,9 +51,12 @@ export async function downloadNewActors(download_limit: DownloadLimitForm) {
     return [true, response.value]
 }
 
-export async function downloadByCategory(category: ActorCategory, download_limit: DownloadLimitForm) {
-    const url = `${baseUrl}/category/${category}`
-    const [ok, response] = await fetchPost(url, download_limit)
+export async function downloadByCategory(category: number, download_limit: DownloadLimitForm) {
+    const url = `${baseUrl}/category`
+    const downForm = new CategoryDownloadForm()
+    downForm.actor_category = category
+    downForm.download_limit = download_limit
+    const [ok, response] = await fetchPost(url, downForm)
     if (!ok) {
         return [ok, response]
     }
@@ -81,8 +97,8 @@ export async function stopAllTasks() {
     return [true, response.value]
 }
 
-export async function restoreFiles() {
-    const url = `${baseUrl}/restore`
+export async function cleanFiles() {
+    const url = `${baseUrl}/clean`
     const [ok, response] = await fetchGet(url)
     return [ok, response]
 }

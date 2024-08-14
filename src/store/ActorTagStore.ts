@@ -1,101 +1,62 @@
 import {defineStore} from "pinia";
 import ActorTagData from "../data/ActorTagData";
-import {getActorTagList, getTagUsedCount} from "../ctrls/ActorTagCtrl";
-import {ElMessage} from "element-plus";
-
-interface ActorTagState {
-    list: ActorTagData[],
-    dirty: boolean,
-}
+import {getActorTagList} from "../ctrls/ActorTagCtrl";
+import SortedList from "../data/SortedList";
 
 export const ActorTagStore = defineStore('ActorTagStore', {
-    state: (): ActorTagState => ({
-        list: [] as ActorTagData[],
-        dirty: false,
+    state: () => ({
+        list: SortedList<ActorTagData>
     }),
     getters: {
         sorted_list: (state: ActorTagState) => {
-            if (state.dirty) {
-                state.dirty = false
-                state.list.sort(state.compareActorTag)
+            if (!state.list) {
+                return []
             }
-            return state.list
+            return state.list.sorted_list
         },
     },
     actions: {
         add(actorTag: ActorTagData) {
-            this.list.push(actorTag)
-            this.dirty = true
+            this.list.add(actorTag)
         },
-        update(actorTag: ActorTagData, index: number) {
-            this.list[index] = actorTag
-            this.dirty = true
+        update(actorTag: ActorTagData) {
+            this.list.update(actorTag)
         },
-        remove(index: number) {
-            this.list.splice(index, 1)
+        remove(tag_id: number) {
+            this.list.remove(tag_id)
         },
+        get(tag_id: number): ActorTagData {
+            return this.list.get(tag_id)
+        },
+
         async getFromServer() {
             const [ok, tag_list] = await getActorTagList()
             if (ok) {
-                this.list = tag_list as ActorTagData[]
-                this.dirty = true
-            } else {
-                ElMessage(tag_list as string)
+                this.list = new SortedList(tag_list)
             }
-        },
-        getTag(tag_id: number): ActorTagData {
-            for (const tag of this.list) {
-                if (tag.tag_id === tag_id) {
-                    return tag
-                }
-            }
-            return null;
-        },
-        getName(tag_id: number): string {
-            const tag = this.getTag(tag_id)
-            if (tag) {
-                return tag.tag_name
-            }
-            return `Error(${tag_id})`
         },
 
-        getTagPriority(tag_id: number): number {
-            const tag = this.getTag(tag_id)
-            if (tag) {
-                return tag.tag_priority
-            }
-            return 0
+        compareTagId(id_a: number, id_b: number): number {
+            const tag_a = this.get(id_a)
+            const tag_b = this.get(id_b)
+            return this.list.compareItem(tag_a, tag_b)
         },
 
-        getColorStyleName(tag_id: number): string {
-            const tag = this.getTag(tag_id)
+        getStyleName(tag_id: number): string {
+            const tag = this.get(tag_id)
             if (tag) {
-                const num = Math.floor(tag.tag_priority / 10)
+                const num = Math.floor(tag.tag_priority / 100)
                 return `tag_${num}`
             }
             return "tag_error"
         },
 
-        sortTagIds(tag_ids: number[]): number[] {
-            const tag_list = this.list.slice()
-            tag_list.sort(this.compareActorTagId)
-        },
-
-        compareActorTag(a: ActorTagData, b: ActorTagData): number {
-            return b.tag_priority - a.tag_priority;
-        },
-
-        compareActorTagId(a: number, b: number): number {
-            const tag_a = this.getTag(a)
-            const tag_b = this.getTag(b)
-            if (tag_a && tag_b) {
-                const ret = this.compareActorTag(tag_a, tag_b)
-                if (ret === 0) {
-                    return a - b
-                }
-                return ret
+        getName(tag_id: number): string {
+            const tag = this.get(tag_id)
+            if (tag) {
+                return tag.tag_name
             }
-            return 0
-        }
+            return `Error(${tag_id})`
+        },
     },
 })

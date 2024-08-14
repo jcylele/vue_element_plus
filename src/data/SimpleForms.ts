@@ -1,17 +1,32 @@
-import ActorCategory from "../consts/ActorCategory";
+import {LimitPreset, PostFilter} from "./Enums";
 
-export enum PostFilter {
-    Normal = 0,
-    Old = 1,
-    New = 2,
+export class BatchActorOperation {
+    actor_names: string[]
 }
 
-export enum LimitPreset {
-    Init = 1,
-    All,
-    Current_Video,
-    Only_Info,
-    Max,
+export class BatchActorCategory extends BatchActorOperation {
+    category: number
+}
+
+export class ActorUrl {
+    actor_name: string
+    full_url: string
+}
+
+abstract class BaseDownloadForm {
+    download_limit: DownloadLimitForm
+}
+
+export class NameDownloadForm extends BaseDownloadForm {
+    actor_names: string[]
+}
+
+export class CategoryDownloadForm extends BaseDownloadForm {
+    actor_category: number
+}
+
+export class UrlDownloadForm extends CategoryDownloadForm {
+    urls: ActorUrl[]
 }
 
 export class DownloadLimitForm {
@@ -77,13 +92,18 @@ export class DownloadLimitForm {
         this.post_filter = PostFilter.Normal
 
         switch (preset_val) {
+            case LimitPreset.All:
+                break
             case LimitPreset.Init:
                 this.actor_count = 50
                 this.post_count = 50
                 this.show_file_size = 20  // 20MB
                 this.show_total_file_size = 1024 // 1GB
                 break
-            case LimitPreset.All:
+            case LimitPreset.Current_Init:
+                this.post_filter = PostFilter.Old
+                this.show_file_size = 20  // 20MB
+                this.show_total_file_size = 1024 // 1GB
                 break
             case LimitPreset.Current_Video:
                 this.post_filter = PostFilter.Old

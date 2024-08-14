@@ -2,6 +2,7 @@ import ActorData from "../data/ActorData";
 import {fetchGet, fetchPatch, fetchPost} from "./FetchCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 import {Base64} from "js-base64";
+import {BatchActorCategory} from "../data/SimpleForms";
 
 const baseUrl = "http://127.0.0.1:8000/api/actor"
 
@@ -69,14 +70,21 @@ export async function changeActorCategory(actor_name: string, actor_category: nu
     return [true, actor]
 }
 
-export async function changeActorStar(actor_name: string, actor_star: boolean) {
-    const url = `${baseUrl}/${actor_name}/star?val=${actor_star}`;
-    const [ok, response] = await fetchPatch(url)
+export async function batchChangeActorCategory(actor_names: string[], actor_category: number) {
+    const url = `${baseUrl}/batch/category`;
+    let form = new BatchActorCategory()
+    form.category = actor_category
+    form.actor_names = actor_names
+    const [ok, response] = await fetchPost(url, form)
     if (!ok) {
         return [false, response]
     }
-    const actor = new ActorData(response)
-    return [true, actor]
+
+    const list = []
+    for (const json_data of response) {
+        list.push(new ActorData(json_data))
+    }
+    return [true, list]
 }
 
 export async function changeActorScore(actor_name: string, score: number) {

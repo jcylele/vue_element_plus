@@ -7,24 +7,30 @@
           <el-table-column prop="download_limit" label="limit" min-width="200px">
             <template #default="scope">
               <el-space direction="vertical">
-                <el-tag v-if="scope.row.download_limit.actor_count > 0" type="success" size="small" effect="dark">
-                  {{ scope.row.download_limit.actor_count }} actors
-                </el-tag>
-                <el-tag type="success" size="small" effect="dark">
-                  {{ scope.row.download_limit.post_desc() }}
-                </el-tag>
-                <el-tag v-if="scope.row.download_limit.total_file_size > 0" type="success" size="small" effect="dark">
-                  Total {{ scope.row.download_limit.total_file_size_desc() }}
-                </el-tag>
-                <el-tag v-if="scope.row.download_limit.file_size > 0" type="success" size="small" effect="dark">
-                  Single {{ scope.row.download_limit.file_size_desc() }}
-                </el-tag>
-                <el-tag v-if="scope.row.download_limit.allow_img" type="success" size="small" effect="dark">
-                  images
-                </el-tag>
-                <el-tag v-if="scope.row.download_limit.allow_video" type="success" size="small" effect="dark">
-                  videos
-                </el-tag>
+                <el-space direction="horizontal">
+                  <el-tag v-if="scope.row.download_limit.actor_count > 0" type="success" size="small" effect="dark">
+                    {{ scope.row.download_limit.actor_count }} actors
+                  </el-tag>
+                  <el-tag type="success" size="small" effect="dark">
+                    {{ scope.row.download_limit.post_desc() }}
+                  </el-tag>
+                </el-space>
+                <el-space direction="horizontal">
+                  <el-tag v-if="scope.row.download_limit.total_file_size > 0" type="success" size="small" effect="dark">
+                    Total {{ scope.row.download_limit.total_file_size_desc() }}
+                  </el-tag>
+                  <el-tag v-if="scope.row.download_limit.file_size > 0" type="success" size="small" effect="dark">
+                    Single {{ scope.row.download_limit.file_size_desc() }}
+                  </el-tag>
+                </el-space>
+                <el-space direction="horizontal">
+                  <el-tag v-if="scope.row.download_limit.allow_img" type="success" size="small" effect="dark">
+                    images
+                  </el-tag>
+                  <el-tag v-if="scope.row.download_limit.allow_video" type="success" size="small" effect="dark">
+                    videos
+                  </el-tag>
+                </el-space>
               </el-space>
             </template>
           </el-table-column>
@@ -54,8 +60,9 @@
         </el-table>
 
         <el-space direction="horizontal" :fill="true">
-          <el-button type="danger" size="large" @click="stopAllTask()">Stop All</el-button>
-          <el-button type="primary" @click="restore">Remove Outdated Downloading Files</el-button>
+          <el-button type="primary" size="default" @click="getAll">Refresh</el-button>
+          <el-button type="danger" size="default" @click="stopAll">Stop All</el-button>
+          <el-button type="info" size="default" @click="clean">Remove Outdated Files</el-button>
         </el-space>
 
       </el-space>
@@ -64,70 +71,50 @@
 </template>
 
 <script lang="ts">
-import {getAllTasks, restoreFiles, stopAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
-import {ElMessage} from "element-plus";
+import {getAllTasks, cleanFiles, stopAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
 import TaskData from "../data/TaskData";
-import {DownloadLimitForm} from "../data/SimpleForms";
+import {logInfo} from "../ctrls/FetchCtrl";
 
 export default {
   name: "Tasks",
   data() {
     return {
       task_list: [] as TaskData[],
-      timer: null,
     }
   },
   methods: {
     async stopTask(uid: number) {
       const [ok, ret] = await stopTask(uid)
       if (ok) {
-        ElMessage({message: "stop task succeed", type: "success"})
+        logInfo("stop task succeed")
         this.task_list.splice(this.task_list.findIndex((task: any) => task.uid === uid), 1)
-      } else {
-        ElMessage({message: ret as string, type: "error"})
       }
     },
 
-    async stopAllTask() {
-      const [ok, ret] = await stopAllTasks()
+    async stopAll() {
+      const [ok, _] = await stopAllTasks()
       if (ok) {
-        ElMessage({message: "stop all task succeed", type: "success"})
+        logInfo("stop all task succeed")
         this.task_list = []
-      } else {
-        ElMessage({message: ret as string, type: "error"})
       }
     },
 
-    async getAllTasks() {
+    async getAll() {
       const [ok, ret] = await getAllTasks()
       if (ok) {
         this.task_list = ret
-      } else {
-        ElMessage({message: ret as string, type: "error"})
       }
     },
 
-    async restore() {
-      const [ok, ret] = await restoreFiles()
+    async clean() {
+      const [ok, ret] = await cleanFiles()
       if (ok) {
-        ElMessage({message: "restore succeed", type: "success"})
-      } else {
-        ElMessage({message: ret as string, type: "error"})
+        logInfo("clean outdated files succeed")
       }
     },
   },
   mounted() {
-    this.getAllTasks()
-    if (this.timer) {
-      clearInterval(this.timer)
-    } else {
-      this.timer = setInterval(this.getAllTasks, 5000)
-    }
-  },
-  beforeUnmount() {
-    if (this.timer) {
-      clearInterval(this.timer)
-    }
+    this.getAll()
   }
 }
 </script>

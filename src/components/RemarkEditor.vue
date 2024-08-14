@@ -5,15 +5,14 @@
         Remarks
       </el-text>
       <svg-icon size="24px" name="add"
-                @click="onAdd"/>
+                @click="onAddRemark"/>
     </el-space>
-    <el-space v-for="item in remark_items"
-              direction="horizontal" alignment="stretch">
-      <el-input :key="item.id"
-                v-model="item.content"
+    <el-space v-for="(line, index) in remark_items"
+              direction="horizontal" alignment="center">
+      <el-input v-model="line.data"
                 style="width: 500px;"/>
-      <svg-icon size="30px" name="remove"
-                @click="onClear(item.id)"/>
+      <svg-icon name="remove" size="24px"
+                @click="onClear(index)"/>
     </el-space>
     <el-space direction="horizontal" alignment="stretch">
       <el-button type="primary" @click="onSubmit">
@@ -28,9 +27,8 @@
 
 <script lang="ts">
 
-interface RemarkItem {
-  id: number,
-  content: string,
+interface RemarkLine {
+  data: string
 }
 
 export default {
@@ -43,27 +41,23 @@ export default {
   },
   data() {
     return {
-      remark_items: [] as RemarkItem[],
+      remark_items: [] as RemarkLine[],
     }
   }
   ,
   methods: {
-    onClear(id: number) {
-      this.remark_items.splice(id, 1)
-      for (let i = 0; i < this.remark_items.length; i++) {
-        this.remark_items[i].id = i
-      }
+    onClear(index: number) {
+      this.remark_items.splice(index, 1)
     },
-    onAdd() {
-      const new_id = this.remark_items.length
-      this.remark_items.push({id: new_id, content: ""})
+    onAddRemark() {
+      this.remark_items.push({data: ""})
     },
     onSubmit() {
       if (this.remark_items.length == 0) {
         this.$emit("submit", "")
         return
       }
-      const new_remark = this.remark_items.map(item => item.content).join("\n");
+      const new_remark = this.remark_items.map(line => line.data).join("\n");
       this.$emit("submit", new_remark)
     },
     onCancel() {
@@ -73,11 +67,12 @@ export default {
   mounted() {
     this.remark_items = []
     if (this.remark != null && this.remark != "") {
-      const list = this.remark.split("\n");
+      let list = this.remark.split("\n")
       for (let i = 0; i < list.length; i++) {
-        this.remark_items.push({id: i, content: list[i]})
+        this.remark_items.push({data: list[i]})
       }
     }
+
   }
 }
 </script>

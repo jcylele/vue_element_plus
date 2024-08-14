@@ -1,215 +1,194 @@
 <template>
-  <el-container>
-    <el-main>
-      <el-tabs type="border-card" @tab-change="onTabChange">
-        <el-tab-pane label="New Actors" name="tab_new">
-          <el-space direction="vertical">
-            <DownloadLimit :download_limit="download_limit"/>
-            <el-button type="primary" @click="downloadNew">Download</el-button>
-          </el-space>
-        </el-tab-pane>
-        <el-tab-pane label="By Category" name="tab_category">
-          <el-space direction="vertical">
-            <DownloadLimit :download_limit="download_limit"/>
-            <el-radio-group v-model="actor_category" size="large">
-              <el-radio v-for="category in actor_category_list"
-                        :label="category.value"
-                        border>
-                {{ category.name }}
-              </el-radio>
-            </el-radio-group>
-            <span>Number of Actors in Category: {{ actor_count }}</span>
-            <el-button type="primary" @click="downloadByCategory">Download</el-button>
-          </el-space>
-        </el-tab-pane>
-        <el-tab-pane label="By Names" name="tab_name">
-          <el-space direction="vertical">
-            <el-steps :active="actor_search_step" finish-status="success" align-center>
-              <el-step title="Choose Actors"/>
-              <el-step title="Set Download Config"/>
-            </el-steps>
-            <el-divider/>
-            <el-space direction="horizontal" size="large" wrap>
-              <el-tag v-for="actor_name in actor_name_list"
-                      :key="actor_name"
-                      @close="removeActor(actor_name)"
-                      closable>
-                {{ actor_name }}
-              </el-tag>
-            </el-space>
-            <el-divider/>
-            <el-space direction="vertical" v-if="actor_search_step == 0">
-              <el-space direction="horizontal">
-                <el-input v-model="actor_search_name" size="large" clearable/>
-                <el-button @click="searchActors">Search</el-button>
-                <el-button type="primary" @click="AddToNameList(actor_search_name)">Add Actor</el-button>
-              </el-space>
-              <el-table :data="actor_search_list" border>
-                <el-table-column type="selection" width="55"/>
-                <el-table-column prop="actor_name" label="Name" min-width="200px"/>
-                <el-table-column prop="actor_category" label="Category" :formatter="formatter" min-width="100px"/>
-                <el-table-column label="Tags" min-width="200px">
-                  <template #default="scope">
-                    <el-tag v-for="tag_id in scope.row.rel_tags"
-                            style="font-size: 18px;background: lightyellow;color: hotpink"
-                            round>
-                      {{ getTagName(tag_id) }}
-                    </el-tag>
-                  </template>
-                </el-table-column>
-                <el-table-column label="Tags" min-width="100px">
-                  <template #default="scope">
-                    <el-button type="primary" @click="AddToNameList(scope.row.actor_name)">Add</el-button>
-                  </template>
-                </el-table-column>
-              </el-table>
-              <el-button type="primary" @click="actor_search_step++">Next</el-button>
-            </el-space>
-            <el-space direction="vertical" v-if="actor_search_step == 1">
-              <DownloadLimit :download_limit="download_limit"/>
-              <el-button type="primary" @click="downloadByName">Download</el-button>
-            </el-space>
-          </el-space>
-        </el-tab-pane>
-      </el-tabs>
-    </el-main>
-  </el-container>
+  <el-space direction="vertical" :fill="true">
+    <!-- type line -->
+    <el-radio-group v-model="down_type" size="large">
+      <el-radio-button v-for="dt in down_type_list"
+                       :label="dt.value">
+        {{ dt.label }}
+      </el-radio-button>
+    </el-radio-group>
+
+    <!-- limit block  -->
+    <DownloadLimit :download_limit="download_limit" border/>
+
+    <!-- actor category line -->
+    <el-space direction="horizontal" class="with-border">
+      <el-text>
+        Actor Category
+      </el-text>
+      <el-select
+          v-model="actor_category"
+          placeholder="Select"
+      >
+        <el-option
+            v-for="group in down_group_list"
+            :key="group.group_id"
+            :label="group.group_name"
+            :value="group.group_id"
+        />
+      </el-select>
+      <el-text v-if="by_category">
+        (including {{ actor_count }} actors)
+      </el-text>
+    </el-space>
+
+    <!-- url block -->
+    <el-space direction="vertical" v-if="by_url" class="with-border">
+      <!-- title line -->
+      <el-space direction="horizontal" size="large">
+        <el-text>
+          Actor Urls
+        </el-text>
+        <svg-icon size="24px" name="add"
+                  @click="onAddUrl"/>
+      </el-space>
+      <!-- url lines -->
+      <el-space v-for="(url, index) in actor_urls"
+                direction="horizontal">
+        <el-form :model="url" :inline="true">
+          <el-form-item label="Name">
+            <el-input v-model="url.actor_name"/>
+          </el-form-item>
+          <el-form-item label="Url">
+            <el-input v-model="url.full_url"/>
+          </el-form-item>
+          <el-form-item>
+            <svg-icon size="30px" name="remove"
+                      @click="onRemoveUrl(index)"/>
+          </el-form-item>
+        </el-form>
+      </el-space>
+    </el-space>
+
+    <!-- button line -->
+    <el-button type="primary" @click="download">Download</el-button>
+  </el-space>
 </template>
 
 <script lang="ts">
 
-import {DownloadLimitForm, LimitPreset} from "../data/SimpleForms";
-import {
-  downloadByCategory,
-  downloadByNames,
-  downloadNewActors,
-} from "../ctrls/DownloadCtrl";
-import {ElMessage} from "element-plus";
+import {ActorUrl, DownloadLimitForm} from "../data/SimpleForms";
+import {downloadByCategory, downloadByUrls, downloadNewActors,} from "../ctrls/DownloadCtrl";
+import {mapActions, mapState} from "pinia";
 import DownloadLimit from "./DownloadLimit.vue";
-import ActorCategory from "../consts/ActorCategory";
-import {getActorCount, getActorList} from "../ctrls/ActorCtrl";
+import {getActorCount} from "../ctrls/ActorCtrl";
 import ActorFilterData from "../data/ActorFilterData";
-import ActorData from "../data/ActorData";
-import {mapActions} from "pinia";
-import {ActorTagStore} from "../store/ActorTagStore";
+import {ActorGroupStore} from "../store/ActorGroupStore";
+import {DownloadType} from "../data/Enums";
+import {logError, logInfo, logWarn} from "../ctrls/FetchCtrl";
+
+interface DownType {
+  label: string
+  value: DownloadType
+}
 
 export default {
 
   components: {DownloadLimit},
   data() {
     return {
+      down_type: DownloadType.New,
       download_limit: new DownloadLimitForm(),
-      actor_category: ActorCategory.Init.value,
+      actor_category: 0,
       actor_count: 0,
-      actor_search_step: 0,
-      actor_search_name: "",
-      actor_search_list: [] as ActorData[],
-      actor_name_list: [] as string[],
-      actor_category_list: [ActorCategory.Init, ActorCategory.Liked],
+      actor_urls: [] as ActorUrl[],
     }
   },
   watch: {
-    async actor_category(new_val, old_val) {
-      let preset = LimitPreset.All
-      if (new_val == ActorCategory.Init.value) {
-        preset = LimitPreset.Init
-      }
-      this.download_limit.resetDefaultValue(preset)
-      //get corresponding actor count
+    async actor_category(new_val, _) {
+      if (this.down_type !== DownloadType.Category) return
+
       const filter_data = new ActorFilterData()
       filter_data.category_list = [new_val]
       const [ok, actor_count] = await getActorCount(filter_data)
       if (ok) {
         this.actor_count = actor_count
-      } else {
-        ElMessage(actor_count as string)
       }
     }
   },
   computed: {
-    ActorCategory() {
-      return ActorCategory
+    ...mapState(ActorGroupStore, {
+      group_list: 'sorted_list',
+      down_group_list: 'down_list',
+    }),
+    by_category(): boolean {
+      return this.down_type === DownloadType.Category
+    },
+    by_url(): boolean {
+      return this.down_type === DownloadType.Url
+    },
+    down_type_list(): DownType[] {
+      return [
+        {label: "New Actors", value: DownloadType.New},
+        {label: "By Category", value: DownloadType.Category},
+        {label: "Specific Urls", value: DownloadType.Url},
+      ]
     }
   },
   methods: {
-    ...mapActions(ActorTagStore, {
-      getTagsFromServer: 'getFromServer',
-      getTagName: 'getName',
+    ...mapActions(ActorGroupStore, {
+      getGroupsFromServer: 'getFromServer',
+      getGroup: 'get',
     }),
-    AddToNameList(actor_name: string) {
-      this.actor_name_list.push(actor_name)
+    checkActorCategory(): boolean {
+      let group = this.getGroup(this.actor_category)
+      if (group == undefined) {
+        logWarn("choose correct category")
+        return false
+      }
+      return true
     },
-    formatter(row: ActorData, _) {
-      return row.actor_category.name
+    async download() {
+
+      if (!this.checkActorCategory()) {
+        return
+      }
+
+      let ok = false
+      let ret = ""
+      switch (this.down_type) {
+        case DownloadType.New: {
+          [ok, ret] = await downloadNewActors(this.actor_category, this.download_limit)
+          break
+        }
+        case DownloadType.Category:
+          [ok, ret] = await downloadByCategory(this.actor_category, this.download_limit)
+          break
+        case DownloadType.Url:
+          if (this.actor_urls.length == 0) {
+            logWarn("no url is assigned")
+            return
+          }
+          [ok, ret] = await downloadByUrls(this.actor_category, this.download_limit, this.actor_urls)
+          break
+        default:
+          logError("invalid download type")
+          break
+      }
+      if (ok) {
+        logInfo("download started")
+      }
     },
 
-    onTabChange(pane_name) {
-      console.log(pane_name)
-      switch (pane_name) {
-        case 'tab_new':
-          this.download_limit.resetDefaultValue(LimitPreset.Init)
-          break
-        case 'tab_name':
-          this.download_limit.resetDefaultValue(LimitPreset.All)
-          break
-        case 'tab_category':
-          this.download_limit.resetDefaultValue(LimitPreset.Init)
-          break
-      }
+    onRemoveUrl(index: number) {
+      this.actor_urls.splice(index, 1)
     },
-    async searchActors() {
-      const filter_data = new ActorFilterData()
-      filter_data.name = this.actor_search_name
-      const [ok, actor_list] = await getActorList(filter_data)
-      if (ok) {
-        this.actor_search_list = actor_list
-      } else {
-        ElMessage(actor_list as string)
-      }
-    },
-    async downloadNew() {
-      const [ok, ret] = await downloadNewActors(this.download_limit)
-      if (ok) {
-        ElMessage({message: "download started", type: "success"})
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
-    },
-    async downloadByCategory() {
-      const [ok, ret] = await downloadByCategory(this.actor_category, this.download_limit)
-      if (ok) {
-        ElMessage({message: "download started", type: "success"})
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
-    },
-    async downloadByName() {
-      const [ok, ret] = await downloadByNames(this.download_limit, this.actor_name_list)
-      if (ok) {
-        this.actor_name_list = []
-        ElMessage({message: "download started", type: "success"})
-      } else {
-        ElMessage({message: ret as string, type: "error"})
-      }
+
+    onAddUrl() {
+      const new_url = new ActorUrl()
+      this.actor_urls.push(new_url)
     },
   },
   async mounted() {
-    await this.getTagsFromServer()
+    await this.getGroupsFromServer()
   }
 }
 
 </script>
 
 <style scoped>
-.demo-tabs > .el-tabs__content {
-  padding: 32px;
-  color: #6b778c;
-  font-size: 32px;
-  font-weight: 600;
+.with-border {
+  border: 1px solid;
+  padding: 5px;
 }
-
-.wrap_line {
-  white-space: pre-line;
-}
-
 </style>

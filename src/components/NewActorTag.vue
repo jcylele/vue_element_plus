@@ -11,7 +11,7 @@
           <el-input v-model="new_actor_tag.tag_name"/>
         </el-form-item>
         <el-form-item label="Priority">
-          <el-input-number v-model="new_actor_tag.tag_priority" :min="0" :max="100"/>
+          <el-input-number v-model="new_actor_tag.tag_priority" :min="0" :max="999" :step="100"/>
         </el-form-item>
         <el-form-item>
           <el-button type="primary" @click="onAddActorTag">Add</el-button>
@@ -26,10 +26,10 @@
 
 <script lang="ts">
 import ActorTagData from "../data/ActorTagData";
-import {ElMessage} from "element-plus";
 import {addActorTag} from "../ctrls/ActorTagCtrl";
 import {mapActions} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
+import {logInfo} from "../ctrls/FetchCtrl";
 
 export default {
   name: "NewActorTag",
@@ -55,10 +55,8 @@ export default {
         this.new_actor_tag = new ActorTagData()
         this.show_add = false
         this.addActorTag(tag)
-        ElMessage({message: "add succeed", type: "success"})
+        logInfo(`tag added: ${tag.tag_name}`)
         this.$emit("tag_added")
-      } else {
-        ElMessage({message: tag, type: "error"})
       }
     },
   }

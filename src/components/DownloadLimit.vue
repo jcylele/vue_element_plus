@@ -1,11 +1,11 @@
 <template>
-  <el-space direction="vertical" border>
+  <el-space direction="vertical" class="limit-form">
     <!-- Presets -->
     <el-space direction="horizontal" wrap>
       <el-radio-group v-model="cur_preset">
-        <el-radio v-for="preset in preset_names"
+        <el-radio v-for="preset in preset_option_list"
                   :label="preset.value">
-          {{ preset.name }}
+          {{ preset.label }}
         </el-radio>
       </el-radio-group>
     </el-space>
@@ -40,8 +40,9 @@
 </template>
 
 <script lang="ts">
-import {DownloadLimitForm, LimitPreset, PostFilter} from "../data/SimpleForms";
-import ActorCategory from "../consts/ActorCategory";
+import {DownloadLimitForm} from "../data/SimpleForms";
+import {LimitPreset, PostFilter} from "../data/Enums";
+import {Preset_Options} from "../data/Consts"
 
 export default {
   name: "DownloadLimit",
@@ -52,12 +53,11 @@ export default {
     return {
       cur_preset: LimitPreset.All,
       post_filter: PostFilter,
-      preset_names: [
-        {name: "Init", value: LimitPreset.Init},
-        {name: "All", value: LimitPreset.All},
-        {name: "Current_Video", value: LimitPreset.Current_Video},
-        {name: "Only_Info", value: LimitPreset.Only_Info}
-      ],
+    }
+  },
+  computed: {
+    preset_option_list() {
+      return Preset_Options
     }
   },
   watch: {
@@ -70,11 +70,9 @@ export default {
 
 <style scoped>
 
-.limit-label {
-  width: 160px;
-  /*height: 40px;*/
-  font-size: 16px;
-  color: darkgreen;
+.limit-form {
+  border: 1px solid;
+  padding: 5px;
 }
 
 </style>

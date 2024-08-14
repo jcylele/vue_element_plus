@@ -1,4 +1,3 @@
-import ActorCategory from "../consts/ActorCategory";
 import EditableData from "./EditableData";
 import {Base64} from "js-base64";
 
@@ -14,7 +13,7 @@ interface ResFileInfo {
 export default class ActorData extends EditableData {
     readonly actor_name: string
     rel_tags: number[]
-    actor_category: ActorCategory
+    actor_category: number
     readonly completed: boolean
     remark: string
     main_actor: string
@@ -26,7 +25,7 @@ export default class ActorData extends EditableData {
     href: string
     score: number
 
-    get post_desc(){
+    get post_desc() {
         let desc = `[${this.finished_post_count}`
         if (this.unfinished_post_count > 0) {
             desc += `(+${this.unfinished_post_count})`
@@ -45,11 +44,9 @@ export default class ActorData extends EditableData {
 
     constructor(json_data?) {
         super(json_data);
-        this.actor_category = ActorCategory.getByValue(json_data.actor_category)
+        // this.actor_category = ActorCategory.getByValue(json_data.actor_category)
         if (json_data.remark) {
             this.remark = Base64.decode(json_data.remark)
-            console.log(json_data.remark)
-            console.log(this.remark)
         }
     }
 
@@ -61,14 +58,20 @@ export default class ActorData extends EditableData {
         return this.rel_tags.indexOf(tag_id) >= 0
     }
 
-    hasFolder() {
-        return this.actor_category.value == ActorCategory.Init.value
-            || this.actor_category.value === ActorCategory.Liked.value;
-    }
-
     formatResFileInfo(rfi: ResFileInfo): string {
         let size = rfi.res_size / (1024 * 1024 * 1024)
         size = Math.floor(size * 100) / 100
         return `${res_state[rfi.res_state - 1]}: ${size}G(${rfi.img_count}P,${rfi.video_count}V)`
+    }
+
+    get icon() {
+        return `http://localhost:1314/_icon/${this.actor_name}.jfif`
+    }
+
+    get remark_list() {
+        if (this.remark != null && this.remark != "") {
+            return this.remark.split("\n")
+        }
+        return []
     }
 }

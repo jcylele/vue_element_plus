@@ -5,14 +5,22 @@ import 'element-plus/dist/index.css'
 import {createRouter, createWebHashHistory} from "vue-router";
 
 import Home from "./Home.vue";
-import Actors from "./components/Actors.vue";
-import Download from "./components/Download.vue";
-import Welcome from "./components/Welcome.vue";
-import ActorTags from "./components/ActorTags.vue";
-import Tasks from "./components/Tasks.vue";
+const Actors = () => import("./components/Actors.vue")
+const Download = () => import("./components/Download.vue")
+const Welcome = () => import("./components/Welcome.vue")
+const ActorTags = () => import("./components/ActorTags.vue")
+const ActorGroups = () => import("./components/ActorGroups.vue")
+const ECharts = () => import("./components/ECharts.vue")
+const Tasks = () => import("./components/Tasks.vue")
+const TagScoresChart = () => import("./components/Chart/TagScoresChart.vue")
+const ScoreTagsChart = () => import("./components/Chart/ScoreTagsChart.vue")
 
 import svgIcon from "./components/SvgIcon/index.vue";
 import 'virtual:svg-icons-register'
+
+// Importing the global css file
+import "./global.css"
+
 
 
 // 1. 定义路由组件.
@@ -24,8 +32,16 @@ import 'virtual:svg-icons-register'
 const routes = [
     {path: '/', component: Welcome},
     {path: '/actors', component: Actors},
-    // {path: '/actor_links', component: ActorLink},
     {path: '/actor_tags', component: ActorTags},
+    {path: '/actor_groups', component: ActorGroups},
+    {
+        path: '/echarts',
+        component: ECharts,
+        children: [
+            {path: 'tag_scores', component: TagScoresChart},
+            {path: 'score_tags', component: ScoreTagsChart},
+        ]
+    },
     // 动态字段以冒号开始
     {path: '/download', component: Download},
     {path: '/tasks', component: Tasks}

@@ -5,6 +5,9 @@ interface ActorFilterState {
     filter: ActorFilterData,
 }
 
+/**
+ * 缓存筛选器，避免其他页面返回时被重置
+ */
 export const ActorFilterStore = defineStore('ActorFilterStore', {
     state: (): ActorFilterState => ({
         filter: null

@@ -24,6 +24,6 @@ export default defineConfig({
              * @default: __svg__icons__dom__
              */
             // customDomId: '__svg__icons__dom__',
-        })
-    ]
+        }),
+    ],
 })

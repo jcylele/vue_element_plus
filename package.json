@@ -12,7 +12,8 @@
   },
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.10",
-    "element-plus": "^2.2.30",
+    "echarts": "^5.5.1",
+    "element-plus": "^2.7.8",
     "fast-glob": "^3.2.12",
     "js-base64": "^3.7.5",
     "pinia": "^2.0.33",

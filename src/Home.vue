@@ -12,7 +12,8 @@
 <!--          <svg-icon size="20px" name="friend"/>-->
           <el-menu-item index="/actors">Actors</el-menu-item>
           <el-menu-item index="/actor_tags">Actor Tags</el-menu-item>
-
+          <el-menu-item index="/actor_groups">Actor Groups</el-menu-item>
+          <el-menu-item index="/echarts">Charts</el-menu-item>
 <!--          <svg-icon size="20px" name="download"/>-->
           <el-menu-item index="/download">Download</el-menu-item>
           <el-menu-item index="/tasks">Tasks</el-menu-item>
@@ -26,6 +27,10 @@
 </template>
 
 <script lang="ts">
+import {mapActions} from "pinia";
+import {ActorTagStore} from "./store/ActorTagStore";
+import {ActorGroupStore} from "./store/ActorGroupStore";
+
 export default {
   components: {},
 
@@ -33,10 +38,20 @@ export default {
     return {}
   },
   methods: {
+    ...mapActions(ActorTagStore, {
+      getTagsFromServer: 'getFromServer',
+    }),
+    ...mapActions(ActorGroupStore, {
+      getGroupsFromServer: 'getFromServer',
+    }),
     onMenuItemSelect(key: string) {
       this.$router.push(key)
-    }
+    },
   },
+  async mounted() {
+    await this.getTagsFromServer()
+    await this.getGroupsFromServer()
+  }
 }
 </script>
 

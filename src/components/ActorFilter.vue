@@ -5,6 +5,8 @@
       <el-checkbox v-model="filter_condition.show_tag">Tag</el-checkbox>
       <el-checkbox v-model="filter_condition.show_score">Star</el-checkbox>
       <el-checkbox v-model="filter_condition.show_name">Name</el-checkbox>
+      <el-checkbox v-model="filter_condition.show_remark">Remark</el-checkbox>
+      <el-checkbox v-model="filter_condition.show_sort">Sort</el-checkbox>
       <el-divider direction="vertical"/>
       <el-button type="primary" @click="onFilterChange">Search</el-button>
       <el-button @click="onFilterCancel">Reset</el-button>
@@ -19,21 +21,19 @@
         <el-checkbox-group
             v-model="filter_condition.category_list"
             @change="onCheckedCategoryChange">
-          <el-checkbox-button v-for="category in all_actor_category_list"
-                              :key="category.value"
-                              :label="category.value">
-            {{ category.name }}
+          <el-checkbox-button v-for="group in actor_group_list"
+                              :label="group.group_id">
+            {{ group.group_name }}
           </el-checkbox-button>
         </el-checkbox-group>
 
-        <el-checkbox
-            size="large" border
+        <el-switch
+            v-model="is_category_all"
+            size="large"
+            active-text="All"
+            inactive-text="None"
             style="margin-left: 10px"
-            v-model="filter_condition.is_category_all"
-            :indeterminate="filter_condition.is_category_partial"
-            @change="checkAllCategory">
-          All
-        </el-checkbox>
+        />
       </el-form-item>
 
       <!-- filter tags -->
@@ -72,16 +72,42 @@
                   style="width: 200px; font-size: 24px; margin-right: 20px"
                   clearable/>
       </el-form-item>
+
+      <!-- remark -->
+      <el-form-item label="Remark" v-if="filter_condition.show_remark">
+        <el-input v-model="filter_condition.remark_str"
+                  style="width: 200px; font-size: 24px; margin-right: 20px"
+                  clearable/>
+        <el-checkbox v-model="filter_condition.remark_any"
+                     @change="checkNoTag"
+                     style="margin-left: 10px;font-size: 24px;"
+                     size="large"
+                     border>
+          Any Remark
+        </el-checkbox>
+      </el-form-item>
+
+      <!-- Sort_Options -->
+      <el-form-item label="Sort" v-if="filter_condition.show_sort">
+        <el-select v-model="filter_condition.show_sort_id">
+          <el-option
+              v-for="sort_option in sort_option_list"
+              :label="sort_option.label"
+              :value="sort_option.id"
+          />
+        </el-select>
+      </el-form-item>
     </el-form>
   </el-space>
 </template>
 
 <script lang="ts">
 import ActorFilterData from "../data/ActorFilterData";
-import ActorCategory from "../consts/ActorCategory";
 import NewActorTag from "./NewActorTag.vue";
 import {mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
+import {ActorGroupStore} from "../store/ActorGroupStore";
+import {Sort_Options} from "../data/Consts";
 
 export default {
   name: "ActorFilter",
@@ -94,13 +120,26 @@ export default {
   components: {NewActorTag},
   data() {
     return {
-      all_actor_category_list: ActorCategory.AllCategories,
+      is_category_all: false,
       filter_history: [] as ActorFilterData[]
     }
   },
 
   computed: {
     ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
+    ...mapState(ActorGroupStore, {actor_group_list: 'sorted_list'}),
+    sort_option_list() {
+      return Sort_Options
+    }
+  },
+
+  watch: {
+    async is_category_all(new_val, _) {
+      if (new_val) {
+        this.fillAllCategory()
+      }
+      this.filter_condition.checkAllCategory(new_val)
+    }
   },
 
   methods: {
@@ -112,14 +151,7 @@ export default {
     onCheckedTagChange() {
       this.filter_condition.onCheckedTagChange()
     },
-    //
-    checkAllCategory(val: boolean) {
-      // console.log("all", val)
-      this.filter_condition.checkAllCategory(val)
-    },
     onCheckedCategoryChange(val: number[]) {
-      // console.log("check", ...val)
-      this.filter_condition.onCheckedCategoryChange(val)
     },
     async onFilterChange() {
       this.filter_history.push(this.filter_condition.clone())
@@ -133,8 +165,13 @@ export default {
         this.filter_condition.copy(this.filter_history.pop())
       }
     },
+    fillAllCategory() {
+      this.filter_condition.setAllCategoryList(this.actor_group_list.map(group => group.group_id))
+    }
   },
+  mounted() {
 
+  }
 }
 </script>
 

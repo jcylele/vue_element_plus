@@ -1,18 +1,33 @@
+// import 'element-plus/es/components/message/style/css'
+import {ElMessage} from 'element-plus'
+
+export function logInfo(msg: string) {
+    ElMessage({message: msg, type: "success"})
+}
+
+export function logWarn(msg: string) {
+    ElMessage({message: msg, type: "warning"})
+}
+
+export function logError(msg: string) {
+    ElMessage({message: msg, type: "error"})
+}
+
 async function _fetch(url: string, init?: RequestInit) {
     try {
-        // console.log(url, init)
         const response = await fetch(url, init);
         const text = await response.text();
-        // console.log(text)
+
         if (response.ok) {
             const json_data = JSON.parse(text)
             return [true, json_data]
         }
-        // console.log(text)
-        return [false, text]
+
+        ElMessage({message: text, type: "warning"})
+        return [false, undefined]
     } catch (e) {
-        console.log(e)
-        return [false, e]
+        ElMessage({message: e.message, type: "error"})
+        return [false, undefined]
     }
 }
 

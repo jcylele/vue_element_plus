@@ -1,15 +1,22 @@
-import ActorCategory from "../consts/ActorCategory";
+import {Sort_Options} from "./Consts";
+import {SortType} from "./Enums";
 
 export default class ActorFilterData {
+    show_rows: boolean[]
     name: string
     category_list: number[]
-    is_category_partial: boolean
-    is_category_all: boolean
+    all_category_list: number[]
     tag_list: number[]
     no_tag: boolean
     min_score: number
     max_score: number
-    show_rows: boolean[]
+
+    sort_id: number
+    sort_type: SortType
+    sort_asc: boolean
+
+    remark_str: string
+    remark_any: boolean
 
     get show_category() {
         return this.show_rows[0]
@@ -47,6 +54,24 @@ export default class ActorFilterData {
         this.resetName()
     }
 
+    get show_sort() {
+        return this.show_rows[4]
+    }
+
+    set show_sort(val: boolean) {
+        this.show_rows[4] = val
+        this.resetSort()
+    }
+
+    get show_remark() {
+        return this.show_rows[5]
+    }
+
+    set show_remark(val: boolean) {
+        this.show_rows[5] = val
+        this.resetRemark()
+    }
+
     get show_min_score() {
         return this.min_score / 2
     }
@@ -63,8 +88,24 @@ export default class ActorFilterData {
         this.max_score = val * 2
     }
 
+    get show_sort_id() {
+        return this.sort_id
+    }
+
+    set show_sort_id(val: number) {
+        this.sort_id = val
+        for (const option of Sort_Options) {
+            if (option.id == val) {
+                this.sort_type = option.sort_type
+                this.sort_asc = option.sort_asc
+                return
+            }
+        }
+    }
+
     constructor() {
-        this.show_rows = [false, false, false, false]
+        this.show_rows = new Array(6).fill(false)
+        this.all_category_list = []
         this.reset()
     }
 
@@ -73,50 +114,49 @@ export default class ActorFilterData {
         this.resetTags()
         this.resetScores()
         this.resetName()
+        this.resetSort()
+        this.resetRemark()
     }
 
     clone() {
         const data = new ActorFilterData()
+        data.show_rows = this.show_rows.slice()
         data.name = this.name
         data.category_list = this.category_list.slice()
         data.tag_list = this.tag_list.slice()
         data.no_tag = this.no_tag
         data.min_score = this.min_score
         data.max_score = this.max_score
-        data.show_rows = this.show_rows.slice()
+        data.show_sort_id = this.show_sort_id
         return data
     }
 
     copy(data: ActorFilterData) {
+        this.show_rows = data.show_rows.slice()
         this.name = data.name
         this.category_list = data.category_list.slice()
         this.tag_list = data.tag_list.slice()
         this.no_tag = data.no_tag
         this.min_score = data.min_score
         this.max_score = data.max_score
-        this.show_rows = data.show_rows.slice()
+        this.show_sort_id = data.show_sort_id
+    }
+
+    setAllCategoryList(list: number[]) {
+        this.all_category_list = list
     }
 
     resetCategory() {
-        this.is_category_all = true
         this.checkAllCategory(true)
     }
 
+
     checkAllCategory(val: boolean) {
-        // console.log("all", val)
         if (val) {
-            this.category_list = ActorCategory.AllCategoryValues
+            this.category_list = this.all_category_list.slice()
         } else {
             this.category_list = []
         }
-        this.is_category_partial = false
-    }
-
-    onCheckedCategoryChange(val: number[]) {
-        // console.log("check", ...val)
-        const length = this.category_list.length
-        this.is_category_all = length === ActorCategory.AllCategories.length
-        this.is_category_partial = length > 0 && length < ActorCategory.AllCategories.length
     }
 
     resetTags() {
@@ -147,6 +187,15 @@ export default class ActorFilterData {
 
     resetName() {
         this.name = ""
+    }
+
+    resetSort() {
+        this.show_sort_id = 0
+    }
+
+    resetRemark() {
+        this.remark_str = ""
+        this.remark_any = false
     }
 }
 
