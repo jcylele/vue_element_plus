@@ -19,6 +19,7 @@
       <el-select
           v-model="actor_category"
           placeholder="Select"
+          style="width: 100px"
       >
         <el-option
             v-for="group in down_group_list"

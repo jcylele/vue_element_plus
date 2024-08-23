@@ -40,12 +40,12 @@
           </el-space>
           <el-space direction="horizontal" v-if="hasFolder()">
             <el-button class="pop-button"
-                       @click="openFolder">
-              Open Folder
-            </el-button>
-            <el-button class="pop-button"
                        @click="toDownload">
               Download
+            </el-button>
+            <el-button class="pop-button"
+                       @click="openFolder">
+              Open Folder
             </el-button>
           </el-space>
         </el-space>
@@ -87,7 +87,7 @@
             v-for="group in group_list"
             :label="group.group_name"
             :value="group.group_id"
-            :style="{'color': group.group_color, }"
+            :style="{'color': group.group_color, 'text-decoration':'underline' }"
         >
           {{ group.show_content }}
         </el-option>

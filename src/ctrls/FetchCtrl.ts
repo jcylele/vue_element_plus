@@ -13,6 +13,29 @@ export function logError(msg: string) {
     ElMessage({message: msg, type: "error"})
 }
 
+const rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;
+
+function trim(text) {
+    text = (text == null)
+        ? ""
+        : (text + "").replace(rtrim, "");
+    return text;
+}
+
+function replacer(key, value) {
+    return typeof this[key] === "string" ? trim(value) : value;
+}
+
+export function parseDict(json_obj){
+    let ret = new Map<number, number>()
+    for(const key in json_obj){
+        if (json_obj.hasOwnProperty(key)){
+            ret.set(parseInt(key), json_obj[key])
+        }
+    }
+    return ret
+}
+
 async function _fetch(url: string, init?: RequestInit) {
     try {
         const response = await fetch(url, init);
@@ -39,7 +62,7 @@ export async function fetchPost(url: string, form_data = {}) {
     const requestOptions = {
         method: "POST",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(form_data)
+        body: JSON.stringify(form_data, replacer)
     };
     return _fetch(url, requestOptions)
 }
@@ -48,7 +71,7 @@ export async function fetchPut(url: string, form_data) {
     const requestOptions = {
         method: "PUT",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(form_data)
+        body: JSON.stringify(form_data, replacer)
     };
     return _fetch(url, requestOptions)
 }
@@ -57,7 +80,7 @@ export async function fetchPatch(url: string, form_data?) {
     const requestOptions = {
         method: "PATCH",
         headers: {"Content-Type": "application/json"},
-        body: JSON.stringify(form_data)
+        body: JSON.stringify(form_data, replacer)
     };
     return _fetch(url, requestOptions)
 }

@@ -14,12 +14,12 @@
 
 <script lang="ts">
 import * as echarts from "echarts/core";
-import {PieChart} from "echarts/charts";
+import {BarChart} from "echarts/charts";
 
 import {
   TooltipComponent,
   DatasetComponent,
-  TransformComponent
+  TransformComponent, TitleComponentOption, GridComponentOption
 } from "echarts/components";
 
 import {LabelLayout, UniversalTransition} from 'echarts/features'
@@ -27,17 +27,19 @@ import {LabelLayout, UniversalTransition} from 'echarts/features'
 import {CanvasRenderer} from 'echarts/renderers'
 
 import type {
-  PieSeriesOption
+  BarSeriesOption
 } from 'echarts/charts'
 
 import type {
   ComposeOption
 } from 'echarts/core'
 
-type ScoreTagsOption = ComposeOption<| PieSeriesOption>;
+type ScoreTagsOption = ComposeOption<| BarSeriesOption
+    | TitleComponentOption
+    | GridComponentOption>;
 
 echarts.use([
-  PieChart,
+  BarChart,
   TooltipComponent,
   DatasetComponent,
   TransformComponent,
@@ -49,6 +51,7 @@ echarts.use([
 import {getTagsByScore} from "../../ctrls/ChartCtrl.js";
 import {mapActions} from "pinia";
 import {ActorTagStore} from "../../store/ActorTagStore";
+import {ECharts} from "echarts";
 
 interface TagCount {
   tag_id: number,
@@ -60,10 +63,19 @@ export default {
   data() {
     return {
       scores: [0, 10],
+      tagChart: undefined as ECharts,
       chart_option: {
+        xAxis: {
+          type: 'value',
+        },
+        yAxis: {
+          type: 'category',
+          data: []
+        },
         series: [{
-          type: 'pie',
+          type: 'bar',
           data: [],
+          // color: []
         }]
       } as ScoreTagsOption
     }
@@ -79,18 +91,18 @@ export default {
       }
     },
     refreshChart(tag_list: TagCount[]) {
-      const data_list = []
-      for (const tag_info of tag_list) {
-        const tagName = this.getTagName(tag_info.tag_id);
-        data_list.push({name: tagName, value: tag_info.count})
-      }
-      this.chart_option.series[0].data = data_list
+      tag_list.sort((a, b) => b.count - a.count)
+      tag_list = tag_list.slice(0, 10)
+      console.log(tag_list)
 
-      const chart = echarts.init(document.getElementById('score_tags'));
-      chart.setOption(this.chart_option)
+      this.chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
+      this.chart_option.series[0].data = tag_list.map(a => a.count)
+
+      this.tagChart.setOption(this.chart_option)
     },
     mounted() {
-
+      console.log("init this.tagChart")
+      this.tagChart = echarts.init(document.getElementById('score_tags'));
     }
   }
 }

@@ -5,6 +5,7 @@ import 'element-plus/dist/index.css'
 import {createRouter, createWebHashHistory} from "vue-router";
 
 import Home from "./Home.vue";
+
 const Actors = () => import("./components/Actors.vue")
 const Download = () => import("./components/Download.vue")
 const Welcome = () => import("./components/Welcome.vue")
@@ -14,13 +15,14 @@ const ECharts = () => import("./components/ECharts.vue")
 const Tasks = () => import("./components/Tasks.vue")
 const TagScoresChart = () => import("./components/Chart/TagScoresChart.vue")
 const ScoreTagsChart = () => import("./components/Chart/ScoreTagsChart.vue")
+const TagRelativeChart = () => import("./components/Chart/TagRelativeChart.vue")
+
 
 import svgIcon from "./components/SvgIcon/index.vue";
 import 'virtual:svg-icons-register'
 
 // Importing the global css file
 import "./global.css"
-
 
 
 // 1. 定义路由组件.
@@ -38,6 +40,7 @@ const routes = [
         path: '/echarts',
         component: ECharts,
         children: [
+            {path: 'tag_relatives', component: TagRelativeChart},
             {path: 'tag_scores', component: TagScoresChart},
             {path: 'score_tags', component: ScoreTagsChart},
         ]

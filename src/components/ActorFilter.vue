@@ -1,12 +1,12 @@
 <template>
   <el-space direction="vertical" :fill="true">
-    <el-space direction="horizontal" alignment="flex-start">
-      <el-checkbox v-model="filter_condition.show_category">Category</el-checkbox>
-      <el-checkbox v-model="filter_condition.show_tag">Tag</el-checkbox>
-      <el-checkbox v-model="filter_condition.show_score">Star</el-checkbox>
-      <el-checkbox v-model="filter_condition.show_name">Name</el-checkbox>
-      <el-checkbox v-model="filter_condition.show_remark">Remark</el-checkbox>
-      <el-checkbox v-model="filter_condition.show_sort">Sort</el-checkbox>
+    <el-space direction="horizontal" alignment="flex-start" class="filter">
+      <el-checkbox size="large" border v-model="filter_condition.show_category">Category</el-checkbox>
+      <el-checkbox size="large" border v-model="filter_condition.show_tag">Tag</el-checkbox>
+      <el-checkbox size="large" border v-model="filter_condition.show_score">Star</el-checkbox>
+      <el-checkbox size="large" border v-model="filter_condition.show_name">Name</el-checkbox>
+      <el-checkbox size="large" border v-model="filter_condition.show_remark">Remark</el-checkbox>
+      <el-checkbox size="large" border v-model="filter_condition.show_sort">Sort</el-checkbox>
       <el-divider direction="vertical"/>
       <el-button type="primary" @click="onFilterChange">Search</el-button>
       <el-button @click="onFilterCancel">Reset</el-button>
@@ -14,7 +14,9 @@
 
     </el-space>
     <el-form :model="filter_condition"
-             label-width="100px" label-position="left">
+             label-width="auto"
+             label-position="right"
+             size="large">
 
       <!-- filter category -->
       <el-form-item label="Category" v-if="filter_condition.show_category">
@@ -34,12 +36,14 @@
             inactive-text="None"
             style="margin-left: 10px"
         />
+
       </el-form-item>
 
       <!-- filter tags -->
       <el-form-item label="Tags" v-if="filter_condition.show_tag">
         <el-select v-model="filter_condition.tag_list"
                    @change="onCheckedTagChange"
+                   style="width: 200px;"
                    multiple filterable clearable>
           <el-option
               v-for="actor_tag in actor_tag_list"
@@ -60,9 +64,15 @@
       <!-- score -->
       <el-form-item label="Star" v-if="filter_condition.show_score">
         <el-rate v-model="filter_condition.show_min_score"
+                 :colors="star_colors"
+                 void-color="#777777"
+                 size="large"
                  allow-half/>
         <el-text>~</el-text>
         <el-rate v-model="filter_condition.show_max_score"
+                 :colors="star_colors"
+                 void-color="#777777"
+                 size="large"
                  allow-half/>
       </el-form-item>
 
@@ -89,7 +99,8 @@
 
       <!-- Sort_Options -->
       <el-form-item label="Sort" v-if="filter_condition.show_sort">
-        <el-select v-model="filter_condition.show_sort_id">
+        <el-select v-model="filter_condition.show_sort_id"
+                   style="width: 200px;">
           <el-option
               v-for="sort_option in sort_option_list"
               :label="sort_option.label"
@@ -107,7 +118,7 @@ import NewActorTag from "./NewActorTag.vue";
 import {mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {ActorGroupStore} from "../store/ActorGroupStore";
-import {Sort_Options} from "../data/Consts";
+import {Sort_Options, Star_Colors} from "../data/Consts";
 
 export default {
   name: "ActorFilter",
@@ -130,7 +141,10 @@ export default {
     ...mapState(ActorGroupStore, {actor_group_list: 'sorted_list'}),
     sort_option_list() {
       return Sort_Options
-    }
+    },
+    star_colors() {
+      return Star_Colors
+    },
   },
 
   watch: {
@@ -176,5 +190,17 @@ export default {
 </script>
 
 <style scoped>
+.filter {
 
+}
+
+.filter el-checkbox {
+  font-size: 24px;
+  font-style: italic;
+}
+
+.filter-divider {
+  margin: 2px;
+  color: black;
+}
 </style>

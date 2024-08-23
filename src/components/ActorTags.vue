@@ -3,6 +3,19 @@
     <el-main>
       <el-space direction="vertical" :fill="true">
         <NewActorTag @tag_added="refreshTags"/>
+        <el-text style="font-size: 24px;font-style: oblique">
+          Drag Elements Below To Set Tags Priorities
+        </el-text>
+        <el-space direction="horizontal" v-if="changed">
+          <el-button type="primary" size="default"
+                     @click="onSubmitPriority">
+            Save
+          </el-button>
+          <el-button type="warning" size="default"
+                     @click="onCancel">
+            Reset
+          </el-button>
+        </el-space>
         <el-space direction="vertical">
           <el-space direction="horizontal"
                     v-for="tag_group in editing_tags"
@@ -12,6 +25,7 @@
             <draggable
                 :list="tag_group"
                 :group="{ name: 'tags', pull: true, put: true }"
+                @change="onTagItemMoved"
                 class="card_row">
               <ActorTagEditor v-for="tag_info in tag_group"
                               :tag_edit_info="tag_info"
@@ -21,16 +35,6 @@
             </draggable>
           </el-space>
 
-        </el-space>
-        <el-space direction="horizontal">
-          <el-button type="primary" size="large"
-                     @click="onSubmitPriority">
-            Save
-          </el-button>
-          <el-button type="warning" size="large"
-                     @click="onCancel">
-            Reset
-          </el-button>
         </el-space>
       </el-space>
     </el-main>
@@ -56,7 +60,8 @@ export default {
 
   data() {
     return {
-      editing_tags: [] as TagEditInfo[][]
+      editing_tags: [] as TagEditInfo[][],
+      changed: false
     }
   },
   computed: {
@@ -66,6 +71,9 @@ export default {
     ...mapActions(ActorTagStore, {
       getTagsFromServer: 'getFromServer',
     }),
+    onTagItemMoved(evt){
+      this.changed = true
+    },
     onDeleteActorTag(tag_id: number) {
       for (const group of this.editing_tags) {
         for (let i = 0; i < group.length; i++) {
@@ -93,10 +101,12 @@ export default {
       let [ok, ret] = await updatePriorities(changed_priorities)
       if (ok) {
         logInfo("priorities of tags saved")
+        this.changed = false
       }
     },
     async onCancel() {
       await this.refreshTags()
+      this.changed = false
     },
     initTags() {
       this.editing_tags = []

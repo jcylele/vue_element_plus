@@ -1,6 +1,6 @@
 <template>
   <el-container>
-    <el-space direction="vertical" size="large" :fill="true">
+    <el-space direction="vertical" size="default" :fill="true">
       <NewActorTag @tag_added="initTags"/>
       <el-input v-model="search_text"
                 @input="onSearchTextChange"
@@ -12,6 +12,7 @@
 
         <el-checkbox-button v-for="tag_info in tag_group"
                             v-model="tag_info.selected"
+                            style="margin: 3px"
                             :class="searchClass(tag_info)">
           {{ tag_info.tag.tag_name }}
 

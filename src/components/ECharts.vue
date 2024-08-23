@@ -6,6 +6,7 @@
           text-color="#000000"
           active-text-color="#a0a0fb"
           @select="onMenuItemSelect">
+        <el-menu-item index="tag_relatives">Tag Relatives</el-menu-item>
         <el-menu-item index="tag_scores">Tag Scores</el-menu-item>
         <el-menu-item index="score_tags">Score Tags</el-menu-item>
       </el-menu>

@@ -1,12 +1,12 @@
 <template>
   <div style="border: 1px solid ; border-radius: 4px; padding: 3px">
     <div v-if="!show_add">
-      <el-button type="default" @click="showAdd(true)">
+      <el-button type="default" @click="showAdd(true)" class="new-tag-button">
         Add New Actor Tag
       </el-button>
     </div>
     <div v-if="show_add">
-      <el-form :inline="true" :model="new_actor_tag" class="demo-form-inline">
+      <el-form :inline="true" :model="new_actor_tag" class="new-tag-form">
         <el-form-item label="Name">
           <el-input v-model="new_actor_tag.tag_name"/>
         </el-form-item>
@@ -64,5 +64,10 @@ export default {
 </script>
 
 <style scoped>
-
+.new-tag-form .el-form-item{
+  margin: 5px 8px;
+}
+.new-tag-button {
+  margin: 5px 8px;
+}
 </style>

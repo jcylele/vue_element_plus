@@ -14,7 +14,7 @@
           :value="actor_tag.tag_id"
       />
     </el-select>
-    <div id="tag_scores" style="width: 640px;height: 420px"></div>
+    <div id="tag_relatives" style="width: 840px;height: 420px"></div>
   </el-space>
 </template>
 
@@ -45,7 +45,7 @@ import type {
   ComposeOption
 } from 'echarts/core'
 
-type TagScoresOption = ComposeOption<| BarSeriesOption
+type TagRelativesOption = ComposeOption<| BarSeriesOption
     | TitleComponentOption
     | GridComponentOption>;
 
@@ -60,64 +60,68 @@ echarts.use([
   CanvasRenderer
 ]);
 
-import {mapState} from "pinia";
+import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../../store/ActorTagStore";
-import {getScoresByTag} from "../../ctrls/ChartCtrl";
-import {Star_Colors} from "../../data/Consts";
+import {getRelativesByTag} from "../../ctrls/ChartCtrl";
+import {CallbackDataParams} from "echarts/types/dist/shared";
 import {ECharts} from "echarts";
 
 export default {
-  name: "TagScoresChart",
+  name: "TagRelativeChart",
   data() {
     return {
       cur_tag_id: 0,
+      count_list: [] as number[][],
       tagChart: undefined as ECharts,
       chart_option: {
         xAxis: {
-          type: 'category',
-          data: []
+          type: 'value',
         },
         yAxis: {
-          type: 'value'
+          type: 'category',
+          data: [],
         },
         series: [{
           type: 'bar',
           data: [],
           color: []
         }]
-      } as TagScoresOption
+      } as TagRelativesOption
     }
   },
   computed: {
     ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
   },
   methods: {
+    ...mapActions(ActorTagStore, {
+      getTagName: 'getName',
+    }),
     async onCheckedTagChange() {
-      const [ok, score_list] = await getScoresByTag(this.cur_tag_id)
+      const [ok, count_map] = await getRelativesByTag(this.cur_tag_id)
       if (ok) {
-        this.refreshChart(score_list)
+        this.count_list = Array.from(count_map)
+        this.count_list.sort((a, b) => a[1] - b[1])
+        // take top 10, self is included, so be 11
+        this.count_list = this.count_list.slice(-11)
+
+        this.refreshChart()
       }
     },
+    refreshChart() {
+      this.chart_option.yAxis.data = this.count_list.map(a => this.getTagName(a[0]))
+      this.chart_option.series[0].data = this.count_list.map(a => a[1])
 
-    refreshChart(score_list) {
-      this.chart_option.series[0].data = score_list
       this.tagChart.setOption(this.chart_option)
     },
-
-    initChartOption() {
-      const colors = []
-      const x_axis = []
-      for (let i = 0; i < 11; i++) {
-        x_axis.push(i)
-        colors.push(Star_Colors[Math.ceil(i / 2)])
-      }
-      this.chart_option.series[0].color = colors
-      this.chart_option.xAxis.data = x_axis
-    }
+    onChartClick(params: CallbackDataParams){
+      const tag_id = this.count_list[params.dataIndex][0]
+      this.cur_tag_id = tag_id
+      this.onCheckedTagChange()
+    },
   },
   mounted() {
-    this.tagChart = echarts.init(document.getElementById('tag_scores'));
-    this.initChartOption()
+    this.tagChart = echarts.init(document.getElementById('tag_relatives'));
+    this.tagChart.on('click', this.onChartClick);
   }
 }
 
