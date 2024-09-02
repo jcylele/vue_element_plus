@@ -1,4 +1,7 @@
 const fs = require("fs")
+const ProjRoot = "C:\\Users\\wangle\\Documents\\PythonCrawler\\";
+const ProjAssets = ProjRoot + "assets"
+const DistAssets = ProjRoot + "dist\\web\\assets"
 
 function clearDirectory(path) {
     // delete
@@ -9,8 +12,8 @@ function clearDirectory(path) {
 
 console.log("Cleaning working tree...");
 
-const target_folder = process.argv[2];
 clearDirectory("./dist")
-clearDirectory(target_folder)
+clearDirectory(ProjAssets)
+clearDirectory(DistAssets)
 
 console.log("Successfully cleaned working tree!");

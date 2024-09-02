@@ -93,11 +93,6 @@
       </el-button>
     </el-space>
     <!-- a big card per actor -->
-    <!--    <draggable v-if="actor_show_card"-->
-    <!--               v-model="actor_list"-->
-    <!--               :group="{ name: 'actors', pull: 'clone', put: false }"-->
-    <!--               @change="onMainItemMoved"-->
-    <!--               class="card_row">-->
     <el-space v-if="actor_show_card" direction="horizontal"
               class="card_row" alignment="stretch" style="gap: 15px 15px">
       <!-- TODO change is not triggered, why   -->
@@ -111,7 +106,6 @@
                  @link="onActorLinkClick"
                  @download="singleShowDownload"/>
     </el-space>
-    <!--    </draggable>-->
     <!-- a line per actor -->
     <el-space v-if="actor_show_line" direction="vertical" size="small" :fill="true">
       <ActorLine v-for="actor_data in actor_list"
@@ -158,7 +152,6 @@ import {
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {ActorFilterStore} from "../store/ActorFilterStore";
-import {VueDraggableNext} from "vue-draggable-next";
 import {DownloadLimitForm} from "../data/SimpleForms";
 import {downloadByNames} from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
@@ -171,7 +164,7 @@ import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 
 export default {
-  components: {SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, draggable: VueDraggableNext, DownloadLimit},
+  components: {SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
   data() {
     return {
       filter_condition: new ActorFilterData(),
