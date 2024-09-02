@@ -1,15 +1,23 @@
 <template>
   <el-space direction="vertical"
-            class="actor_card" alignment="stretch" size="default"
+            class="actor_card" alignment="stretch" :size="3"
             :key="actor.uuid"
             :style="{'color': group_color}">
 
     <!-- actor avatar -->
     <div class="avatar">
       <el-image class="avatar-img" :src="actor.icon"/>
-      <svg-icon class="avatar-friend" v-if="actor.main_actor"
+      <svg-icon v-if="actor.has_main_actor"
                 size="30px" name="friend"
+                style="position: absolute;top: 0;left: 15px;"
                 @click="findLinkedActor"/>
+
+      <svg-icon v-if="show_link"
+                size="30px" name="top"
+                style="position: absolute;top: 0;right: 15px;"
+                class="blink-class"
+                @click="onLinkClick"/>
+
       <el-rate class="avatar-rate"
                v-model="actor.show_score"
                :colors="star_colors"
@@ -20,31 +28,53 @@
     </div>
 
     <!-- actor name, click to open menu items -->
-    <el-popover trigger="click" placement="top" width="240px">
+    <el-popover trigger="click" placement="top"
+                v-model:visible="is_show_op"
+                :popper-style="{'border-color': group_color, 'width': 300}"
+                popper-class="op_popper"
+                :offset="6">
       <template #reference>
         <el-text class="actor_name" :style="{'color': group_color}">
           {{ actor.actor_name }}
         </el-text>
       </template>
       <template #default>
-        <el-space direction="vertical">
+        <el-space direction="vertical" alignment="center">
           <el-space direction="horizontal">
             <el-button class="pop-button"
-                       @click="gotoActorPage">
-              Go To Page
-            </el-button>
-            <el-button class="pop-button"
+                       type="primary"
                        @click="showPosts">
               Show Posts
+            </el-button>
+            <el-button class="pop-button"
+                       type="primary"
+                       @click="gotoActorPage">
+              Go To Page
             </el-button>
           </el-space>
           <el-space direction="horizontal" v-if="hasFolder()">
             <el-button class="pop-button"
-                       @click="toDownload">
+                       type="warning"
+                       @click="resetPosts">
+              Reset Posts
+            </el-button>
+            <el-button class="pop-button"
+                       type="warning"
+                       @click="clearFolder">
+              Clear Folder
+            </el-button>
+          </el-space>
+          <el-space direction="horizontal" v-if="hasFolder()">
+            <el-button class="pop-button"
+                       type="success"
+                       @click="toDownload"
+                       v-if="hasFolder()">
               Download
             </el-button>
             <el-button class="pop-button"
-                       @click="openFolder">
+                       type="success"
+                       @click="openFolder"
+                       v-if="hasFolder()">
               Open Folder
             </el-button>
           </el-space>
@@ -53,15 +83,20 @@
     </el-popover>
 
     <!-- actor post info -->
-    <el-text style="font-size: 18px; color: black;" tag="ins">
-      {{ actor.post_desc }}
-    </el-text>
-    <!-- actor res info -->
-    <el-text v-for="res_file_info in actor.res_info"
-             :class="'res' + res_file_info.res_state"
-             style="font-size: 14px; ">
-      {{ actor.formatResFileInfo(res_file_info) }}
-    </el-text>
+    <el-space direction="vertical"
+              v-if="actor.file_info"
+              alignment="start"
+              style="gap: 1px 0px;padding-left: 15px">
+      <el-text style="font-size: 18px; color: black;" tag="ins">
+        {{ actor.post_desc }}
+      </el-text>
+      <!-- actor res info -->
+      <el-text v-for="res_file_info in actor.file_info.res_info"
+               :class="'res' + res_file_info.res_state"
+               style="font-size: 14px; ">
+        {{ actor.formatResFileInfo(res_file_info) }}
+      </el-text>
+    </el-space>
 
     <!--actor remark + category + edit button -->
     <el-space direction="horizontal" alignment="stretch">
@@ -98,33 +133,30 @@
                 name="edit"/>
     </el-space>
 
-    <!-- actor tags editing dialog-->
-    <el-dialog v-model="is_editing_tags"
-               :title="actor.actor_name"
-               width="67%">
-      <ActorTagChooser :actor="actor"
-                       @submit="onSubmitTag"
-                       @cancel="onCancelAddTag"
-      />
-    </el-dialog>
-
-
     <!--actor tags-->
     <el-space wrap style="margin-top: 5px">
-      <el-tag v-for="tag_id in actor.rel_tags"
+      <el-tag v-for="tag_id in actor.tag_ids"
               :class="getTagStyleName(tag_id)"
               style="font-size: 18px"
               round>
         {{ getTagName(tag_id) }}
       </el-tag>
     </el-space>
-
-    <el-dialog v-model="is_show_post"
-               title="Posts"
-               width=720px>
-      <Posts :specific_actor_name="actor.actor_name"></Posts>
-    </el-dialog>
   </el-space>
+  <!-- actor tags editing dialog-->
+  <el-dialog v-model="is_editing_tags"
+             :title="actor.actor_name"
+             width="67%">
+    <ActorTagChooser :actor="actor"
+                     @submit="onSubmitTag"
+                     @cancel="onCancelAddTag"
+    />
+  </el-dialog>
+  <el-dialog v-model="is_show_post"
+             title="Posts"
+             width=720px>
+    <Posts :specific_actor_name="actor.actor_name"></Posts>
+  </el-dialog>
 </template>
 
 <script lang="ts">
@@ -132,11 +164,10 @@ import ActorData from "../data/ActorData";
 import {
   ChangeActorTag,
   changeActorCategory,
-  openActorFolder, changeActorRemark, getFileInfo, changeActorScore
+  openActorFolder, changeActorRemark, getFileInfo, changeActorScore, clearActorFolder, resetActorPosts
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
-import ActorTagData from "../data/ActorTagData";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagChooser from "./ActorTagChooser.vue";
 import RemarkEditor from "./RemarkEditor.vue";
@@ -147,17 +178,13 @@ import ActorGroupData from "../data/ActorGroupData";
 import {Star_Colors} from "../data/Consts";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 
-interface TagInfo {
-  tag: ActorTagData,
-  selected: boolean,
-}
-
 export default {
   name: "ActorCard",
   components: {ActorTagChooser, SvgIcon, RemarkEditor, Posts},
   // props from parent
   props: {
-    actor_data: ActorElement
+    actor_data: ActorElement,
+    show_link: Boolean
   },
   computed: {
     ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
@@ -173,12 +200,12 @@ export default {
     },
   },
   // declare emitted events to parent
-  emits: ['refresh', 'link', 'download', 'post'],
+  emits: ['refresh', 'link', 'download', 'friend'],
   data() {
     return {
       is_editing_tags: false,
-      editing_tags: [] as TagInfo[][],
-      is_show_post: false
+      is_show_post: false,
+      is_show_op: false
     }
   },
   mounted() {
@@ -219,13 +246,31 @@ export default {
     },
 
     gotoActorPage() {
+      this.is_show_op = false
       window.open(this.actor.href, '_blank', 'noreferrer');
     },
     openFolder() {
+      this.is_show_op = false
       openActorFolder(this.actor.actor_name)
     },
+    async clearFolder() {
+      this.is_show_op = false
+      const [ok, file_info] = await clearActorFolder(this.actor.actor_name)
+      if (ok) {
+        this.setFileInfo(file_info)
+        logInfo("clear folder succeed")
+      }
+    },
+    async resetPosts() {
+      this.is_show_op = false
+      const [ok, file_info] = await resetActorPosts(this.actor.actor_name)
+      if (ok) {
+        this.setFileInfo(file_info)
+        logInfo("reset posts succeed")
+      }
+    },
     async setActorCategory() {
-      if (this.actor.rel_tags.length == 0) {
+      if (this.actor.tag_ids.length == 0) {
         logWarn("add any tag before setting category")
         return
       }
@@ -244,14 +289,15 @@ export default {
     },
     async onCancelAddTag() {
       this.is_editing_tags = false
-      this.editing_tags = []
     },
 
     toDownload() {
+      this.is_show_op = false
       this.$emit('download', this.actor_data)
     },
 
     showPosts() {
+      this.is_show_op = false
       this.is_show_post = true
     },
 
@@ -260,6 +306,9 @@ export default {
       this.onRecvActorMsg(ok, new_actor, "change score succeed")
     },
     async findLinkedActor() {
+      this.$emit('friend', this.actor_data)
+    },
+    onLinkClick() {
       this.$emit('link', this.actor_data)
     },
     async onSubmitRemark(new_remark: string) {
@@ -272,12 +321,12 @@ export default {
     async getFileInfo() {
       const [ok, file_info] = await getFileInfo(this.actor.actor_name)
       if (ok) {
-        this.actor.res_info = file_info.res_info
-        this.actor.total_post_count = file_info.total_post_count
-        this.actor.unfinished_post_count = file_info.unfinished_post_count
-        this.actor.finished_post_count = file_info.finished_post_count
+        this.setFileInfo(file_info)
       }
-    }
+    },
+    setFileInfo(file_info) {
+      this.actor.file_info = file_info
+    },
   }
   ,
 }
@@ -296,7 +345,6 @@ export default {
   padding: 2px;
   box-shadow: 2px 2px;
   width: 210px;
-  padding: 5px;
 }
 
 .avatar {
@@ -314,12 +362,6 @@ export default {
   left: 15px;
 }
 
-.avatar-friend {
-  position: absolute;
-  top: 0;
-  left: 15px;
-}
-
 .avatar-rate {
   position: absolute;
   bottom: 0;
@@ -328,8 +370,25 @@ export default {
 }
 
 .pop-button {
-  width: 100px;
+  width: 126px;
   height: 32px;
+  font-size: 16px;
+}
+
+.blink-class {
+  animation: blink 1s linear infinite;
+}
+
+@keyframes blink {
+  25% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0;
+  }
+  75% {
+    opacity: 0.5;
+  }
 }
 
 .res1 {

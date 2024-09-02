@@ -115,7 +115,10 @@ export default {
       }
       for (const tag: ActorTagData of this.actor_tag_list) {
         const group_id = Math.floor(tag.tag_priority / 100)
-        this.editing_tags[group_id].push({tag: tag, is_editing: false})
+        let tagEditInfo = new TagEditInfo()
+        tagEditInfo.tag = tag
+        tagEditInfo.is_editing = false
+        this.editing_tags[group_id].push(tagEditInfo)
       }
       this.editing_tags.reverse()
     },

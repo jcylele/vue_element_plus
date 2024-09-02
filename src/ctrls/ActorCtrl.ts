@@ -60,6 +60,16 @@ export async function openActorFolder(actor_name: string) {
     return await fetchGet(url)
 }
 
+export async function clearActorFolder(actor_name: string) {
+    const url = `${baseUrl}/${actor_name}/clear`;
+    return await fetchGet(url)
+}
+
+export async function resetActorPosts(actor_name: string) {
+    const url = `${baseUrl}/${actor_name}/reset_posts`;
+    return await fetchGet(url)
+}
+
 export async function changeActorCategory(actor_name: string, actor_category: number) {
     const url = `${baseUrl}/${actor_name}/category?val=${actor_category}`;
     const [ok, response] = await fetchPatch(url)

@@ -100,6 +100,7 @@ export default {
 
       this.tagChart.setOption(this.chart_option)
     },
+    // TODO why mounted if not called
     mounted() {
       console.log("init this.tagChart")
       this.tagChart = echarts.init(document.getElementById('score_tags'));

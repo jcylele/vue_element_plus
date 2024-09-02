@@ -5,6 +5,7 @@ export const Sort_Options: SortOption[] = [
     {id: 0, label: "None", sort_type: SortType.Default, sort_asc: false},
     {id: 1, label: "Star Desc", sort_type: SortType.Star, sort_asc: false},
     {id: 2, label: "Post Count Asc", sort_type: SortType.TotalPostCount, sort_asc: true},
+    {id: 3, label: "Category Time Asc", sort_type: SortType.CategoryTime, sort_asc: true},
 ]
 
 export const Preset_Options: CommonOption[] = [

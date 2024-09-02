@@ -8,23 +8,25 @@
       <el-checkbox size="large" border v-model="filter_condition.show_remark">Remark</el-checkbox>
       <el-checkbox size="large" border v-model="filter_condition.show_sort">Sort</el-checkbox>
       <el-divider direction="vertical"/>
-      <el-button type="primary" @click="onFilterChange">Search</el-button>
-      <el-button @click="onFilterCancel">Reset</el-button>
-      <el-button v-if="filter_history.length > 0" type="success" @click="toPreviousFilter">Previous</el-button>
+      <el-button type="primary" size="large" @click="onFilterSubmit">Search</el-button>
+      <el-button type="warning" size="large" @click="onFilterCancel">Reset</el-button>
+      <el-button v-if="filter_history.length > 0" type="success" size="large" @click="toPreviousFilter">Previous
+      </el-button>
 
     </el-space>
     <el-form :model="filter_condition"
              label-width="auto"
              label-position="right"
-             size="large">
+             class="filter-form">
 
       <!-- filter category -->
       <el-form-item label="Category" v-if="filter_condition.show_category">
         <el-checkbox-group
             v-model="filter_condition.category_list"
-            @change="onCheckedCategoryChange">
+            @change="onAnyConditionChange"
+            size="default">
           <el-checkbox-button v-for="group in actor_group_list"
-                              :label="group.group_id">
+                              :value="group.group_id">
             {{ group.group_name }}
           </el-checkbox-button>
         </el-checkbox-group>
@@ -44,6 +46,7 @@
         <el-select v-model="filter_condition.tag_list"
                    @change="onCheckedTagChange"
                    style="width: 200px;"
+                   size="default"
                    multiple filterable clearable>
           <el-option
               v-for="actor_tag in actor_tag_list"
@@ -55,7 +58,7 @@
         <el-checkbox v-model="filter_condition.no_tag"
                      @change="checkNoTag"
                      style="margin-left: 10px;font-size: 24px;"
-                     size="large"
+                     size="default"
                      border>
           No Tag
         </el-checkbox>
@@ -64,12 +67,14 @@
       <!-- score -->
       <el-form-item label="Star" v-if="filter_condition.show_score">
         <el-rate v-model="filter_condition.show_min_score"
+                 @change="onAnyConditionChange"
                  :colors="star_colors"
                  void-color="#777777"
                  size="large"
                  allow-half/>
         <el-text>~</el-text>
         <el-rate v-model="filter_condition.show_max_score"
+                 @change="onAnyConditionChange"
                  :colors="star_colors"
                  void-color="#777777"
                  size="large"
@@ -79,6 +84,7 @@
       <!-- filter name -->
       <el-form-item label="Name" v-if="filter_condition.show_name">
         <el-input v-model="filter_condition.name"
+                  @change="onAnyConditionChange"
                   style="width: 200px; font-size: 24px; margin-right: 20px"
                   clearable/>
       </el-form-item>
@@ -86,12 +92,12 @@
       <!-- remark -->
       <el-form-item label="Remark" v-if="filter_condition.show_remark">
         <el-input v-model="filter_condition.remark_str"
-                  style="width: 200px; font-size: 24px; margin-right: 20px"
+                  @change="onAnyConditionChange"
+                  style="width: 200px; font-size: 24px;"
                   clearable/>
         <el-checkbox v-model="filter_condition.remark_any"
-                     @change="checkNoTag"
+                     @change="checkAnyRemark"
                      style="margin-left: 10px;font-size: 24px;"
-                     size="large"
                      border>
           Any Remark
         </el-checkbox>
@@ -100,6 +106,7 @@
       <!-- Sort_Options -->
       <el-form-item label="Sort" v-if="filter_condition.show_sort">
         <el-select v-model="filter_condition.show_sort_id"
+                   @change="onAnyConditionChange"
                    style="width: 200px;">
           <el-option
               v-for="sort_option in sort_option_list"
@@ -127,7 +134,7 @@ export default {
     filter_condition: ActorFilterData
   },
   // declare emitted events to parent
-  emits: ['change'],
+  emits: ['change', 'submit'],
   components: {NewActorTag},
   data() {
     return {
@@ -157,22 +164,32 @@ export default {
   },
 
   methods: {
+    onAnyConditionChange(){
+      this.$emit('change')
+    },
     //
     checkNoTag(val: boolean) {
+      this.onAnyConditionChange()
       this.filter_condition.checkNoTag(val)
     },
-    //dd
+    //
     onCheckedTagChange() {
+      this.onAnyConditionChange()
       this.filter_condition.onCheckedTagChange()
     },
     onCheckedCategoryChange(val: number[]) {
     },
-    async onFilterChange() {
+    checkAnyRemark(val: boolean){
+      this.onAnyConditionChange()
+      this.filter_condition.checkAnyRemark(val)
+    },
+    async onFilterSubmit() {
       this.filter_history.push(this.filter_condition.clone())
-      this.$emit('change')
+      this.$emit('submit')
     },
     onFilterCancel() {
       this.filter_condition.reset()
+      this.$emit('change')
     },
     async toPreviousFilter() {
       if (this.filter_history.length > 0) {
@@ -203,4 +220,9 @@ export default {
   margin: 2px;
   color: black;
 }
+
+.filter-form .el-form-item {
+  margin-bottom: 8px;
+}
+
 </style>

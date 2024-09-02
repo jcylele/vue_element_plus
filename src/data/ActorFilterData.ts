@@ -120,14 +120,7 @@ export default class ActorFilterData {
 
     clone() {
         const data = new ActorFilterData()
-        data.show_rows = this.show_rows.slice()
-        data.name = this.name
-        data.category_list = this.category_list.slice()
-        data.tag_list = this.tag_list.slice()
-        data.no_tag = this.no_tag
-        data.min_score = this.min_score
-        data.max_score = this.max_score
-        data.show_sort_id = this.show_sort_id
+        data.copy(this)
         return data
     }
 
@@ -140,6 +133,8 @@ export default class ActorFilterData {
         this.min_score = data.min_score
         this.max_score = data.max_score
         this.show_sort_id = data.show_sort_id
+        this.remark_str = data.remark_str
+        this.remark_any = data.remark_any
     }
 
     setAllCategoryList(list: number[]) {
@@ -196,6 +191,12 @@ export default class ActorFilterData {
     resetRemark() {
         this.remark_str = ""
         this.remark_any = false
+    }
+
+    checkAnyRemark(val: boolean) {
+        if (val) {
+            this.remark_str = ""
+        }
     }
 }
 

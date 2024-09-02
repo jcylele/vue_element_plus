@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "prebuild": "node cleanJsFiles.cjs C:\\Users\\wangle\\Documents\\PythonCrawler\\assets",
+    "prebuild": "node preProcess.cjs",
     "build": "vite build",
-    "postbuild": "copyfiles -f -u 1 ./dist/**/*.* C:\\Users\\wangle\\Documents\\PythonCrawler\\assets",
+    "postbuild": "node postProcess.cjs",
     "preview": "vite preview"
   },
   "dependencies": {

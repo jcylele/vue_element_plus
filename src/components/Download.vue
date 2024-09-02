@@ -3,7 +3,7 @@
     <!-- type line -->
     <el-radio-group v-model="down_type" size="large">
       <el-radio-button v-for="dt in down_type_list"
-                       :label="dt.value">
+                       :value="dt.value">
         {{ dt.label }}
       </el-radio-button>
     </el-radio-group>

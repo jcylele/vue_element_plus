@@ -1,9 +1,6 @@
 import ActorData from "./ActorData";
 
-let UUID = 0
-
 export class ActorElement {
-    private uuid: number
     private actor: ActorData
 
     constructor(actor: ActorData) {
@@ -11,7 +8,6 @@ export class ActorElement {
     }
 
     set data(actor: ActorData) {
-        this.uuid = ++UUID
         this.actor = actor
     }
 
@@ -20,7 +16,7 @@ export class ActorElement {
     }
 
     get id() {
-        return this.uuid
+        return this.actor.uuid
     }
 }
 

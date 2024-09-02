@@ -10,28 +10,29 @@ interface ResFileInfo {
     video_count: number,
 }
 
-export default class ActorData extends EditableData {
-    readonly actor_name: string
-    rel_tags: number[]
-    actor_category: number
-    readonly completed: boolean
-    remark: string
-    main_actor: string
-    // file_info: FileInfo
+interface ActorFileInfo {
+    res_info: ResFileInfo[]
     total_post_count: number
     unfinished_post_count: number
     finished_post_count: number
-    res_info: ResFileInfo[]
-    href: string
+}
+
+export default class ActorData extends EditableData {
+    readonly actor_name: string
+    actor_category: number
     score: number
+    href: string
+    has_main_actor: boolean
+    remark: string
+    tag_ids: number[]
+    file_info: ActorFileInfo
 
     get post_desc() {
-        let desc = `[${this.finished_post_count}`
-        if (this.unfinished_post_count > 0) {
-            desc += `(+${this.unfinished_post_count})`
+        if (this.file_info.unfinished_post_count > 0) {
+            return `[${this.file_info.finished_post_count}(+${this.file_info.unfinished_post_count})/${this.file_info.total_post_count}]`
+        } else {
+            return `[${this.file_info.finished_post_count}/${this.file_info.total_post_count}]`
         }
-        desc += `/${this.total_post_count}]`
-        return desc
     }
 
     get show_score() {
@@ -47,15 +48,17 @@ export default class ActorData extends EditableData {
         // this.actor_category = ActorCategory.getByValue(json_data.actor_category)
         if (json_data.remark) {
             this.remark = Base64.decode(json_data.remark)
+        } else {
+            this.remark = ""
         }
     }
 
     sortTags(compareFn?: (a: number, b: number) => number) {
-        this.rel_tags.sort(compareFn)
+        this.tag_ids.sort(compareFn)
     }
 
     hasTag(tag_id: number) {
-        return this.rel_tags.indexOf(tag_id) >= 0
+        return this.tag_ids.indexOf(tag_id) >= 0
     }
 
     formatResFileInfo(rfi: ResFileInfo): string {

@@ -1,40 +1,53 @@
 <template>
   <el-space direction="vertical" :fill="true">
-    <el-collapse v-model="active_parts">
+    <el-collapse v-model="active_parts" @change="onActivePartChange">
       <!-- link actors group -->
-      <el-collapse-item name="link" title="Linked Actors">
+      <el-collapse-item name="link" title="">
+        <template #title>
+          <el-text style="font-size: 24px;font-style: oblique;margin-right: 10px">
+            Link Actors
+          </el-text>
+          <svg-icon size="24px" name="link"/>
+        </template>
         <el-space direction="horizontal">
 
           <el-space direction="vertical" :alignment="'stretch'">
-            <el-button type="primary" @click="linkActors">Link</el-button>
-            <el-button type="danger" @click="clearLinkedActors">Clear</el-button>
+            <el-button type="primary" size="large" @click="linkActors">Link</el-button>
+            <el-button type="warning" size="large" @click="clearLinkedActors">Clear</el-button>
           </el-space>
 
           <!-- linked actors -->
-          <draggable v-model="linked_list"
-                     :group="{ name: 'actors', pull: false, put: true }"
-                     class="card_row">
-            <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
+
+          <el-space v-if="actor_show_card" direction="horizontal"
+                    class="card_row" alignment="stretch">
             <ActorCard v-for="actor_data in linked_list"
                        :actor_data="actor_data"
-                       :key="actor_data.data.actor_name"
-                       class="card"/>
-          </draggable>
+                       :show_link="false"
+                       :key="actor_data.id"/>
+          </el-space>
         </el-space>
       </el-collapse-item>
       <!-- filter conditions -->
-      <el-collapse-item name="filter" title="Actor Filter">
+      <el-collapse-item name="filter">
+        <template #title>
+          <el-text style="font-size: 24px;font-style: oblique;margin-right: 10px">
+            Actor Filter
+          </el-text>
+          <svg-icon size="24px" name="filter"/>
+        </template>
         <el-space direction="vertical">
-          <ActorFilter :filter_condition="filter_condition" @change="onFilterChange"/>
+          <ActorFilter :filter_condition="filter_condition"
+                       @change="onFilterChange"
+                       @submit="onFilterSubmit"/>
         </el-space>
       </el-collapse-item>
     </el-collapse>
     <!-- tools menu -->
     <el-space direction="horizontal" size="large" spacer="|">
       <el-pagination
-          v-model:current-page="cur_actor_page"
-          :page-size="actor_size"
-          :page-sizes="[10, 14]"
+          v-model:current-page="page_index"
+          :page-size="page_size"
+          :page-sizes="[12, 14]"
           :total="actor_count"
           @current-change="onActorPageChange"
           @size-change="handleSizeChange"
@@ -80,50 +93,54 @@
       </el-button>
     </el-space>
     <!-- a big card per actor -->
-    <draggable v-if="actor_show_card"
-               v-model="actor_list"
-               :group="{ name: 'actors', pull: 'clone', put: false }"
-               class="card_row">
+    <!--    <draggable v-if="actor_show_card"-->
+    <!--               v-model="actor_list"-->
+    <!--               :group="{ name: 'actors', pull: 'clone', put: false }"-->
+    <!--               @change="onMainItemMoved"-->
+    <!--               class="card_row">-->
+    <el-space v-if="actor_show_card" direction="horizontal"
+              class="card_row" alignment="stretch" style="gap: 15px 15px">
       <!-- TODO change is not triggered, why   -->
       <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
       <ActorCard v-for="actor_data in actor_list"
                  :actor_data="actor_data"
+                 :show_link="show_link"
                  :key="actor_data.id"
                  @refresh="onActorChange"
+                 @friend="onActorFriendClick"
                  @link="onActorLinkClick"
-                 @download="singleShowDownload"
-                 @post="showActorPosts"
-                 class="card"/>
-    </draggable>
+                 @download="singleShowDownload"/>
+    </el-space>
+    <!--    </draggable>-->
     <!-- a line per actor -->
     <el-space v-if="actor_show_line" direction="vertical" size="small" :fill="true">
       <ActorLine v-for="actor_data in actor_list"
                  :actor_data="actor_data"
                  :key="actor_data.id"/>
     </el-space>
-    <!-- download  dialog -->
-    <el-dialog v-model="is_show_download"
-               :title="download_title"
-               :before-close="onDownloadClose"
-               width="640px">
-      <el-space direction="vertical">
-        <DownloadLimit :download_limit="download_limit"/>
-        <el-space direction="horizontal" alignment="center">
-          <el-button type="primary" @click="onSubmitDownload">
-            Download
-          </el-button>
-          <el-button type="warning" @click="onDownloadClose">
-            Cancel
-          </el-button>
-        </el-space>
-      </el-space>
-    </el-dialog>
-    <el-dialog v-model="is_show_post"
-               title="Posts"
-               width=720px>
-      <Posts></Posts>
-    </el-dialog>
   </el-space>
+  <!-- download  dialog -->
+  <el-dialog v-model="is_show_download"
+             :title="download_title"
+             :before-close="onDownloadClose"
+             width="640px">
+    <el-space direction="vertical">
+      <DownloadLimit :download_limit="download_limit"/>
+      <el-space direction="horizontal" alignment="center">
+        <el-button type="primary" @click="onSubmitDownload">
+          Download
+        </el-button>
+        <el-button type="warning" @click="onDownloadClose">
+          Cancel
+        </el-button>
+      </el-space>
+    </el-space>
+  </el-dialog>
+  <el-dialog v-model="is_show_post"
+             title="Posts"
+             width=720px>
+    <Posts></Posts>
+  </el-dialog>
 </template>
 
 <script lang="ts">
@@ -151,16 +168,17 @@ import {Actor_Show_Options} from "../data/Consts";
 import ActorLine from "./ActorLine.vue";
 import Posts from "./Posts.vue";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
+import SvgIcon from "./SvgIcon/index.vue";
 
 export default {
-  components: {Posts, ActorLine, ActorCard, ActorFilter, draggable: VueDraggableNext, DownloadLimit},
+  components: {SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, draggable: VueDraggableNext, DownloadLimit},
   data() {
     return {
       filter_condition: new ActorFilterData(),
       actor_list: [] as ActorElement[],
       // actor_cards: {} as Map<Number, ActorCard>,
-      actor_size: 10,
-      cur_actor_page: 1,
+      page_size: 12,
+      page_index: 1,
       actor_count: 0,
       active_parts: ['filter'],
       linked_list: [] as ActorElement[],
@@ -171,8 +189,15 @@ export default {
     }
   },
   computed: {
-    ...mapState(ActorFilterStore, {cached_filter_condition: 'filter_condition'}),
+    ...mapState(ActorFilterStore, {
+      cached_filter_condition: 'filter_condition',
+      cached_page_size: "page_size",
+      cached_page_index: "page_index",
+    }),
     ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
+    show_link() {
+      return this.active_parts.includes('link')
+    },
     is_show_download() {
       return this.download_actor_names.length > 0
     },
@@ -208,27 +233,38 @@ export default {
       getTagsFromServer: 'getFromServer',
     }),
     ...mapActions(ActorFilterStore, {
-      saveFilterCondition: 'setFilterCondition',
+      saveFilterCondition: "setFilter",
+      savePageIndex: "setPageIndex",
+      savePageSize: "setPageSize",
     }),
     ...mapActions(ActorGroupStore, {
       getGroupsFromServer: 'getFromServer',
     }),
 
     async handleSizeChange(val: number) {
-      this.actor_size = val
-      this.cur_actor_page = 1
+      this.page_size = val
+      this.savePageSize(val)
+      this.page_index = 1
       await this.onActorPageChange()
     },
 
     async onActorPageChange() {
-      const [ok, actor_list] = await getActorList(this.filter_condition, this.actor_size, (this.cur_actor_page - 1) * this.actor_size)
+      this.savePageIndex(this.page_index)
+      const [ok, actor_list] = await getActorList(this.filter_condition, this.page_size, (this.page_index - 1) * this.page_size)
       if (ok) {
         this.actor_list = ToActorElements(actor_list)
       } else {
         this.actor_list = []
       }
     },
-    async onFilterChange() {
+    onFilterChange() {
+      // console.log("on filter change")
+      this.savePageIndex(1)
+      this.page_index = 1
+      this.actor_list = []
+      this.actor_count = 0
+    },
+    async onFilterSubmit() {
       this.saveFilterCondition(this.filter_condition)
 
       this.actor_list = []
@@ -236,22 +272,34 @@ export default {
       const [ok, actor_count] = await getActorCount(this.filter_condition)
       if (ok) {
         this.actor_count = actor_count
+        this.refreshPageIndex()
+        await this.onActorPageChange()
       }
-
-      this.cur_actor_page = 1
-      await this.onActorPageChange()
+    },
+    refreshPageIndex() {
+      let max_page_count = Math.ceil(this.actor_count / this.page_size)
+      this.page_index = this.cached_page_index
+      if (this.page_index > max_page_count) {
+        this.page_index = max_page_count
+      }
+      if (this.page_index < 1) {
+        this.page_index = 1
+      }
     },
     onActorChange(actor_data: ActorElement) {
       console.log(`actor changed: ${actor_data.data.actor_name}`)
     },
-    async onActorLinkClick(actor_data: ActorElement) {
-      console.log(`actor link clicked: ${actor_data.data.actor_name}`)
+    async onActorFriendClick(actor_data: ActorElement) {
+      console.log(`actor friend clicked: ${actor_data.data.actor_name}`)
       const [ok, actor_list] = await getLinkedActors(actor_data.data.actor_name)
       if (ok) {
         this.actor_list = ToActorElements(actor_list)
       } else {
         this.actor_list = []
       }
+    },
+    async onActorLinkClick(actor_data: ActorElement) {
+      this.linked_list.push(actor_data)
     },
     async linkActors() {
       if (this.linked_list.length < 2) {
@@ -318,10 +366,19 @@ export default {
     showPosts() {
       this.is_show_post = true
     },
+
+    onActivePartChange() {
+      if (!this.show_link) {
+        this.linked_list = []
+      }
+    }
   },
   watch: {},
   async mounted() {
     this.filter_condition = this.cached_filter_condition
+    this.page_size = this.cached_page_size
+    this.page_index = this.cached_page_index
+
     await this.getTagsFromServer()
     await this.getGroupsFromServer()
   }
@@ -330,15 +387,12 @@ export default {
 </script>
 
 <style scoped>
-.card {
-  display: table-cell;
-  margin: 10px;
-}
 
 .card_row {
   min-height: 100px;
   min-width: 300px;
   display: flex;
   flex-wrap: wrap;
+  size: 0
 }
 </style>

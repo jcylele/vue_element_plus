@@ -1,7 +1,6 @@
 export enum PostFilter {
     Normal = 0,
     Old = 1,
-    New = 2,
 }
 
 export enum LimitPreset {
@@ -23,7 +22,8 @@ export enum DownloadType {
 export enum SortType {
     Default,
     Star,
-    TotalPostCount
+    TotalPostCount,
+    CategoryTime,
 }
 
 export enum ActorShowType{
