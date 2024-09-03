@@ -173,7 +173,7 @@ export default class ActorFilterData {
 
     resetScores() {
         this.min_score = 0
-        this.max_score = 10
+        this.max_score = 12
     }
 
     onFilterNameChange() {

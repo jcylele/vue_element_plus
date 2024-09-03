@@ -22,6 +22,7 @@
                v-model="actor.show_score"
                :colors="star_colors"
                void-color="#777777"
+               :max="6"
                size="large"
                @change="changeScore"
                allow-half/>

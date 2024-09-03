@@ -70,6 +70,7 @@
                  @change="onAnyConditionChange"
                  :colors="star_colors"
                  void-color="#777777"
+                 :max="6"
                  size="large"
                  allow-half/>
         <el-text>~</el-text>
@@ -77,6 +78,7 @@
                  @change="onAnyConditionChange"
                  :colors="star_colors"
                  void-color="#777777"
+                 :max="6"
                  size="large"
                  allow-half/>
       </el-form-item>

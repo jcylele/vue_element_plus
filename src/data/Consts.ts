@@ -17,12 +17,13 @@ export const Preset_Options: CommonOption[] = [
 ]
 
 export const Star_Colors = {
-    0: '#0000FF',
-    1: '#7F8EFF',
-    2: '#1EFF00',
-    3: '#FFEE00',
-    4: '#FFA0AB',
+    0: '#2020FF',
+    1: '#7F7EFF',
+    2: '#7EFF00',
+    3: '#FFBE00',
+    4: '#FF70DB',
     5: '#FF007F',
+    6: '#7F00FF'
 }
 
 export const Actor_Show_Options = [
