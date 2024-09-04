@@ -14,7 +14,7 @@
           :value="actor_tag.tag_id"
       />
     </el-select>
-    <div id="tag_relatives" style="width: 840px;height: 420px"></div>
+    <div id="tag_relatives" style="width: 640px;height: 480px"></div>
   </el-space>
 </template>
 
@@ -120,6 +120,7 @@ export default {
     },
   },
   mounted() {
+    console.log(`Tag Relative Chart mounted`)
     this.tagChart = echarts.init(document.getElementById('tag_relatives'));
     this.tagChart.on('click', this.onChartClick);
   }

@@ -14,7 +14,7 @@
           :value="actor_tag.tag_id"
       />
     </el-select>
-    <div id="tag_scores" style="width: 640px;height: 420px"></div>
+    <div id="tag_scores" style="width: 640px;height: 480px"></div>
   </el-space>
 </template>
 
@@ -116,9 +116,10 @@ export default {
     }
   },
   mounted() {
+    console.log(`Tag Scores Chart mounted`)
     this.tagChart = echarts.init(document.getElementById('tag_scores'));
     this.initChartOption()
-  }
+  },
 }
 
 </script>

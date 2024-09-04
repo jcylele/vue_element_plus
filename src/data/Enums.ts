@@ -8,7 +8,7 @@ export enum LimitPreset {
     Init,
     Current_Init,
     Current_Video,
-    Only_Info,
+    All_Video,
     Max,
 }
 

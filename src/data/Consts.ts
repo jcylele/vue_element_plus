@@ -12,8 +12,8 @@ export const Preset_Options: CommonOption[] = [
     {label: "All", value: LimitPreset.All},
     {label: "Init", value: LimitPreset.Init},
     {label: "Cur_Init", value: LimitPreset.Current_Init},
+    {label: "All_Video", value: LimitPreset.All_Video},
     {label: "Cur_Video", value: LimitPreset.Current_Video},
-    {label: "Only_Info", value: LimitPreset.Only_Info}
 ]
 
 export const Star_Colors = {
@@ -21,7 +21,7 @@ export const Star_Colors = {
     1: '#7F7EFF',
     2: '#7EFF00',
     3: '#FFBE00',
-    4: '#FF70DB',
+    4: '#FFC0CB',
     5: '#FF007F',
     6: '#7F00FF'
 }

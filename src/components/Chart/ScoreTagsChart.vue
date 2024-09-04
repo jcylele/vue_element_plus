@@ -4,11 +4,11 @@
       Choose Score Range
     </el-text>
     <el-slider v-model="scores"
-               :min="0" :max="10"
+               :min="0" :max="12"
                range show-stops
                style="width: 400px;"
                @change="onScoreChange"/>
-    <div id="score_tags" style="width: 640px;height: 640px"></div>
+    <div id="score_tags" style="width: 640px;height: 480px"></div>
   </el-space>
 </template>
 
@@ -18,8 +18,9 @@ import {BarChart} from "echarts/charts";
 
 import {
   TooltipComponent,
+  GridComponent,
   DatasetComponent,
-  TransformComponent, TitleComponentOption, GridComponentOption
+  TransformComponent
 } from "echarts/components";
 
 import {LabelLayout, UniversalTransition} from 'echarts/features'
@@ -31,6 +32,10 @@ import type {
 } from 'echarts/charts'
 
 import type {
+  TitleComponentOption,
+  GridComponentOption
+} from "echarts/components";
+import type {
   ComposeOption
 } from 'echarts/core'
 
@@ -41,6 +46,7 @@ type ScoreTagsOption = ComposeOption<| BarSeriesOption
 echarts.use([
   BarChart,
   TooltipComponent,
+  GridComponent,
   DatasetComponent,
   TransformComponent,
   LabelLayout,
@@ -91,8 +97,8 @@ export default {
       }
     },
     refreshChart(tag_list: TagCount[]) {
-      tag_list.sort((a, b) => b.count - a.count)
-      tag_list = tag_list.slice(0, 10)
+      tag_list.sort((a, b) => a.count - b.count)
+      tag_list = tag_list.slice(-10)
       console.log(tag_list)
 
       this.chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
@@ -100,12 +106,11 @@ export default {
 
       this.tagChart.setOption(this.chart_option)
     },
-    // TODO why mounted if not called
-    mounted() {
-      console.log("init this.tagChart")
-      this.tagChart = echarts.init(document.getElementById('score_tags'));
-    }
-  }
+  },
+  mounted() {
+    console.log(`Score Tags Chart mounted`)
+    this.tagChart = echarts.init(document.getElementById('score_tags'));
+  },
 }
 </script>
 

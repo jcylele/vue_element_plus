@@ -108,10 +108,11 @@ export class DownloadLimitForm {
             case LimitPreset.Current_Video:
                 this.post_filter = PostFilter.Old
                 this.allow_img = false
+                this.show_total_file_size = 1024 // 1GB
                 break
-            case LimitPreset.Only_Info:
-                this.show_file_size = 1  // 1MB, most res will be oversize
-                this.show_total_file_size = 1 // 1MB total
+            case LimitPreset.All_Video:
+                this.allow_img = false
+                this.show_total_file_size = 1024 // 1GB
             default:
                 break
         }
