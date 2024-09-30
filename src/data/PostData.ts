@@ -2,8 +2,8 @@ import EditableData from "./EditableData";
 
 
 export class PostConditionForm {
-    fixed_actor_name: string
-    actor_name: string
+    fixed_actor_id: number
+    actor_id: number
     post_id_prefix: string
     has_comment: boolean
     private _is_editing: boolean
@@ -20,7 +20,7 @@ export class PostConditionForm {
             return
         }
         if (val) {
-            this.actor_name = this.fixed_actor_name || ""
+            this.actor_id = this.fixed_actor_id
         } else {
             if (this.post_id_prefix.length < this.calcMinPrefixLength()) {
                 return
@@ -29,23 +29,19 @@ export class PostConditionForm {
         this._is_editing = val
     }
 
-    get has_actor_name(){
-        return this.actor_name != ""
-    }
-
     calcMinPrefixLength(): number {
         if (this.has_comment) {
             return 0
         }
-        if (this.actor_name.length > 0) {
+        if (this.actor_id != 0) {
             return 3
         }
         return 5
     }
 
-    constructor(_fixed_actor_name?) {
-        this.fixed_actor_name = _fixed_actor_name
-        this.actor_name = _fixed_actor_name || ""
+    constructor(_fixed_actor_id) {
+        this.fixed_actor_id = _fixed_actor_id
+        this.actor_id = _fixed_actor_id
         this.post_id_prefix = ""
         this.has_comment = false
         this._is_editing = true
@@ -54,14 +50,12 @@ export class PostConditionForm {
 
 
 export class PostCommentForm {
-    post_id: number
+    post_id: string
     comment: string
 }
 
 export class PostData extends EditableData {
-    post_id: number
-    actor_name: string
-    completed: boolean
+    post_id: string
     comment: string
     is_editing: boolean
 }

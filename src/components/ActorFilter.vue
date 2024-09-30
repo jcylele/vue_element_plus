@@ -22,7 +22,7 @@
       <!-- filter category -->
       <el-form-item label="Category" v-if="filter_condition.show_category">
         <el-checkbox-group
-            v-model="filter_condition.category_list"
+            v-model="filter_condition.group_id_list"
             @change="onAnyConditionChange"
             size="default">
           <el-checkbox-button v-for="group in actor_group_list"
@@ -199,7 +199,7 @@ export default {
       }
     },
     fillAllCategory() {
-      this.filter_condition.setAllCategoryList(this.actor_group_list.map(group => group.group_id))
+      this.filter_condition.setAllGroupList(this.actor_group_list.map(group => group.group_id))
     }
   },
   mounted() {

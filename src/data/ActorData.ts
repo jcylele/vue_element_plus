@@ -18,8 +18,9 @@ interface ActorFileInfo {
 }
 
 export default class ActorData extends EditableData {
-    readonly actor_name: string
-    actor_category: number
+    actor_id: number
+    actor_name: string
+    actor_group_id: number
     score: number
     href: string
     has_main_actor: boolean

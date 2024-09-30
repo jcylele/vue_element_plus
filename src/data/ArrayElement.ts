@@ -16,7 +16,7 @@ export class ActorElement {
     }
 
     get id() {
-        return this.actor.uuid
+        return this.actor.actor_id
     }
 }
 

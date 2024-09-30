@@ -115,8 +115,8 @@
         </template>
       </el-popover>
       <!-- actor category -->
-      <el-select v-model="actor.actor_category"
-                 @change="setActorCategory"
+      <el-select v-model="actor.actor_group_id"
+                 @change="setActorGroup"
                  style="width: 140px"
       >
         <el-option
@@ -156,7 +156,7 @@
   <el-dialog v-model="is_show_post"
              title="Posts"
              width=720px>
-    <Posts :specific_actor_name="actor.actor_name"></Posts>
+    <Posts :specific_actor_id="actor.actor_id"></Posts>
   </el-dialog>
 </template>
 
@@ -164,7 +164,7 @@
 import ActorData from "../data/ActorData";
 import {
   ChangeActorTag,
-  changeActorCategory,
+  changeActorGroup,
   openActorFolder, changeActorRemark, getFileInfo, changeActorScore, clearActorFolder, resetActorPosts
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
@@ -196,7 +196,7 @@ export default {
       return Star_Colors
     },
     group_color(): string {
-      let group = this.getActorGroup(this.actor_data.data.actor_category)
+      let group = this.getActorGroup(this.actor_data.data.actor_group_id)
       return group.group_color
     },
   },
@@ -226,8 +226,8 @@ export default {
     }),
 
     getActorGroupData(): ActorGroupData {
-      let category_id = this.actor_data.data.actor_category
-      return this.getActorGroup(category_id)
+      let group_id = this.actor_data.data.actor_group_id
+      return this.getActorGroup(group_id)
     },
 
     hasFolder(): boolean {
@@ -252,11 +252,11 @@ export default {
     },
     openFolder() {
       this.is_show_op = false
-      openActorFolder(this.actor.actor_name)
+      openActorFolder(this.actor.actor_id)
     },
     async clearFolder() {
       this.is_show_op = false
-      const [ok, file_info] = await clearActorFolder(this.actor.actor_name)
+      const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
       if (ok) {
         this.setFileInfo(file_info)
         logInfo("clear folder succeed")
@@ -264,18 +264,18 @@ export default {
     },
     async resetPosts() {
       this.is_show_op = false
-      const [ok, file_info] = await resetActorPosts(this.actor.actor_name)
+      const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
       if (ok) {
         this.setFileInfo(file_info)
         logInfo("reset posts succeed")
       }
     },
-    async setActorCategory() {
+    async setActorGroup() {
       if (this.actor.tag_ids.length == 0) {
         logWarn("add any tag before setting category")
         return
       }
-      const [ok, new_actor] = await changeActorCategory(this.actor.actor_name, this.actor.actor_category)
+      const [ok, new_actor] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
       this.onRecvActorMsg(ok, new_actor, "change category succeed")
     },
     onStartEditTag() {
@@ -285,7 +285,7 @@ export default {
       this.is_editing_tags = false
 
       //request
-      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, new_tag_list)
+      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
       this.onRecvActorMsg(ok, new_actor, "change tags succeed")
     },
     async onCancelAddTag() {
@@ -303,7 +303,7 @@ export default {
     },
 
     async changeScore() {
-      const [ok, new_actor] = await changeActorScore(this.actor.actor_name, this.actor.score)
+      const [ok, new_actor] = await changeActorScore(this.actor.actor_id, this.actor.score)
       this.onRecvActorMsg(ok, new_actor, "change score succeed")
     },
     async findLinkedActor() {
@@ -316,11 +316,11 @@ export default {
       if (new_remark == this.actor.remark) {
         return
       }
-      const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, new_remark)
+      const [ok, new_actor] = await changeActorRemark(this.actor.actor_id, new_remark)
       this.onRecvActorMsg(ok, new_actor, "change remark succeed")
     },
     async getFileInfo() {
-      const [ok, file_info] = await getFileInfo(this.actor.actor_name)
+      const [ok, file_info] = await getFileInfo(this.actor.actor_id)
       if (ok) {
         this.setFileInfo(file_info)
       }

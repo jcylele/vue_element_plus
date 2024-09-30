@@ -65,8 +65,16 @@ export default {
     })
   },
   mounted() {
-    console.log(`mounted ActorTagChooser for [${this.actor.actor_name}]`)
+    console.log(`mounted for ${this.actor.actor_name}`)
     this.initTags()
+  },
+  activated() {
+    console.log(`activated for ${this.actor.actor_name}`)
+    this.initTags()
+  },
+  deactivated() {
+    console.log(`deactivated for ${this.actor.actor_name}`)
+    this.editing_tags = []
   },
   methods: {
     onSearchTextChange() {
@@ -74,9 +82,9 @@ export default {
     },
     searchClass(tag_info: TagInfo) {
       if (this.search_text == "") return "normal-text"
-      if (tag_info.tag.tag_name.includes(this.search_text)){
+      if (tag_info.tag.tag_name.includes(this.search_text)) {
         return "filtered-text"
-      }else{
+      } else {
         return "failed-text"
       }
     },
@@ -102,7 +110,6 @@ export default {
           }
         }
       }
-      this.editing_tags = []
 
       this.$emit("submit", new_tag_list)
     },
@@ -125,7 +132,7 @@ export default {
   color: hotpink;
 }
 
-.failed-text{
+.failed-text {
   opacity: 0.67;
   color: dimgray;
 }

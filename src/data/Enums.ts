@@ -30,3 +30,7 @@ export enum ActorShowType{
     Card,
     Line
 }
+
+export enum NoticeType {
+    UnlinkedActor = 1
+}

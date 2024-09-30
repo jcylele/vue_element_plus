@@ -26,7 +26,11 @@ export const Star_Colors = {
     6: '#7F00FF'
 }
 
-export const Actor_Show_Options = [
+export const Actor_Show_Options: CommonOption[] = [
     {label: "Card", value: ActorShowType.Card},
     {label: "Line", value: ActorShowType.Line},
+]
+
+export const Notice_Type_Options: CommonOption[] = [
+    {label: "Unlinked Actor", value: 1},
 ]

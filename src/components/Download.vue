@@ -69,7 +69,7 @@
 <script lang="ts">
 
 import {ActorUrl, DownloadLimitForm} from "../data/SimpleForms";
-import {downloadByCategory, downloadByUrls, downloadNewActors,} from "../ctrls/DownloadCtrl";
+import {downloadByGroup, downloadByUrls, downloadNewActors,} from "../ctrls/DownloadCtrl";
 import {mapActions, mapState} from "pinia";
 import DownloadLimit from "./DownloadLimit.vue";
 import {getActorCount} from "../ctrls/ActorCtrl";
@@ -100,7 +100,7 @@ export default {
       if (this.down_type !== DownloadType.Category) return
 
       const filter_data = new ActorFilterData()
-      filter_data.category_list = [new_val]
+      filter_data.group_id_list = [new_val]
       const [ok, actor_count] = await getActorCount(filter_data)
       if (ok) {
         this.actor_count = actor_count
@@ -153,7 +153,7 @@ export default {
           break
         }
         case DownloadType.Category:
-          [ok, ret] = await downloadByCategory(this.actor_category, this.download_limit)
+          [ok, ret] = await downloadByGroup(this.actor_category, this.download_limit)
           break
         case DownloadType.Url:
           if (this.actor_urls.length == 0) {

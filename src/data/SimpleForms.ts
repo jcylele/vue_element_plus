@@ -1,11 +1,11 @@
 import {LimitPreset, PostFilter} from "./Enums";
 
 export class BatchActorOperation {
-    actor_names: string[]
+    actor_ids: number[]
 }
 
-export class BatchActorCategory extends BatchActorOperation {
-    category: number
+export class BatchActorGroup extends BatchActorOperation {
+    group_id: number
 }
 
 export class ActorUrl {
@@ -17,15 +17,15 @@ abstract class BaseDownloadForm {
     download_limit: DownloadLimitForm
 }
 
-export class NameDownloadForm extends BaseDownloadForm {
-    actor_names: string[]
+export class ActorIdDownloadForm extends BaseDownloadForm {
+    actor_ids: number[]
 }
 
-export class CategoryDownloadForm extends BaseDownloadForm {
-    actor_category: number
+export class GroupDownloadForm extends BaseDownloadForm {
+    actor_group_id: number
 }
 
-export class UrlDownloadForm extends CategoryDownloadForm {
+export class UrlDownloadForm extends GroupDownloadForm {
     urls: ActorUrl[]
 }
 

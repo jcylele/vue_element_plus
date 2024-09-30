@@ -42,6 +42,7 @@ async function _fetch(url: string, init?: RequestInit) {
         const text = await response.text();
 
         if (response.ok) {
+            // console.log(text)
             const json_data = JSON.parse(text)
             return [true, json_data]
         }

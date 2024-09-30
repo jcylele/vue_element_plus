@@ -17,8 +17,3 @@ export interface CommonOption {
     label: string
     value: any
 }
-
-export interface ActorPostInfo {
-    actor_name: string
-    post_count: number
-}

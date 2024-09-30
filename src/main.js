@@ -13,6 +13,7 @@ const ActorTags = () => import("./components/ActorTags.vue")
 const ActorGroups = () => import("./components/ActorGroups.vue")
 const ECharts = () => import("./components/ECharts.vue")
 const Tasks = () => import("./components/Tasks.vue")
+const Notices = () => import("./components/Notices.vue")
 const TagScoresChart = () => import("./components/Chart/TagScoresChart.vue")
 const ScoreTagsChart = () => import("./components/Chart/ScoreTagsChart.vue")
 const TagRelativeChart = () => import("./components/Chart/TagRelativeChart.vue")
@@ -47,7 +48,8 @@ const routes = [
     },
     // 动态字段以冒号开始
     {path: '/download', component: Download},
-    {path: '/tasks', component: Tasks}
+    {path: '/tasks', component: Tasks},
+    {path: '/notices', component: Notices},
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置

@@ -4,8 +4,8 @@ import {SortType} from "./Enums";
 export default class ActorFilterData {
     show_rows: boolean[]
     name: string
-    category_list: number[]
-    all_category_list: number[]
+    group_id_list: number[]
+    all_group_list: number[]
     tag_list: number[]
     no_tag: boolean
     min_score: number
@@ -24,7 +24,9 @@ export default class ActorFilterData {
 
     set show_category(val: boolean) {
         this.show_rows[0] = val
-        this.resetCategory()
+        if (!val) {
+            this.resetCategory()
+        }
     }
 
     get show_tag() {
@@ -33,7 +35,9 @@ export default class ActorFilterData {
 
     set show_tag(val: boolean) {
         this.show_rows[1] = val
-        this.resetTags()
+        if (!val){
+            this.resetTags()
+        }
     }
 
     get show_score() {
@@ -42,7 +46,9 @@ export default class ActorFilterData {
 
     set show_score(val: boolean) {
         this.show_rows[2] = val
-        this.resetScores()
+        if (!val) {
+            this.resetScores()
+        }
     }
 
     get show_name() {
@@ -51,7 +57,9 @@ export default class ActorFilterData {
 
     set show_name(val: boolean) {
         this.show_rows[3] = val
-        this.resetName()
+        if (!val) {
+            this.resetName()
+        }
     }
 
     get show_sort() {
@@ -60,7 +68,9 @@ export default class ActorFilterData {
 
     set show_sort(val: boolean) {
         this.show_rows[4] = val
-        this.resetSort()
+        if (!val) {
+            this.resetSort()
+        }
     }
 
     get show_remark() {
@@ -69,7 +79,9 @@ export default class ActorFilterData {
 
     set show_remark(val: boolean) {
         this.show_rows[5] = val
-        this.resetRemark()
+        if (!val) {
+            this.resetRemark()
+        }
     }
 
     get show_min_score() {
@@ -105,7 +117,7 @@ export default class ActorFilterData {
 
     constructor() {
         this.show_rows = new Array(6).fill(false)
-        this.all_category_list = []
+        this.all_group_list = []
         this.reset()
     }
 
@@ -127,7 +139,7 @@ export default class ActorFilterData {
     copy(data: ActorFilterData) {
         this.show_rows = data.show_rows.slice()
         this.name = data.name
-        this.category_list = data.category_list.slice()
+        this.group_id_list = data.group_id_list.slice()
         this.tag_list = data.tag_list.slice()
         this.no_tag = data.no_tag
         this.min_score = data.min_score
@@ -137,8 +149,8 @@ export default class ActorFilterData {
         this.remark_any = data.remark_any
     }
 
-    setAllCategoryList(list: number[]) {
-        this.all_category_list = list
+    setAllGroupList(list: number[]) {
+        this.all_group_list = list
     }
 
     resetCategory() {
@@ -148,9 +160,9 @@ export default class ActorFilterData {
 
     checkAllCategory(val: boolean) {
         if (val) {
-            this.category_list = this.all_category_list.slice()
+            this.group_id_list = this.all_group_list.slice()
         } else {
-            this.category_list = []
+            this.group_id_list = []
         }
     }
 

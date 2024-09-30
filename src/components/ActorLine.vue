@@ -3,7 +3,7 @@
             class="actor_line" alignment="center"
             :key="actor.uuid"
             shadow="always"
-            :style="{'color': getGroupColor(actor.actor_category)}"
+            :style="{'color': getGroupColor(actor.actor_group_id)}"
   >
     <!-- left part: icon name -->
     <div style="position: relative;margin: 10px;height: 100px;width: 100px">
@@ -112,7 +112,7 @@ export default {
       if (new_remark == this.actor.remark) {
         return
       }
-      const [ok, new_actor] = await changeActorRemark(this.actor.actor_name, new_remark)
+      const [ok, new_actor] = await changeActorRemark(this.actor.actor_id, new_remark)
       this.onRecvActorMsg(ok, new_actor, "change remark succeed")
     },
 
@@ -123,7 +123,7 @@ export default {
       this.is_editing_tags = false
 
       //request
-      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_name, new_tag_list)
+      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
       this.onRecvActorMsg(ok, new_actor, "change tags succeed")
     },
     async onCancelAddTag() {
