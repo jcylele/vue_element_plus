@@ -1,171 +1,170 @@
 <template>
-  <el-space direction="vertical"
-            class="actor_card" alignment="stretch" :size="3"
-            :key="actor.uuid"
-            :style="{'color': group_color}">
-
-    <!-- actor avatar -->
-    <div class="avatar">
-      <el-image class="avatar-img" :src="actor.icon"/>
-      <svg-icon v-if="actor.has_main_actor"
-                size="30px" name="friend"
-                style="position: absolute;top: 0;left: 15px;"
-                @click="findLinkedActor"/>
-
-      <svg-icon v-if="show_link"
-                size="30px" name="top"
-                style="position: absolute;top: 0;right: 15px;"
-                class="blink-class"
-                @click="onLinkClick"/>
-
-      <el-rate class="avatar-rate"
-               v-model="actor.show_score"
-               :colors="star_colors"
-               void-color="#777777"
-               :max="6"
-               size="large"
-               @change="changeScore"
-               allow-half/>
-    </div>
-
-    <!-- actor name, click to open menu items -->
-    <el-popover trigger="click" placement="top"
-                v-model:visible="is_show_op"
-                :popper-style="{'border-color': group_color, 'width': 300}"
-                popper-class="op_popper"
-                :offset="6">
-      <template #reference>
-        <el-text class="actor_name" :style="{'color': group_color}">
-          {{ actor.actor_name }}
-        </el-text>
-      </template>
-      <template #default>
-        <el-space direction="vertical" alignment="center">
-          <el-space direction="horizontal">
-            <el-button class="pop-button"
-                       type="primary"
-                       @click="showPosts">
-              Show Posts
-            </el-button>
-            <el-button class="pop-button"
-                       type="primary"
-                       @click="gotoActorPage">
-              Go To Page
-            </el-button>
-          </el-space>
-          <el-space direction="horizontal" v-if="hasFolder()">
-            <el-button class="pop-button"
-                       type="warning"
-                       @click="resetPosts">
-              Reset Posts
-            </el-button>
-            <el-button class="pop-button"
-                       type="warning"
-                       @click="clearFolder">
-              Clear Folder
-            </el-button>
-          </el-space>
-          <el-space direction="horizontal" v-if="hasFolder()">
-            <el-button class="pop-button"
-                       type="success"
-                       @click="toDownload"
-                       v-if="hasFolder()">
-              Download
-            </el-button>
-            <el-button class="pop-button"
-                       type="success"
-                       @click="openFolder"
-                       v-if="hasFolder()">
-              Open Folder
-            </el-button>
-          </el-space>
-        </el-space>
-      </template>
-    </el-popover>
-
-    <!-- actor post info -->
     <el-space direction="vertical"
-              v-if="actor.file_info"
-              alignment="start"
-              style="gap: 1px 0px;padding-left: 15px">
-      <el-text style="font-size: 18px; color: black;" tag="ins">
-        {{ actor.post_desc }}
-      </el-text>
-      <!-- actor res info -->
-      <el-text v-for="res_file_info in actor.file_info.res_info"
-               :class="'res' + res_file_info.res_state"
-               style="font-size: 14px; ">
-        {{ actor.formatResFileInfo(res_file_info) }}
-      </el-text>
-    </el-space>
+              class="actor_card" alignment="stretch" :size="3"
+              :key="actor.uuid"
+              :style="{'color': group_color}">
 
-    <!--actor remark + category + edit button -->
-    <el-space direction="horizontal" alignment="stretch">
-      <!-- actor remark -->
-      <el-popover placement="right" trigger="click" :width="600">
-        <template #reference>
-          <svg-icon size="24px"
-                    :name="actor.remark ? 'remark' : 'remark_empty'"
-          />
-        </template>
-        <template #default>
-          <RemarkEditor :remark="actor.remark"
-                        @submit="onSubmitRemark"
-          />
-        </template>
-      </el-popover>
-      <!-- actor category -->
-      <el-select v-model="actor.actor_group_id"
-                 @change="setActorGroup"
-                 style="width: 140px"
-      >
-        <el-option
-            v-for="group in group_list"
-            :label="group.group_name"
-            :value="group.group_id"
-            :style="{'color': group.group_color, 'text-decoration':'underline' }"
-        >
-          {{ group.show_content }}
-        </el-option>
-      </el-select>
-      <!-- click to edit tags -->
-      <svg-icon @click="onStartEditTag()"
-                size="24px"
-                name="edit"/>
-    </el-space>
+        <!-- actor avatar -->
+        <div class="avatar">
+            <el-image class="avatar-img" :src="actor.icon"/>
+            <svg-icon v-if="actor.has_main_actor"
+                      size="30px" name="friend"
+                      style="position: absolute;top: 0;left: 15px;"
+                      @click="findLinkedActor"/>
 
-    <!--actor tags-->
-    <el-space wrap style="margin-top: 5px">
-      <el-tag v-for="tag_id in actor.tag_ids"
-              :class="getTagStyleName(tag_id)"
-              style="font-size: 18px"
-              round>
-        {{ getTagName(tag_id) }}
-      </el-tag>
+            <svg-icon v-if="show_link"
+                      size="30px" name="top"
+                      style="position: absolute;top: 0;right: 15px;"
+                      class="blink-class"
+                      @click="onLinkClick"/>
+
+            <el-rate class="avatar-rate"
+                     v-model="actor.show_score"
+                     :colors="star_colors"
+                     void-color="#777777"
+                     :max="6"
+                     size="large"
+                     @change="changeScore"
+                     allow-half/>
+        </div>
+
+        <!-- actor name, click to open menu items -->
+        <el-popover trigger="click" placement="top"
+                    v-model:visible="is_show_op"
+                    :popper-style="{'border-color': group_color, 'width': 300}"
+                    popper-class="op_popper"
+                    :offset="6">
+            <template #reference>
+                <el-text class="actor_name" :style="{'color': group_color}">
+                    {{ actor.actor_name }}
+                </el-text>
+            </template>
+            <template #default>
+                <el-space direction="vertical" alignment="center">
+                    <el-space direction="horizontal">
+                        <el-button class="pop-button"
+                                   type="primary"
+                                   @click="showPosts">
+                            Show Posts
+                        </el-button>
+                        <el-button class="pop-button"
+                                   type="primary"
+                                   @click="gotoActorPage">
+                            Go To Page
+                        </el-button>
+                    </el-space>
+                    <el-space direction="horizontal" v-if="hasFolder()">
+                        <el-button class="pop-button"
+                                   type="warning"
+                                   @click="resetPosts">
+                            Reset Posts
+                        </el-button>
+                        <el-button class="pop-button"
+                                   type="warning"
+                                   @click="clearFolder">
+                            Clear Folder
+                        </el-button>
+                    </el-space>
+                    <el-space direction="horizontal" v-if="hasFolder()">
+                        <el-button class="pop-button"
+                                   type="success"
+                                   @click="toDownload"
+                                   v-if="hasFolder()">
+                            Download
+                        </el-button>
+                        <el-button class="pop-button"
+                                   type="success"
+                                   @click="openFolder"
+                                   v-if="hasFolder()">
+                            Open Folder
+                        </el-button>
+                    </el-space>
+                </el-space>
+            </template>
+        </el-popover>
+
+        <!-- actor post info -->
+        <el-space direction="vertical"
+                  v-if="actor.file_info"
+                  alignment="start"
+                  style="gap: 1px 0px;padding-left: 15px">
+            <el-text style="font-size: 18px; color: black;" tag="ins">
+                {{ actor.post_desc }}
+            </el-text>
+            <!-- actor res info -->
+            <el-text v-for="res_file_info in actor.file_info.res_info"
+                     :class="'res' + res_file_info.res_state"
+                     style="font-size: 14px; ">
+                {{ actor.formatResFileInfo(res_file_info) }}
+            </el-text>
+        </el-space>
+
+        <!--actor remark + category + edit button -->
+        <el-space direction="horizontal" alignment="stretch">
+            <!-- actor remark -->
+            <svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'"
+                      @click="startEditRemark"
+                      size="24px"/>
+            <!-- actor category -->
+            <el-select v-model="actor.actor_group_id"
+                       @change="setActorGroup"
+                       style="width: 140px">
+                <el-option
+                    v-for="group in group_list"
+                    :label="group.group_name"
+                    :value="group.group_id"
+                    :style="{'color': group.group_color, 'text-decoration':'underline' }"
+                >
+                    {{ group.show_content }}
+                </el-option>
+            </el-select>
+            <!-- click to edit tags -->
+            <svg-icon @click="startEditTag()"
+                      size="24px"
+                      name="edit"/>
+        </el-space>
+
+        <!--actor tags-->
+        <el-space wrap style="margin-top: 5px">
+            <el-tag v-for="tag_id in actor.tag_ids"
+                    :class="getTagStyleName(tag_id)"
+                    style="font-size: 18px"
+                    round>
+                {{ getTagName(tag_id) }}
+            </el-tag>
+        </el-space>
     </el-space>
-  </el-space>
-  <!-- actor tags editing dialog-->
-  <el-dialog v-model="is_editing_tags"
-             :title="actor.actor_name"
-             width="67%">
-    <ActorTagChooser :actor="actor"
-                     @submit="onSubmitTag"
-                     @cancel="onCancelAddTag"
-    />
-  </el-dialog>
-  <el-dialog v-model="is_show_post"
-             title="Posts"
-             width=720px>
-    <Posts :specific_actor_id="actor.actor_id"></Posts>
-  </el-dialog>
+    <!-- actor remark editing dialog-->
+    <el-dialog v-model="is_show_remark"
+               :title="actor.actor_name"
+               width="600px">
+        <RemarkEditor :actor="actor"
+                      @submit="onSubmitRemark"
+                      @cancel="onCancelRemark"/>
+    </el-dialog>
+    <!-- actor tags editing dialog-->
+    <el-dialog v-model="is_editing_tags"
+               :title="actor.actor_name"
+               width="67%">
+        <ActorTagChooser :actor="actor"
+                         @submit="onSubmitTag"
+                         @cancel="onCancelAddTag"
+        />
+    </el-dialog>
+    <!-- actor posts dialog-->
+    <el-dialog v-model="is_show_post"
+               title="Posts"
+               width=720px>
+        <Posts :specific_actor_id="actor.actor_id"></Posts>
+    </el-dialog>
 </template>
 
 <script lang="ts">
 import ActorData from "../data/ActorData";
 import {
-  ChangeActorTag,
-  changeActorGroup,
-  openActorFolder, changeActorRemark, getFileInfo, changeActorScore, clearActorFolder, resetActorPosts
+    ChangeActorTag,
+    changeActorGroup,
+    openActorFolder, changeActorRemark, getFileInfo, changeActorScore, clearActorFolder, resetActorPosts
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -180,232 +179,240 @@ import {Star_Colors} from "../data/Consts";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 
 export default {
-  name: "ActorCard",
-  components: {ActorTagChooser, SvgIcon, RemarkEditor, Posts},
-  // props from parent
-  props: {
-    actor_data: ActorElement,
-    show_link: Boolean
-  },
-  computed: {
-    ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
-    actor(): ActorData {
-      return this.actor_data.data
+    name: "ActorCard",
+    components: {ActorTagChooser, SvgIcon, RemarkEditor, Posts},
+    // props from parent
+    props: {
+        actor_data: ActorElement,
+        show_link: Boolean
     },
-    star_colors() {
-      return Star_Colors
+    computed: {
+        ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
+        actor(): ActorData {
+            return this.actor_data.data
+        },
+        star_colors() {
+            return Star_Colors
+        },
+        group_color(): string {
+            let group = this.getActorGroup(this.actor_data.data.actor_group_id)
+            return group.group_color
+        },
     },
-    group_color(): string {
-      let group = this.getActorGroup(this.actor_data.data.actor_group_id)
-      return group.group_color
+    // declare emitted events to parent
+    emits: ['refresh', 'link', 'download', 'friend'],
+    data() {
+        return {
+            is_show_remark: false,
+            is_editing_tags: false,
+            is_show_post: false,
+            is_show_op: false
+        }
     },
-  },
-  // declare emitted events to parent
-  emits: ['refresh', 'link', 'download', 'friend'],
-  data() {
-    return {
-      is_editing_tags: false,
-      is_show_post: false,
-      is_show_op: false
-    }
-  },
-  mounted() {
-    // console.log(`mounted[${this.actor_data.id}]: ${this.actor.actor_name}`)
-    this.actor.sortTags(this.compareActorTagId)
-    this.getFileInfo()
-  },
-  methods: {
-    ...mapActions(ActorTagStore, {
-      compareActorTagId: 'compareTagId',
-      getTagStyleName: 'getStyleName',
-      getTagName: 'getName',
-    }),
-
-    ...mapActions(ActorGroupStore, {
-      getActorGroup: 'get',
-    }),
-
-    getActorGroupData(): ActorGroupData {
-      let group_id = this.actor_data.data.actor_group_id
-      return this.getActorGroup(group_id)
-    },
-
-    hasFolder(): boolean {
-      let group = this.getActorGroupData()
-      return group.has_folder
-    },
-
-    onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
-      if (ok) {
-        this.actor_data.data = new_actor
+    mounted() {
+        // console.log(`mounted[${this.actor_data.id}]: ${this.actor.actor_name}`)
         this.actor.sortTags(this.compareActorTagId)
-        this.$emit('refresh', this.actor_data)
-        logInfo(msg)
-        // request file info
         this.getFileInfo()
-      }
     },
+    methods: {
+        ...mapActions(ActorTagStore, {
+            compareActorTagId: 'compareTagId',
+            getTagStyleName: 'getStyleName',
+            getTagName: 'getName',
+        }),
 
-    gotoActorPage() {
-      this.is_show_op = false
-      window.open(this.actor.href, '_blank', 'noreferrer');
-    },
-    openFolder() {
-      this.is_show_op = false
-      openActorFolder(this.actor.actor_id)
-    },
-    async clearFolder() {
-      this.is_show_op = false
-      const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
-      if (ok) {
-        this.setFileInfo(file_info)
-        logInfo("clear folder succeed")
-      }
-    },
-    async resetPosts() {
-      this.is_show_op = false
-      const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
-      if (ok) {
-        this.setFileInfo(file_info)
-        logInfo("reset posts succeed")
-      }
-    },
-    async setActorGroup() {
-      if (this.actor.tag_ids.length == 0) {
-        logWarn("add any tag before setting category")
-        return
-      }
-      const [ok, new_actor] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
-      this.onRecvActorMsg(ok, new_actor, "change category succeed")
-    },
-    onStartEditTag() {
-      this.is_editing_tags = true
-    },
-    async onSubmitTag(new_tag_list: number[]) {
-      this.is_editing_tags = false
+        ...mapActions(ActorGroupStore, {
+            getActorGroup: 'get',
+        }),
 
-      //request
-      const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
-      this.onRecvActorMsg(ok, new_actor, "change tags succeed")
-    },
-    async onCancelAddTag() {
-      this.is_editing_tags = false
-    },
+        getActorGroupData(): ActorGroupData {
+            let group_id = this.actor_data.data.actor_group_id
+            return this.getActorGroup(group_id)
+        },
 
-    toDownload() {
-      this.is_show_op = false
-      this.$emit('download', this.actor_data)
-    },
+        hasFolder(): boolean {
+            let group = this.getActorGroupData()
+            return group.has_folder
+        },
 
-    showPosts() {
-      this.is_show_op = false
-      this.is_show_post = true
-    },
+        onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
+            if (ok) {
+                this.actor_data.data = new_actor
+                this.actor.sortTags(this.compareActorTagId)
+                this.$emit('refresh', this.actor_data)
+                logInfo(msg)
+                // request file info
+                this.getFileInfo()
+            }
+        },
 
-    async changeScore() {
-      const [ok, new_actor] = await changeActorScore(this.actor.actor_id, this.actor.score)
-      this.onRecvActorMsg(ok, new_actor, "change score succeed")
-    },
-    async findLinkedActor() {
-      this.$emit('friend', this.actor_data)
-    },
-    onLinkClick() {
-      this.$emit('link', this.actor_data)
-    },
-    async onSubmitRemark(new_remark: string) {
-      if (new_remark == this.actor.remark) {
-        return
-      }
-      const [ok, new_actor] = await changeActorRemark(this.actor.actor_id, new_remark)
-      this.onRecvActorMsg(ok, new_actor, "change remark succeed")
-    },
-    async getFileInfo() {
-      const [ok, file_info] = await getFileInfo(this.actor.actor_id)
-      if (ok) {
-        this.setFileInfo(file_info)
-      }
-    },
-    setFileInfo(file_info) {
-      this.actor.file_info = file_info
-    },
-  }
-  ,
+        gotoActorPage() {
+            this.is_show_op = false
+            window.open(this.actor.href, '_blank', 'noreferrer');
+        },
+        openFolder() {
+            this.is_show_op = false
+            openActorFolder(this.actor.actor_id)
+        },
+        async clearFolder() {
+            this.is_show_op = false
+            const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
+            if (ok) {
+                this.setFileInfo(file_info)
+                logInfo("clear folder succeed")
+            }
+        },
+        async resetPosts() {
+            this.is_show_op = false
+            const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
+            if (ok) {
+                this.setFileInfo(file_info)
+                logInfo("reset posts succeed")
+            }
+        },
+        async setActorGroup() {
+            if (this.actor.tag_ids.length == 0) {
+                logWarn("add any tag before setting category")
+                return
+            }
+            const [ok, new_actor] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
+            this.onRecvActorMsg(ok, new_actor, "change category succeed")
+        },
+        startEditTag() {
+            this.is_editing_tags = true
+        },
+        async onSubmitTag(new_tag_list: number[]) {
+            this.is_editing_tags = false
+
+            //request
+            const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
+            this.onRecvActorMsg(ok, new_actor, "change tags succeed")
+        },
+        async onCancelAddTag() {
+            this.is_editing_tags = false
+        },
+
+        toDownload() {
+            this.is_show_op = false
+            this.$emit('download', this.actor_data)
+        },
+
+        showPosts() {
+            this.is_show_op = false
+            this.is_show_post = true
+        },
+
+        async changeScore() {
+            const [ok, new_actor] = await changeActorScore(this.actor.actor_id, this.actor.score)
+            this.onRecvActorMsg(ok, new_actor, "change score succeed")
+        },
+        async findLinkedActor() {
+            this.$emit('friend', this.actor_data)
+        },
+        onLinkClick() {
+            this.$emit('link', this.actor_data)
+        },
+        startEditRemark() {
+            this.is_show_remark = true
+        },
+        onCancelRemark() {
+            this.is_show_remark = false
+        },
+        async onSubmitRemark(new_remark: string) {
+            this.is_show_remark = false
+            if (new_remark == this.actor.remark) {
+                return
+            }
+            const [ok, new_actor] = await changeActorRemark(this.actor.actor_id, new_remark)
+            this.onRecvActorMsg(ok, new_actor, "change remark succeed")
+        },
+        async getFileInfo() {
+            const [ok, file_info] = await getFileInfo(this.actor.actor_id)
+            if (ok) {
+                this.setFileInfo(file_info)
+            }
+        },
+        setFileInfo(file_info) {
+            this.actor.file_info = file_info
+        },
+    }
+    ,
 }
 </script>
 
 <style scoped>
 
 .actor_name {
-  font-size: 20px;
-  word-wrap: anywhere;
-  text-align: center;
+    font-size: 20px;
+    word-wrap: anywhere;
+    text-align: center;
 }
 
 .actor_card {
-  border: 1px solid;
-  padding: 2px;
-  box-shadow: 2px 2px;
-  width: 210px;
+    border: 1px solid;
+    padding: 2px;
+    box-shadow: 2px 2px;
+    width: 210px;
 }
 
 .avatar {
-  position: relative;
-  /*width: 180px;*/
-  height: 180px;
-  margin-top: 15px;
+    position: relative;
+    /*width: 180px;*/
+    height: 180px;
+    margin-top: 15px;
 }
 
 .avatar-img {
-  width: 180px;
-  height: 180px;
-  position: absolute;
-  top: 0;
-  left: 15px;
+    width: 180px;
+    height: 180px;
+    position: absolute;
+    top: 0;
+    left: 15px;
 }
 
 .avatar-rate {
-  position: absolute;
-  bottom: 0;
-  left: 50%;
-  transform: translateX(-50%);
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
 }
 
 .pop-button {
-  width: 126px;
-  height: 32px;
-  font-size: 16px;
+    width: 126px;
+    height: 32px;
+    font-size: 16px;
 }
 
 .blink-class {
-  animation: blink 1s linear infinite;
+    animation: blink 1s linear infinite;
 }
 
 @keyframes blink {
-  25% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0;
-  }
-  75% {
-    opacity: 0.5;
-  }
+    25% {
+        opacity: 0.5;
+    }
+    50% {
+        opacity: 0;
+    }
+    75% {
+        opacity: 0.5;
+    }
 }
 
 .res1 {
-  color: darkgreen;
+    color: darkgreen;
 }
 
 .res2 {
-  color: hotpink;
+    color: hotpink;
 }
 
 .res3 {
-  color: orangered;
+    color: orangered;
 }
 
 .res4 {
-  color: blue;
+    color: blue;
 }
 
 

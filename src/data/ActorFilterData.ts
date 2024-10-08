@@ -4,6 +4,7 @@ import {SortType} from "./Enums";
 export default class ActorFilterData {
     show_rows: boolean[]
     name: string
+    linked: boolean
     group_id_list: number[]
     all_group_list: number[]
     tag_list: number[]
@@ -139,6 +140,7 @@ export default class ActorFilterData {
     copy(data: ActorFilterData) {
         this.show_rows = data.show_rows.slice()
         this.name = data.name
+        this.linked = data.linked
         this.group_id_list = data.group_id_list.slice()
         this.tag_list = data.tag_list.slice()
         this.no_tag = data.no_tag
@@ -188,12 +190,9 @@ export default class ActorFilterData {
         this.max_score = 12
     }
 
-    onFilterNameChange() {
-
-    }
-
     resetName() {
         this.name = ""
+        this.linked = false
     }
 
     resetSort() {

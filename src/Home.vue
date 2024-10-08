@@ -8,15 +8,13 @@
                     text-color="#fff"
                     active-text-color="#ffd04b"
                     @select="onMenuItemSelect">
-
-                    <!--          <svg-icon size="20px" name="friend"/>-->
                     <el-menu-item index="/actors">Actors</el-menu-item>
-                    <el-menu-item index="/actor_tags">Actor Tags</el-menu-item>
+                    <el-menu-item index="/tasks">Tasks</el-menu-item>
+                    <el-menu-item index="/download">Download</el-menu-item>
+
+                    <el-menu-item index="/actor_tags" style="margin-left: 40px">Actor Tags</el-menu-item>
                     <el-menu-item index="/actor_groups">Actor Groups</el-menu-item>
                     <el-menu-item index="/echarts">Charts</el-menu-item>
-                    <!--          <svg-icon size="20px" name="download"/>-->
-                    <el-menu-item index="/download">Download</el-menu-item>
-                    <el-menu-item index="/tasks">Tasks</el-menu-item>
                     <el-menu-item index="/notices">Notices</el-menu-item>
                 </el-menu>
             </el-header>

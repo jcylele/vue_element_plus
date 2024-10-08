@@ -1,5 +1,6 @@
 import EditableData from "./EditableData";
 import {Base64} from "js-base64";
+import {PostData} from "./PostData";
 
 const res_state = ["未下载", "已下载", "大文件", "已删除"]
 
@@ -25,6 +26,7 @@ export default class ActorData extends EditableData {
     href: string
     has_main_actor: boolean
     remark: string
+    commented_posts: PostData[]
     tag_ids: number[]
     file_info: ActorFileInfo
 
@@ -44,6 +46,10 @@ export default class ActorData extends EditableData {
         this.score = val * 2
     }
 
+    get has_remark() {
+        return (this.remark !== "") || this.commented_posts.length > 0
+    }
+
     constructor(json_data?) {
         super(json_data);
         // this.actor_category = ActorCategory.getByValue(json_data.actor_category)
@@ -51,6 +57,11 @@ export default class ActorData extends EditableData {
             this.remark = Base64.decode(json_data.remark)
         } else {
             this.remark = ""
+        }
+
+        this.commented_posts = []
+        for (const jsonDatum of json_data.commented_posts) {
+            this.commented_posts.push(new PostData(jsonDatum))
         }
     }
 
