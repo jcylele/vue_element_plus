@@ -59,7 +59,7 @@
           </el-table-column>
         </el-table>
 
-        <el-space direction="horizontal" :fill="true">
+        <el-space direction="vertical" :fill="true">
           <el-button type="primary" size="default" @click="getAll">Refresh</el-button>
           <el-button type="danger" size="default" @click="stopAll">Stop All</el-button>
           <el-button type="info" size="default" @click="clean">Remove Outdated Files</el-button>

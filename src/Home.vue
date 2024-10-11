@@ -9,8 +9,8 @@
                     active-text-color="#ffd04b"
                     @select="onMenuItemSelect">
                     <el-menu-item index="/actors">Actors</el-menu-item>
-                    <el-menu-item index="/tasks">Tasks</el-menu-item>
                     <el-menu-item index="/download">Download</el-menu-item>
+                    <el-menu-item index="/tasks">Tasks</el-menu-item>
 
                     <el-menu-item index="/actor_tags" style="margin-left: 40px">Actor Tags</el-menu-item>
                     <el-menu-item index="/actor_groups">Actor Groups</el-menu-item>

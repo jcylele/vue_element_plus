@@ -1,15 +1,19 @@
 <template>
-  <el-space direction="vertical" alignment="flex-start">
-    <el-text style="font-size: 24px">
-      Choose Score Range
-    </el-text>
-    <el-slider v-model="scores"
-               :min="0" :max="12"
-               range show-stops
-               style="width: 400px;"
-               @change="onScoreChange"/>
+    <el-form label-width="120px" label-position="left">
+        <el-form-item label="Score Range">
+            <el-slider v-model="scores"
+                       :min="0" :max="max_score"
+                       range show-stops
+                       style="width: 250px;"/>
+        </el-form-item>
+        <el-form-item label="Tag Count">
+            <el-input-number v-model="tag_count" :min="1" :max="20"/>
+        </el-form-item>
+        <el-form-item label="Op">
+            <el-button type="primary" @click="refreshData">Refresh</el-button>
+        </el-form-item>
+    </el-form>
     <div id="score_tags" style="width: 640px;height: 480px"></div>
-  </el-space>
 </template>
 
 <script lang="ts">
@@ -17,10 +21,10 @@ import * as echarts from "echarts/core";
 import {BarChart} from "echarts/charts";
 
 import {
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  TransformComponent
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent
 } from "echarts/components";
 
 import {LabelLayout, UniversalTransition} from 'echarts/features'
@@ -28,15 +32,15 @@ import {LabelLayout, UniversalTransition} from 'echarts/features'
 import {CanvasRenderer} from 'echarts/renderers'
 
 import type {
-  BarSeriesOption
+    BarSeriesOption
 } from 'echarts/charts'
 
 import type {
-  TitleComponentOption,
-  GridComponentOption
+    TitleComponentOption,
+    GridComponentOption
 } from "echarts/components";
 import type {
-  ComposeOption
+    ComposeOption
 } from 'echarts/core'
 
 type ScoreTagsOption = ComposeOption<| BarSeriesOption
@@ -44,73 +48,73 @@ type ScoreTagsOption = ComposeOption<| BarSeriesOption
     | GridComponentOption>;
 
 echarts.use([
-  BarChart,
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  TransformComponent,
-  LabelLayout,
-  UniversalTransition,
-  CanvasRenderer
+    BarChart,
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent,
+    LabelLayout,
+    UniversalTransition,
+    CanvasRenderer
 ]);
 
 import {getTagsByScore} from "../../ctrls/ChartCtrl.js";
 import {mapActions} from "pinia";
 import {ActorTagStore} from "../../store/ActorTagStore";
 import {ECharts} from "echarts";
-
-interface TagCount {
-  tag_id: number,
-  count: number
-}
+import {MAX_SCORE} from "../../data/Consts";
+import {TagCount} from "../../data/Interfaces";
 
 export default {
-  name: "ScoreTagsChart",
-  data() {
-    return {
-      scores: [0, 10],
-      tagChart: undefined as ECharts,
-      chart_option: {
-        xAxis: {
-          type: 'value',
-        },
-        yAxis: {
-          type: 'category',
-          data: []
-        },
-        series: [{
-          type: 'bar',
-          data: [],
-          // color: []
-        }]
-      } as ScoreTagsOption
-    }
-  },
-  methods: {
-    ...mapActions(ActorTagStore, {
-      getTagName: 'getName',
-    }),
-    async onScoreChange() {
-      const [ok, tag_list] = await getTagsByScore(this.scores[0], this.scores[1])
-      if (ok) {
-        this.refreshChart(tag_list)
-      }
+    name: "ScoreTagsChart",
+    computed: {
+        max_score() {
+            return MAX_SCORE
+        }
     },
-    refreshChart(tag_list: TagCount[]) {
-      tag_list.sort((a, b) => a.count - b.count)
-      tag_list = tag_list.slice(-10)
-      console.log(tag_list)
-
-      this.chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
-      this.chart_option.series[0].data = tag_list.map(a => a.count)
-
-      this.tagChart.setOption(this.chart_option)
+    data() {
+        return {
+            tag_count: 10,
+            scores: [0, MAX_SCORE],
+            tagChart: undefined as ECharts,
+            chart_option: {
+                xAxis: {
+                    type: 'value',
+                },
+                yAxis: {
+                    type: 'category',
+                    data: []
+                },
+                series: [{
+                    type: 'bar',
+                    data: [],
+                    // color: []
+                }]
+            } as ScoreTagsOption
+        }
     },
-  },
-  mounted() {
-    console.log(`Score Tags Chart mounted`)
-    this.tagChart = echarts.init(document.getElementById('score_tags'));
-  },
+    methods: {
+        ...mapActions(ActorTagStore, {
+            getTagName: 'getName',
+        }),
+        async refreshData() {
+            const [ok, tag_list] = await getTagsByScore(this.scores[0], this.scores[1], this.tag_count)
+            if (ok) {
+                this.refreshChart(tag_list)
+            }
+        },
+        refreshChart(tag_list: TagCount[]) {
+            tag_list.reverse()
+            this.chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
+            this.chart_option.series[0].data = tag_list.map(a => a.count)
+
+            this.tagChart.setOption(this.chart_option)
+        },
+    },
+    mounted() {
+        console.log(`Score Tags Chart mounted`)
+        this.tagChart = echarts.init(document.getElementById('score_tags'));
+    },
 }
 </script>
 

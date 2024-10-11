@@ -63,7 +63,7 @@ echarts.use([
 import {mapState} from "pinia";
 import {ActorTagStore} from "../../store/ActorTagStore";
 import {getScoresByTag} from "../../ctrls/ChartCtrl";
-import {Star_Colors} from "../../data/Consts";
+import {MAX_SCORE, Star_Colors} from "../../data/Consts";
 import {ECharts} from "echarts";
 
 export default {
@@ -107,7 +107,7 @@ export default {
     initChartOption() {
       const colors = []
       const x_axis = []
-      for (let i = 0; i < 11; i++) {
+      for (let i = 0; i <= MAX_SCORE; i++) {
         x_axis.push(i)
         colors.push(Star_Colors[Math.ceil(i / 2)])
       }

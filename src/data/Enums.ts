@@ -32,5 +32,6 @@ export enum ActorShowType{
 }
 
 export enum NoticeType {
-    UnlinkedActor = 1
+    UnlinkedActor = 1,
+    InvalidPost = 2,
 }

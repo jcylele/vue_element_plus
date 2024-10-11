@@ -8,7 +8,7 @@
             <el-checkbox size="large" border v-model="filter_condition.show_remark">Remark</el-checkbox>
             <el-checkbox size="large" border v-model="filter_condition.show_sort">Sort</el-checkbox>
             <el-divider direction="vertical"/>
-            <el-button type="primary" size="large" @click="onFilterSubmit">Search</el-button>
+            <el-button :type="cond_changed ? 'warning' : 'primary'" size="large" @click="onFilterSubmit">Search</el-button>
             <el-button type="warning" size="large" @click="onFilterCancel">Reset</el-button>
             <el-button v-if="filter_history.length > 0" type="success" size="large" @click="toPreviousFilter">Previous
             </el-button>
@@ -146,6 +146,7 @@ export default {
     components: {NewActorTag},
     data() {
         return {
+            cond_changed: false,
             is_category_all: false,
             filter_history: [] as ActorFilterData[]
         }
@@ -173,7 +174,8 @@ export default {
 
     methods: {
         onAnyConditionChange() {
-            this.$emit('change')
+            // this.$emit('change')
+            this.cond_changed = true
         },
         //
         checkNoTag(val: boolean) {
@@ -185,19 +187,19 @@ export default {
             this.onAnyConditionChange()
             this.filter_condition.onCheckedTagChange()
         },
-        onCheckedCategoryChange(val: number[]) {
-        },
         checkAnyRemark(val: boolean) {
             this.onAnyConditionChange()
             this.filter_condition.checkAnyRemark(val)
         },
         async onFilterSubmit() {
             this.filter_history.push(this.filter_condition.clone())
+            this.cond_changed = false
             this.$emit('submit')
         },
         onFilterCancel() {
             this.filter_condition.reset()
-            this.$emit('change')
+            // this.$emit('change')
+            this.cond_changed = true
         },
         async toPreviousFilter() {
             if (this.filter_history.length > 0) {

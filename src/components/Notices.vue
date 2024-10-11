@@ -7,7 +7,7 @@
                 active-text-color="#a0a0fb"
                 @select="onNoticeTypeChange">
                 <el-menu-item v-for="nt in notice_type_list"
-                              :index="nt.value">
+                              :index="nt.value.toString()">
                     {{ nt.label }}
                 </el-menu-item>
             </el-menu>
@@ -15,28 +15,30 @@
         <el-main>
             <el-space direction="vertical">
                 <el-table :data="notice_list" border class="wrap_line">
-                    <el-table-column prop="notice_param0" label="param0" min-width="180px"/>
-                    <el-table-column prop="notice_param1" label="param1" min-width="180px"/>
-                    <el-table-column prop="notice_param2" label="param2" min-width="180px"/>
+                    <el-table-column prop="notice_param0" :label="label_names[0]" min-width="180px"/>
+                    <el-table-column prop="notice_param1" :label="label_names[1]" min-width="180px"/>
+                    <el-table-column prop="notice_param2" :label="label_names[2]" min-width="180px"/>
                     <el-table-column v-if="is_unlinked_actor" prop="sub_string01" label="sub_string" min-width="180px"/>
                     <el-table-column label="Op" min-width="250px">
                         <template #default="scope">
                             <el-button v-if="is_unlinked_actor" type="primary"
-                                       @click="toActors(scope.row.sub_string01)">Search</el-button>
+                                       @click="toActors(scope.row.sub_string01)">Search
+                            </el-button>
                             <el-button type="danger" @click="delNotice(scope.row.notice_id)">Delete</el-button>
                         </template>
                     </el-table-column>
                 </el-table>
+                <el-button type="danger" size="default" @click="deleteAll">Stop All</el-button>
             </el-space>
         </el-main>
     </el-container>
 </template>
 
 <script lang="ts">
-import {Notice_Type_Options} from "../data/Consts";
+import {Notice_Param_Names, Notice_Type_Options} from "../data/Consts";
 import {NoticeType} from "../data/Enums"
 import NoticeData from "../data/NoticeData";
-import {deleteNotice, getNotices} from "../ctrls/NoticeCtrl";
+import {deleteNotice, delNoticesByType, getNotices} from "../ctrls/NoticeCtrl";
 import {mapActions} from "pinia";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import ActorFilterData from "../data/ActorFilterData";
@@ -47,6 +49,7 @@ export default {
     data() {
         return {
             cur_notice_type: 0,
+            label_names: ["", "", ""],
             notice_list: [] as NoticeData[]
         }
     },
@@ -66,6 +69,7 @@ export default {
         }),
         async onNoticeTypeChange(index: string) {
             this.cur_notice_type = parseInt(index)
+            this.label_names = Notice_Param_Names[this.cur_notice_type]
             const [ok, new_list] = await getNotices(this.cur_notice_type)
             if (ok) {
                 this.notice_list = new_list
@@ -79,6 +83,13 @@ export default {
                 if (index !== -1) {
                     this.notice_list.splice(index, 1)
                 }
+            }
+        },
+
+        async deleteAll() {
+            const [ok, _] = await delNoticesByType(this.cur_notice_type)
+            if (ok) {
+                this.notice_list = []
             }
         },
 

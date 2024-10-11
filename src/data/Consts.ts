@@ -1,5 +1,7 @@
-import {ActorShowType, LimitPreset, SortType} from "./Enums";
+import {ActorShowType, LimitPreset, NoticeType, SortType} from "./Enums";
 import {CommonOption, SortOption} from "./Interfaces";
+
+export const MAX_SCORE = 12
 
 export const Sort_Options: SortOption[] = [
     {id: 0, label: "None", sort_type: SortType.Default, sort_asc: false},
@@ -20,7 +22,7 @@ export const Star_Colors = {
     0: '#2020FF',
     1: '#7F7EFF',
     2: '#7EFF00',
-    3: '#FFBE00',
+    3: '#CFBE60',
     4: '#FFC0CB',
     5: '#FF007F',
     6: '#7F00FF'
@@ -32,5 +34,12 @@ export const Actor_Show_Options: CommonOption[] = [
 ]
 
 export const Notice_Type_Options: CommonOption[] = [
-    {label: "Unlinked Actor", value: 1},
+    {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
+    {label: "Invalid Post", value: NoticeType.InvalidPost},
 ]
+
+export const Notice_Param_Names =
+    {
+        [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2", "actor_name3"],
+        [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"]
+    }

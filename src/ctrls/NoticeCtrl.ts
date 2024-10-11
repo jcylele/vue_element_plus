@@ -22,3 +22,8 @@ export async function deleteNotice(notice_id: number) {
     const url = `${baseUrl}/${notice_id}`
     return await fetchDelete(url)
 }
+
+export async function delNoticesByType(notice_type: NoticeType) {
+    const url = `${baseUrl}/list/${notice_type}`
+    return await fetchDelete(url)
+}

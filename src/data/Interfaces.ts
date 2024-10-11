@@ -17,3 +17,8 @@ export interface CommonOption {
     label: string
     value: any
 }
+
+export interface TagCount {
+    tag_id: number,
+    count: number
+}

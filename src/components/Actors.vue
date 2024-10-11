@@ -38,7 +38,6 @@
                 </template>
                 <el-space direction="vertical">
                     <ActorFilter :filter_condition="filter_condition"
-                                 @change="onFilterChange"
                                  @submit="onFilterSubmit"/>
                 </el-space>
             </el-collapse-item>
