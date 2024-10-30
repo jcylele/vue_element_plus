@@ -3,15 +3,6 @@ export enum PostFilter {
     Old = 1,
 }
 
-export enum LimitPreset {
-    All,
-    Init,
-    Current_Init,
-    Current_Video,
-    All_Video,
-    Max,
-}
-
 export enum DownloadType {
     None,
     New,
@@ -26,7 +17,7 @@ export enum SortType {
     CategoryTime,
 }
 
-export enum ActorShowType{
+export enum ActorShowType {
     Card,
     Line
 }

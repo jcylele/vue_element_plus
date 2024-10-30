@@ -156,7 +156,7 @@ import {DownloadLimitForm} from "../data/SimpleForms";
 import {downloadByActorIds} from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
 import {ActorGroupStore} from "../store/ActorGroupStore";
-import {ActorShowType, LimitPreset} from "../data/Enums";
+import {ActorShowType} from "../data/Enums";
 import {Actor_Show_Options} from "../data/Consts";
 import ActorLine from "./ActorLine.vue";
 import Posts from "./Posts.vue";
@@ -329,7 +329,6 @@ export default {
             this.download_actor_ids = actor_ids
             if (this.download_limit == null) {
                 this.download_limit = new DownloadLimitForm()
-                this.download_limit.resetDefaultValue(LimitPreset.All)
             }
         },
 

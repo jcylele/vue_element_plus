@@ -35,10 +35,9 @@
                 <svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'"
                           @click="startEditRemark"
                           size="24px"/>
-                <el-space direction="vertical" alignment="start" size="small"> <!-- style="color: black" -->
-                    <el-text v-for="remark_item in actor.remark_list"
-                             style="font-size: 20px; color: hotpink;">
-                        {{ remark_item }}
+                <el-space direction="vertical" alignment="start" size="small">
+                    <el-text class="actor-remark">
+                        {{ actor.remark }}
                     </el-text>
                     <el-text v-for="post in actor.commented_posts"
                              style="font-size: 20px; color: royalblue;">
@@ -171,6 +170,13 @@ export default {
 
 .actor_name {
     font-size: 20px;
+}
+
+.actor-remark {
+    font-size: 20px;
+    color: hotpink;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 </style>

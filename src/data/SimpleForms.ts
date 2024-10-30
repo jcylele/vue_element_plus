@@ -1,4 +1,4 @@
-import {LimitPreset, PostFilter} from "./Enums";
+import {PostFilter} from "./Enums";
 
 export class BatchActorOperation {
     actor_ids: number[]
@@ -81,54 +81,10 @@ export class DownloadLimitForm {
         return this.format_file_size(this.total_file_size)
     }
 
-    resetDefaultValue(preset_val: number) {
-        console.log(`preset_val: ${preset_val}`)
-        this.actor_count = 0
-        this.post_count = 0
-        this.show_file_size = 0
-        this.show_total_file_size = 0
-        this.allow_video = true
-        this.allow_img = true
-        this.post_filter = PostFilter.Normal
-
-        switch (preset_val) {
-            case LimitPreset.All:
-                break
-            case LimitPreset.Init:
-                this.actor_count = 50
-                this.post_count = 50
-                this.show_file_size = 20  // 20MB
-                this.show_total_file_size = 1024 // 1GB
-                break
-            case LimitPreset.Current_Init:
-                this.post_filter = PostFilter.Old
-                this.show_file_size = 20  // 20MB
-                this.show_total_file_size = 1024 // 1GB
-                break
-            case LimitPreset.Current_Video:
-                this.post_filter = PostFilter.Old
-                this.allow_img = false
-                this.show_total_file_size = 1024 // 1GB
-                break
-            case LimitPreset.All_Video:
-                this.allow_img = false
-                this.show_total_file_size = 1024 // 1GB
-            default:
-                break
-        }
-    }
-
-    static NewForm(category_value: number) {
-        const form = new DownloadLimitForm()
-        form.resetDefaultValue(category_value)
-        return form
-    }
-
-    setPageLimit(page_limit: number) {
-        if (page_limit < 1) {
-            this.post_count = 0
-        } else {
-            this.post_count = page_limit * 50
+    setPresetValue(preset, default_preset) {
+        Object.assign(this, default_preset)
+        if (preset) {
+            Object.assign(this, preset)
         }
     }
 
@@ -137,8 +93,6 @@ export class DownloadLimitForm {
         switch (this.post_filter) {
             case PostFilter.Old:
                 return "current posts"
-            case PostFilter.New:
-                return "latest posts"
             default:
                 if (this.post_count == 0) {
                     return "all posts"

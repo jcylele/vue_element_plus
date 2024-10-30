@@ -4,8 +4,8 @@
         <el-space direction="horizontal" wrap>
             <el-radio-group v-model="cur_preset">
                 <el-radio v-for="preset in preset_option_list"
-                          :value="preset.value">
-                    {{ preset.label }}
+                          :value="preset">
+                    {{ preset }}
                 </el-radio>
             </el-radio-group>
         </el-space>
@@ -17,8 +17,10 @@
             </el-form-item>
             <el-form-item label="Post Filter">
                 <el-radio-group v-model="download_limit.post_filter">
-                    <el-radio :value="post_filter.Normal">Normal</el-radio>
-                    <el-radio :value="post_filter.Old">Current</el-radio>
+                    <el-radio v-for="pf in post_filter_list"
+                              :value="pf.value">
+                        {{ pf.label }}
+                    </el-radio>
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="Post Count">
@@ -40,8 +42,8 @@
 
 <script lang="ts">
 import {DownloadLimitForm} from "../data/SimpleForms";
-import {LimitPreset, PostFilter} from "../data/Enums";
-import {Preset_Options} from "../data/Consts"
+import {Post_Filter_Options} from "../data/Consts"
+import downJson from "../assets/down.json"
 
 export default {
     name: "DownloadLimit",
@@ -50,18 +52,25 @@ export default {
     },
     data() {
         return {
-            cur_preset: LimitPreset.All,
-            post_filter: PostFilter,
+            cur_preset: "",
+            down_json_obj: downJson
         }
     },
     computed: {
         preset_option_list() {
-            return Preset_Options
+            // return Preset_Options
+            return this.down_json_obj.presets.map(preset => preset.name)
+        },
+
+        post_filter_list() {
+            return Post_Filter_Options
         }
     },
     watch: {
         async cur_preset(new_val, old_val) {
-            this.download_limit.resetDefaultValue(new_val)
+            const default_preset = this.down_json_obj.default
+            const preset = this.down_json_obj.presets.find(preset => preset.name == new_val)
+            this.download_limit.setPresetValue(preset, default_preset)
         }
     },
 }

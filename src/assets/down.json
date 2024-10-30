@@ -1,0 +1,42 @@
+{
+  "default": {
+    "actor_count": 0,
+    "post_count": 0,
+    "post_filter": 0,
+    "show_file_size": 0,
+    "show_total_file_size": 0,
+    "allow_video": true,
+    "allow_img": true
+  },
+  "presets": [
+    {
+      "name": "All"
+    },
+    {
+      "name": "Init",
+      "actor_count": 50,
+      "post_count": 50,
+      "show_file_size": 5,
+      "show_total_file_size": 128,
+      "allow_video": false
+    },
+    {
+      "name": "Cur_Init",
+      "post_filter": 1,
+      "show_file_size": 5,
+      "show_total_file_size": 128,
+      "allow_video": false
+    },
+    {
+      "name": "Cur_Video",
+      "post_filter": 1,
+      "show_total_file_size": 1024,
+      "allow_img": false
+    },
+    {
+      "name": "All_Video",
+      "show_total_file_size": 1024,
+      "allow_img": false
+    }
+  ]
+}

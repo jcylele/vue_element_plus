@@ -1,4 +1,4 @@
-import {ActorShowType, LimitPreset, NoticeType, SortType} from "./Enums";
+import {ActorShowType, NoticeType, PostFilter, SortType} from "./Enums";
 import {CommonOption, SortOption} from "./Interfaces";
 
 export const MAX_SCORE = 12
@@ -10,19 +10,16 @@ export const Sort_Options: SortOption[] = [
     {id: 3, label: "Category Time Asc", sort_type: SortType.CategoryTime, sort_asc: true},
 ]
 
-export const Preset_Options: CommonOption[] = [
-    {label: "All", value: LimitPreset.All},
-    {label: "Init", value: LimitPreset.Init},
-    {label: "Cur_Init", value: LimitPreset.Current_Init},
-    {label: "All_Video", value: LimitPreset.All_Video},
-    {label: "Cur_Video", value: LimitPreset.Current_Video},
+export const Post_Filter_Options: CommonOption[] = [
+    {label: "Normal", value: PostFilter.Normal},
+    {label: "Current", value: PostFilter.Old},
 ]
 
 export const Star_Colors = {
     0: '#2020FF',
     1: '#7F7EFF',
     2: '#7EFF00',
-    3: '#CFBE60',
+    3: '#FFDE00',
     4: '#FFC0CB',
     5: '#FF007F',
     6: '#7F00FF'

@@ -52,3 +52,9 @@
     background: purple;
     color: red;
 }
+
+.el-dialog__title {
+    font-size: 28px;
+    font-weight: bold;
+    font-style: italic;
+}

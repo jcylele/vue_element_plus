@@ -52,7 +52,6 @@ export default class ActorData extends EditableData {
 
     constructor(json_data?) {
         super(json_data);
-        // this.actor_category = ActorCategory.getByValue(json_data.actor_category)
         if (json_data.remark) {
             this.remark = Base64.decode(json_data.remark)
         } else {
@@ -81,12 +80,5 @@ export default class ActorData extends EditableData {
 
     get icon() {
         return `http://localhost:1314/_icon/${this.actor_name}.jfif`
-    }
-
-    get remark_list() {
-        if (this.remark != null && this.remark != "") {
-            return this.remark.split("\n")
-        }
-        return []
     }
 }
