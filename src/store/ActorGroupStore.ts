@@ -35,6 +35,20 @@ export const ActorGroupStore = defineStore('ActorGroupStore', {
         get(group_id: number): ActorGroupData {
             return this.list.get(group_id)
         },
+        getName(group_id: number): string {
+            const group = this.get(group_id)
+            if (group) {
+                return group.group_name
+            }
+            return `Error(${group_id})`
+        },
+        getColor(group_id: number): string {
+            const group = this.get(group_id)
+            if (group) {
+                return group.group_color
+            }
+            return "#000000"
+        },
         async getFromServer() {
             const [ok, group_list] = await getActorGroupList()
             if (ok) {

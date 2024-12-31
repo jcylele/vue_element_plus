@@ -157,6 +157,16 @@ export async function getActorFileInfo(actor_id: number) {
 }
 
 
+export async function getActorLogs(actor_id: number) {
+    const url = `${baseUrl}/${actor_id}/logs`;
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [false, response]
+    }
+    return [true, response]
+}
+
+
 export async function getLinkedActors(actor_id: number) {
     const url = `${baseUrl}/${actor_id}/linked`;
     const [ok, response] = await fetchGet(url)

@@ -92,6 +92,13 @@
                                 Open Folder
                             </el-button>
                         </el-space>
+                        <el-space direction="horizontal">
+                            <el-button class="pop-button"
+                                       type="primary"
+                                       @click="showLogs">
+                                Show Logs
+                            </el-button>
+                        </el-space>
                     </el-space>
                 </template>
             </el-popover>
@@ -207,9 +214,15 @@
     </el-dialog>
     <!-- actor posts dialog-->
     <el-dialog v-model="is_show_post"
-               title="Posts"
+               :title="actor.actor_name"
                width=720px>
-        <Posts :specific_actor_id="actor.actor_id"></Posts>
+        <Posts :specific_actor_id="actor.actor_id"/>
+    </el-dialog>
+    <!-- actor logs dialog-->
+    <el-dialog v-model="is_show_log"
+               :title="actor.actor_name"
+               width=720px>
+        <ActorLogs :specific_actor_id="actor.actor_id"/>
     </el-dialog>
 </template>
 
@@ -226,6 +239,7 @@ import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagChooser from "./ActorTagChooser.vue";
 import RemarkEditor from "./RemarkEditor.vue";
 import Posts from "./Posts.vue";
+import ActorLogs from "./ActorLogs.vue";
 import {ActorElement} from "../data/ArrayElement";
 import {ActorGroupStore} from "../store/ActorGroupStore";
 import ActorGroupData from "../data/ActorGroupData";
@@ -234,9 +248,10 @@ import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import ActorFileInfo from "../data/FileInfo";
 
+
 export default {
     name: "ActorCard",
-    components: {ActorTagChooser, SvgIcon, RemarkEditor, Posts},
+    components: {SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts},
     // props from parent
     props: {
         actor_data: ActorElement,
@@ -276,7 +291,8 @@ export default {
             is_show_remark: false,
             is_editing_tags: false,
             is_show_post: false,
-            is_show_op: false
+            is_show_op: false,
+            is_show_log: false
         }
     },
     mounted() {
@@ -377,6 +393,13 @@ export default {
         showPosts() {
             this.is_show_op = false
             this.is_show_post = true
+            this.is_show_log = false
+        },
+
+        showLogs() {
+            this.is_show_op = false
+            this.is_show_post = false
+            this.is_show_log = true
         },
 
         async changeScore() {

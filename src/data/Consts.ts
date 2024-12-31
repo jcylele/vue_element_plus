@@ -1,4 +1,4 @@
-import {ActorShowType, DownloadType, NoticeType, PostFilter, SortType} from "./Enums";
+import {ActorLogType, ActorShowType, DownloadType, NoticeType, PostFilter, SortType} from "./Enums";
 import {CommonOption, SortOption} from "./Interfaces";
 
 export const BASE_URL = "http://127.0.0.1:7878"
@@ -23,7 +23,6 @@ export const Download_Options: CommonOption[] = [
     {label: "Specific Urls", value: DownloadType.Url},
     {label: "Resume Files", value: DownloadType.Resume},
 ]
-
 
 
 export const Star_Colors = {
@@ -53,3 +52,16 @@ export const Notice_Param_Names =
         [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
         [NoticeType.SameActorName]: ["actor_name"],
     }
+
+export const Actor_Log_Type_Names = {
+    [ActorLogType.Add]: "Create Actor",
+    [ActorLogType.Group]: "Set Group",
+    [ActorLogType.Score]: "Set Score",
+    [ActorLogType.Tag]: "Set Tags",
+    [ActorLogType.ResetPost]: "Reset Post",
+    [ActorLogType.Remark]: "Set Remark",
+    [ActorLogType.Link]: "Link",
+    [ActorLogType.Unlink]: "Unlink",
+    [ActorLogType.PostCount]: "Set Post Count",
+    [ActorLogType.ClearFolder]: "Clear Folder",
+}
