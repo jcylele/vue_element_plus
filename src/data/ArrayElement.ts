@@ -2,9 +2,11 @@ import ActorData from "./ActorData";
 
 export class ActorElement {
     private actor: ActorData
+    selected: boolean
 
     constructor(actor: ActorData) {
         this.data = actor
+        this.selected = false
     }
 
     set data(actor: ActorData) {
@@ -15,8 +17,8 @@ export class ActorElement {
         return this.actor
     }
 
-    get id() {
-        return this.actor.actor_id
+    get uuid() {
+        return this.actor.uuid
     }
 }
 

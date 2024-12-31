@@ -1,5 +1,7 @@
-import {ActorShowType, NoticeType, PostFilter, SortType} from "./Enums";
+import {ActorShowType, DownloadType, NoticeType, PostFilter, SortType} from "./Enums";
 import {CommonOption, SortOption} from "./Interfaces";
+
+export const BASE_URL = "http://127.0.0.1:7878"
 
 export const MAX_SCORE = 12
 
@@ -14,6 +16,15 @@ export const Post_Filter_Options: CommonOption[] = [
     {label: "Normal", value: PostFilter.Normal},
     {label: "Current", value: PostFilter.Old},
 ]
+
+export const Download_Options: CommonOption[] = [
+    {label: "New Actors", value: DownloadType.New},
+    {label: "By Category", value: DownloadType.Category},
+    {label: "Specific Urls", value: DownloadType.Url},
+    {label: "Resume Files", value: DownloadType.Resume},
+]
+
+
 
 export const Star_Colors = {
     0: '#2020FF',
@@ -33,10 +44,12 @@ export const Actor_Show_Options: CommonOption[] = [
 export const Notice_Type_Options: CommonOption[] = [
     {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
     {label: "Invalid Post", value: NoticeType.InvalidPost},
+    {label: "Same Actor Name", value: NoticeType.SameActorName},
 ]
 
 export const Notice_Param_Names =
     {
-        [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2", "actor_name3"],
-        [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"]
+        [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2"],
+        [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
+        [NoticeType.SameActorName]: ["actor_name"],
     }

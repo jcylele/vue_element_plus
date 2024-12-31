@@ -1,5 +1,5 @@
 <template>
-  <el-space direction="vertical" :fill="true" style="width: 100%">
+  <el-space direction="vertical" fill style="width: 100%">
     <NewActorGroup @group_added="onNewGroupAdded"/>
     <el-table :data="actor_group_list" row-key="uuid">
       <el-table-column label="Name" min-width="100px">

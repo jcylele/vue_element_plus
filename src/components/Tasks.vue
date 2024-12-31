@@ -9,7 +9,7 @@
                 </el-space>
                 <el-table :data="task_list" border class="wrap_line">
                     <el-table-column prop="desc" label="task" min-width="300px"/>
-                    <el-table-column prop="download_limit" label="limit" min-width="200px">
+                    <el-table-column prop="download_limit" label="limit" min-width="280px">
                         <template #default="scope">
                             <el-space direction="vertical">
                                 <el-space direction="horizontal">

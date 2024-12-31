@@ -1,5 +1,5 @@
 <template>
-    <el-space direction="vertical" :fill="true">
+    <el-space direction="vertical" fill>
         <el-text style="font-size: 24px;font-weight: bold; color: hotpink;">
             Remarks
         </el-text>

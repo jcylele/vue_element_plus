@@ -3,8 +3,9 @@ import {fetchGet, fetchPatch, fetchPost} from "./FetchCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 import {Base64} from "js-base64";
 import {BatchActorGroup} from "../data/SimpleForms";
+import {BASE_URL} from "../data/Consts";
 
-const baseUrl = "http://127.0.0.1:8000/api/actor"
+const baseUrl = `${BASE_URL}/api/actor`
 
 
 export async function getActorCount(filter_condition: ActorFilterData) {
@@ -37,7 +38,7 @@ export async function linkSameActors(actor_ids: number[]) {
         return [false, response]
     }
 
-    const map = {}
+    const map = new Map<number, ActorData>()
     for (const json_data of response) {
         const actor = new ActorData(json_data)
         map[actor.actor_id] = actor
@@ -71,11 +72,12 @@ export async function batchChangeActorGroup(actor_ids: number[], group_id: numbe
         return [false, response]
     }
 
-    const list = []
+    const map = {}
     for (const json_data of response) {
-        list.push(new ActorData(json_data))
+        const actor = new ActorData(json_data)
+        map[actor.actor_id] = actor
     }
-    return [true, list]
+    return [true, map]
 }
 
 export async function getActor(actor_id: number) {
@@ -145,7 +147,7 @@ export async function ChangeActorTag(actor_id: number, tag_list: number[]) {
 }
 
 
-export async function getFileInfo(actor_id: number) {
+export async function getActorFileInfo(actor_id: number) {
     const url = `${baseUrl}/${actor_id}/file_info`;
     const [ok, response] = await fetchGet(url)
     if (!ok) {

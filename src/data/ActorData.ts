@@ -1,22 +1,9 @@
 import EditableData from "./EditableData";
 import {Base64} from "js-base64";
 import {PostData} from "./PostData";
+import {ResState} from "./Enums";
+import ActorFileInfo from "./FileInfo";
 
-const res_state = ["未下载", "已下载", "大文件", "已删除"]
-
-interface ResFileInfo {
-    res_state: number,
-    res_size: number,
-    img_count: number,
-    video_count: number,
-}
-
-interface ActorFileInfo {
-    res_info: ResFileInfo[]
-    total_post_count: number
-    unfinished_post_count: number
-    finished_post_count: number
-}
 
 export default class ActorData extends EditableData {
     actor_id: number
@@ -29,6 +16,28 @@ export default class ActorData extends EditableData {
     commented_posts: PostData[]
     tag_ids: number[]
     file_info: ActorFileInfo
+
+    get is_video_all() {
+        if (!this.file_info) {
+            return false
+        }
+        let un_down_video_count = 0
+        for (const resFileInfo of this.file_info.res_info) {
+            switch (resFileInfo.res_state) {
+                case ResState.Init:
+                case ResState.Skip:
+                    un_down_video_count += resFileInfo.video_count
+                    break
+            }
+        }
+        if (un_down_video_count > 0) {
+            return false
+        }
+        if (this.file_info.finished_post_count < this.file_info.total_post_count) {
+            return false
+        }
+        return true
+    }
 
     get post_desc() {
         if (this.file_info.unfinished_post_count > 0) {
@@ -52,13 +61,19 @@ export default class ActorData extends EditableData {
 
     constructor(json_data?) {
         super(json_data);
-        if (json_data.remark) {
-            this.remark = Base64.decode(json_data.remark)
-        } else {
-            this.remark = ""
+
+        // default values for specific fields
+        this.tag_ids ??= []
+        this.remark = ""
+        this.commented_posts = []
+
+        if (!json_data) {
+            return
         }
 
-        this.commented_posts = []
+        if (json_data.remark) {
+            this.remark = Base64.decode(json_data.remark)
+        }
         for (const jsonDatum of json_data.commented_posts) {
             this.commented_posts.push(new PostData(jsonDatum))
         }
@@ -70,12 +85,6 @@ export default class ActorData extends EditableData {
 
     hasTag(tag_id: number) {
         return this.tag_ids.indexOf(tag_id) >= 0
-    }
-
-    formatResFileInfo(rfi: ResFileInfo): string {
-        let size = rfi.res_size / (1024 * 1024 * 1024)
-        size = Math.floor(size * 100) / 100
-        return `${res_state[rfi.res_state - 1]}: ${size}G(${rfi.img_count}P,${rfi.video_count}V)`
     }
 
     get icon() {

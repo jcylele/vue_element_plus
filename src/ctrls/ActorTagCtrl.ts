@@ -1,8 +1,9 @@
 import ActorTagData from "../data/ActorTagData";
 import {fetchDelete, fetchGet, fetchPost, fetchPut} from "./FetchCtrl";
 import AllActorTagPriorities from "../data/ActorTagPriority";
+import {BASE_URL} from "../data/Consts";
 
-const baseUrl = "http://127.0.0.1:8000/api/actor_tag"
+const baseUrl = `${BASE_URL}/api/actor_tag`
 
 export async function addActorTag(actor_tag: ActorTagData) {
     const url = `${baseUrl}/add`

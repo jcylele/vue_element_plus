@@ -13,7 +13,7 @@ export class ActorUrl {
     full_url: string
 }
 
-abstract class BaseDownloadForm {
+export class BaseDownloadForm {
     download_limit: DownloadLimitForm
 }
 

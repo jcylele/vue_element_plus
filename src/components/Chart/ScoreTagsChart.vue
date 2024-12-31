@@ -31,22 +31,6 @@ import {LabelLayout, UniversalTransition} from 'echarts/features'
 
 import {CanvasRenderer} from 'echarts/renderers'
 
-import type {
-    BarSeriesOption
-} from 'echarts/charts'
-
-import type {
-    TitleComponentOption,
-    GridComponentOption
-} from "echarts/components";
-import type {
-    ComposeOption
-} from 'echarts/core'
-
-type ScoreTagsOption = ComposeOption<| BarSeriesOption
-    | TitleComponentOption
-    | GridComponentOption>;
-
 echarts.use([
     BarChart,
     TooltipComponent,
@@ -64,6 +48,7 @@ import {ActorTagStore} from "../../store/ActorTagStore";
 import {ECharts} from "echarts";
 import {MAX_SCORE} from "../../data/Consts";
 import {TagCount} from "../../data/Interfaces";
+import {score_tag_option} from "../../data/ChartOptionData";
 
 export default {
     name: "ScoreTagsChart",
@@ -77,20 +62,6 @@ export default {
             tag_count: 10,
             scores: [0, MAX_SCORE],
             tagChart: undefined as ECharts,
-            chart_option: {
-                xAxis: {
-                    type: 'value',
-                },
-                yAxis: {
-                    type: 'category',
-                    data: []
-                },
-                series: [{
-                    type: 'bar',
-                    data: [],
-                    // color: []
-                }]
-            } as ScoreTagsOption
         }
     },
     methods: {
@@ -105,10 +76,12 @@ export default {
         },
         refreshChart(tag_list: TagCount[]) {
             tag_list.reverse()
-            this.chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
-            this.chart_option.series[0].data = tag_list.map(a => a.count)
 
-            this.tagChart.setOption(this.chart_option)
+            const chart_option = score_tag_option
+            chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
+            chart_option.series[0].data = tag_list.map(a => a.count)
+
+            this.tagChart.setOption(chart_option, true)
         },
     },
     mounted() {

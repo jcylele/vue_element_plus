@@ -1,7 +1,8 @@
 import {fetchDelete, fetchGet, fetchPost} from "./FetchCtrl";
 import ActorGroupData from "../data/ActorGroupData";
+import {BASE_URL} from "../data/Consts";
 
-const baseUrl = "http://127.0.0.1:8000/api/actor_group"
+const baseUrl = `${BASE_URL}/api/actor_group`
 
 export async function getActorGroupList() {
     const url = `${baseUrl}/list`

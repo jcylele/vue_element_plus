@@ -1,5 +1,4 @@
 import {SortType} from "./Enums";
-import ActorTagData from "./ActorTagData";
 
 export interface ISortItem {
     get key: number

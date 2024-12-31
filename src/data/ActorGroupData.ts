@@ -21,7 +21,7 @@ export default class ActorGroupData extends EditableData implements ISortItem {
         }
     }
 
-    get show_content(): string{
+    get show_content(): string {
         return `${this.group_name} (${this.group_desc})`
     }
 

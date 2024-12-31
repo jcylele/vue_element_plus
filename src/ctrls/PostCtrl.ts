@@ -1,8 +1,9 @@
-import {fetchPost} from "./FetchCtrl";
+import {fetchGet, fetchPost} from "./FetchCtrl";
 import {PostCommentForm, PostConditionForm, PostData} from "../data/PostData";
 import {ActorPostInfo} from "../data/WebData";
+import {BASE_URL} from "../data/Consts";
 
-const baseUrl = "http://127.0.0.1:8000/api/post"
+const baseUrl = `${BASE_URL}/api/post`
 
 export async function getPostCountList(form: PostConditionForm) {
     const url = `${baseUrl}/post_count_list`
@@ -39,4 +40,9 @@ export async function setPostComment(post_id: string, comment: string) {
     form.post_id = post_id
     form.comment = comment
     return await fetchPost(url, form)
+}
+
+export async function getVideoStates(actor_id: number) {
+    const url = `${baseUrl}/video_states/${actor_id}`
+    return await fetchGet(url)
 }

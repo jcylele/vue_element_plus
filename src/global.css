@@ -1,3 +1,94 @@
+:root {
+    --el-fill-color-blank: #c7ffc7;
+    --el-fill-color-light: #d7ffd7;
+    --el-bg-color: #def0de;
+    --el-card-bg-color: #c8f4c8;
+    --el-border-color: #ffa050;
+    --el-font-size-base: 18px;
+
+    --me-header-bg-color: #9bdd9b;
+    --me-hover-color-blank: #a7dfa7;
+    --me-switch-off-color: #787878;
+}
+
+.el-switch {
+    --el-switch-off-color: var(--me-switch-off-color);
+}
+
+.el-aside {
+    width: 200px;
+}
+
+.el-table {
+    --el-table-header-bg-color: var(--me-header-bg-color);
+    font-size: 16px;
+}
+
+.el-tag {
+    --el-tag-font-size: 16px;
+}
+
+.el-collapse {
+    --el-collapse-header-bg-color: var(--me-header-bg-color);
+    --el-collapse-content-bg-color: var(--el-bg-color);
+}
+
+.el-select__wrapper {
+    font-size: var(--el-font-size-base);
+}
+
+.el-form-item {
+    margin-bottom: 5px;
+}
+
+.el-checkbox {
+    --el-checkbox-font-size: 18px;
+}
+
+.el-scrollbar {
+    /*--el-scrollbar-bg-color: var(--el-fill-color-blank);*/
+    /*--el-scrollbar-hover-bg-color: var(--me-hover-color-blank);*/
+}
+
+.el-rate {
+    --el-rate-icon-margin: 0;
+}
+
+.el-rate__item {
+    color: var(--el-border-color);
+}
+
+.el-icon {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.el-icon svg {
+    width: 1.5em;
+    height: 1.5em;
+}
+
+.el-switch__label * {
+    font-size: 16px;
+}
+
+tr:nth-child(even) {
+    background-color: #f0ffc7;
+}
+
+tr:nth-child(odd) {
+    background-color: #c7fff0;
+}
+
+.el-form-item:nth-child(even) {
+    background-color: #cef0ee;
+}
+
+.el-form-item:nth-child(odd) {
+    background-color: #eef0ce;
+}
+
+
 .tag_9 {
     background: #787878;
     color: #ffffff;
@@ -57,4 +148,36 @@
     font-size: 28px;
     font-weight: bold;
     font-style: italic;
+}
+
+.res1 {
+    color: darkgreen;
+}
+
+.res1 .el-text {
+    color: darkgreen;
+}
+
+.res2 {
+    color: hotpink;
+}
+
+.res2 .el-text {
+    color: hotpink;
+}
+
+.res3 {
+    color: orangered;
+}
+
+.res3 .el-text {
+    color: orangered;
+}
+
+.res4 {
+    color: blue;
+}
+
+.res4 .el-text {
+    color: blue;
 }

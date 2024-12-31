@@ -3,9 +3,18 @@ import ActorTagData from "../data/ActorTagData";
 import {getActorTagList} from "../ctrls/ActorTagCtrl";
 import SortedList from "../data/SortedList";
 
+interface TagHistory {
+    last_used: number,
+    tags: number[]
+}
+
+const MAX_TAG_HISTORY = 5
+
 export const ActorTagStore = defineStore('ActorTagStore', {
     state: () => ({
-        list: SortedList<ActorTagData>
+        list: null as SortedList<ActorTagData>,
+        history_list: [] as TagHistory[],
+        last_used: 0
     }),
     getters: {
         sorted_list: (state: ActorTagState) => {
@@ -14,6 +23,9 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             }
             return state.list.sorted_list
         },
+        tag_history: (state: ActorTagState) => {
+            return state.history_list
+        }
     },
     actions: {
         add(actorTag: ActorTagData) {
@@ -58,5 +70,47 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             }
             return `Error(${tag_id})`
         },
+
+        addRecord(tags: number[]) {
+            this.last_used++
+            let existing_index = -1
+            let min_used_index = -1
+            let min_used = this.last_used
+            for (let i = 0; i < this.history_list.length; i++) {
+                const item = this.history_list[i]
+                // find the min used
+                if (item.last_used < min_used) {
+                    min_used = item.last_used
+                    min_used_index = i
+                }
+                // find same record
+                if (tags.length != item.tags.length) {
+                    continue
+                }
+                let same = true
+                for (let j = 0; j < tags.length; j++) {
+                    // tags are sorted, so no need to check order
+                    if (tags[j] != item.tags[j]) {
+                        same = false
+                        break
+                    }
+                }
+                if (same) {
+                    existing_index = i
+                    break
+                }
+            }
+            // already exist only update last_used
+            if (existing_index != -1) {
+                this.history_list[existing_index].last_used = this.last_used
+                return
+            }
+            // add if not full, otherwise replace
+            if (this.history_list.length < MAX_TAG_HISTORY) {
+                this.history_list.push({last_used: this.last_used, tags: tags})
+            } else {
+                this.history_list[min_used_index] = {last_used: this.last_used, tags: tags}
+            }
+        }
     },
 })

@@ -1,8 +1,9 @@
 import NoticeData from "../data/NoticeData";
 import {fetchDelete, fetchGet} from "./FetchCtrl";
 import {NoticeType} from "../data/Enums";
+import {BASE_URL} from "../data/Consts";
 
-const baseUrl = "http://127.0.0.1:8000/api/notice"
+const baseUrl = `${BASE_URL}/api/notice`
 
 export async function getNotices(notice_type: NoticeType) {
     const url = `${baseUrl}/list/${notice_type}`

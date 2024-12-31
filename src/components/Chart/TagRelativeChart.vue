@@ -19,7 +19,7 @@
             <el-button type="primary" @click="refreshData">Refresh</el-button>
         </el-form-item>
     </el-form>
-    <div id="tag_relatives" style="width: 640px;height: 480px"></div>
+    <div id="tag_relatives" style="width: 1280px;height: 600px"></div>
 </template>
 
 <script lang="ts">
@@ -36,22 +36,6 @@ import {
 import {LabelLayout, UniversalTransition} from 'echarts/features'
 
 import {CanvasRenderer} from 'echarts/renderers'
-
-import type {
-    BarSeriesOption
-} from 'echarts/charts'
-
-import type {
-    TitleComponentOption,
-    GridComponentOption
-} from "echarts/components";
-import type {
-    ComposeOption
-} from 'echarts/core'
-
-type TagRelativesOption = ComposeOption<| BarSeriesOption
-    | TitleComponentOption
-    | GridComponentOption>;
 
 echarts.use([
     BarChart,
@@ -70,6 +54,7 @@ import {getRelativesByTag} from "../../ctrls/ChartCtrl";
 import {CallbackDataParams} from "echarts/types/dist/shared";
 import {ECharts} from "echarts";
 import {TagCount} from "../../data/Interfaces";
+import {tag_relative_option} from "../../data/ChartOptionData";
 
 export default {
     name: "TagRelativeChart",
@@ -78,21 +63,7 @@ export default {
             cur_tag_id: 0,
             tag_count: 10,
             count_list: [] as TagCount[],
-            tagChart: undefined as ECharts,
-            chart_option: {
-                xAxis: {
-                    type: 'value',
-                },
-                yAxis: {
-                    type: 'category',
-                    data: [],
-                },
-                series: [{
-                    type: 'bar',
-                    data: [],
-                    color: []
-                }]
-            } as TagRelativesOption
+            tagChart: undefined as ECharts
         }
     },
     computed: {
@@ -110,11 +81,13 @@ export default {
         },
         refreshChart(tag_list: TagCount[]) {
             tag_list.reverse()
-            this.chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
-            this.chart_option.series[0].data = tag_list.map(a => a.count)
-
-            this.tagChart.setOption(this.chart_option)
             this.count_list = tag_list
+
+            const chart_option = tag_relative_option
+            chart_option.yAxis.data = tag_list.map(a => this.getTagName(a.tag_id))
+            chart_option.series[0].data = tag_list.map(a => a.count)
+
+            this.tagChart.setOption(chart_option, true)
         },
         onChartClick(params: CallbackDataParams) {
             const tag_id = this.count_list[params.dataIndex].tag_id

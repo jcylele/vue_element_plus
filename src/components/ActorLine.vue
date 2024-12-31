@@ -25,7 +25,6 @@
                           size="24px" name="edit"/>
                 <el-tag v-for="tag_id in actor.tag_ids"
                         :class="getTagStyleName(tag_id)"
-                        style="font-size: 18px"
                         round>
                     {{ getTagName(tag_id) }}
                 </el-tag>

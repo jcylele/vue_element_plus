@@ -1,53 +1,14 @@
 <template>
-    <el-space direction="vertical" :fill="true">
-        <el-collapse v-model="active_parts" @change="onActivePartChange">
-            <!-- link actors group -->
-            <el-collapse-item name="link" title="">
-                <template #title>
-                    <el-text style="font-size: 24px;font-style: oblique;margin-right: 10px">
-                        Link Actors
-                    </el-text>
-                    <svg-icon size="24px" name="link"/>
-                </template>
-                <el-space direction="horizontal">
-
-                    <el-space direction="vertical" :alignment="'stretch'">
-                        <el-button type="primary" size="large" @click="linkActors">Link</el-button>
-                        <el-button type="warning" size="large" @click="clearLinkedActors">Clear</el-button>
-                        <el-button type="danger" size="large" @click="unlinkActors">Unlink</el-button>
-                    </el-space>
-
-                    <!-- linked actors -->
-
-                    <el-space v-if="actor_show_card" direction="horizontal"
-                              class="card_row" alignment="stretch">
-                        <ActorCard v-for="actor_data in linked_list"
-                                   :actor_data="actor_data"
-                                   :show_link="false"
-                                   :key="actor_data.id"/>
-                    </el-space>
-                </el-space>
-            </el-collapse-item>
-            <!-- filter conditions -->
-            <el-collapse-item name="filter">
-                <template #title>
-                    <el-text style="font-size: 24px;font-style: oblique;margin-right: 10px">
-                        Actor Filter
-                    </el-text>
-                    <svg-icon size="24px" name="filter"/>
-                </template>
-                <el-space direction="vertical">
-                    <ActorFilter :filter_condition="filter_condition"
-                                 @submit="onFilterSubmit"/>
-                </el-space>
-            </el-collapse-item>
-        </el-collapse>
-        <!-- tools menu -->
+    <el-space direction="vertical" fill>
+        <ActorFilter :filter_condition="filter_condition"
+                     @submit="onFilterSubmit"/>
+        <el-divider style="margin: 5px 0;"/>
+        <!-- tools bar -->
         <el-space direction="horizontal" size="large" spacer="|">
             <el-pagination
                 v-model:current-page="page_index"
                 :page-size="page_size"
-                :page-sizes="[12, 14]"
+                :page-sizes="[6, 8, 10, 12, 14]"
                 :total="actor_count"
                 @current-change="onActorPageChange"
                 @size-change="handleSizeChange"
@@ -55,32 +16,6 @@
                 background
                 style="margin: 5px"
             />
-            <el-popover trigger="click" placement="right" width="200px">
-                <template #reference>
-                    <el-button>Operate These Actors</el-button>
-                </template>
-                <template #default>
-                    <el-space direction="vertical" style="width: 180px" :fill="true">
-                        <!-- download -->
-                        <el-button @click="batchShowDownload">
-                            Batch Download
-                        </el-button>
-                        <!-- actor category -->
-                        <el-select placeholder="Batch Set Group"
-                                   @change="batchSetGroup">
-                            <el-option
-                                v-for="group in group_list"
-                                :label="group.show_content"
-                                :value="group.group_id"
-                                :style="{'color': group.group_color, }"
-                            />
-                        </el-select>
-                    </el-space>
-                </template>
-            </el-popover>
-            <!--        <el-text style="font-style: italic;font-weight: bold;margin-left: 10px;">-->
-            <!--          Show Type-->
-            <!--        </el-text>-->
             <el-select v-model="actor_show_type" style="min-width: 100px">
                 <el-option
                     v-for="option in actor_show_options"
@@ -89,28 +24,84 @@
                 />
             </el-select>
             <el-button type="primary" @click="showPosts">
-                Posts
+                Search Posts
             </el-button>
+            <el-checkbox v-model="is_show_lock"
+                         label="Lock"
+                         size="default" border/>
+            <div>
+                <el-checkbox v-model="is_show_batch_op"
+                             label="Batch Ops"
+                             @change="onBatchOpChange"
+                             size="default" border/>
+                <el-switch
+                    v-if="is_show_batch_op"
+                    v-model="is_batch_select_all"
+                    @change="batchSelectAll"
+                    active-text="All"
+                    inactive-text="None"
+                    style="margin: 0 20px"
+                />
+            </div>
+
+        </el-space>
+        <!-- batch tool bar -->
+        <el-space direction="horizontal" v-if="is_show_batch_op" size="large" spacer="|">
+            <!-- download -->
+            <el-button @click="batchShowDownload" style="width: 200px">
+                Batch Download
+            </el-button>
+            <!-- set actor category -->
+            <el-select placeholder="Batch Set Group"
+                       style="width: 200px"
+                       @change="batchSetGroup">
+                <el-option
+                    v-for="group in group_list"
+                    :label="group.show_content"
+                    :value="group.group_id"
+                    :style="{'color': group.group_color, }"
+                />
+            </el-select>
+            <div style="gap: 5px">
+                <el-button type="danger" size="default" @click="unlinkActors">
+                    Unlink Actors
+                </el-button>
+                <el-button type="primary" size="default" @click="linkActors">
+                    Link Actors
+                </el-button>
+            </div>
         </el-space>
         <!-- a big card per actor -->
         <el-space v-if="actor_show_card" direction="horizontal"
                   class="card_row" alignment="stretch" style="gap: 15px 15px">
             <!-- TODO change is not triggered, why   -->
             <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
-            <ActorCard v-for="actor_data in actor_list"
+            <ActorCard v-for="actor_data in locked_actor_list"
                        :actor_data="actor_data"
-                       :show_link="show_link"
-                       :key="actor_data.id"
+                       :show_select="is_show_batch_op"
+                       :key="actor_data.uuid"
+                       :show_lock="is_show_lock"
+                       :locked="true"
                        @refresh="onActorChange"
                        @friend="onActorFriendClick"
-                       @link="onActorLinkClick"
-                       @download="singleShowDownload"/>
+                       @download="singleShowDownload"
+                       @lock="onActorLockClick"/>
+            <ActorCard v-for="actor_data in actor_list"
+                       :actor_data="actor_data"
+                       :show_select="is_show_batch_op"
+                       :key="actor_data.uuid"
+                       :show_lock="is_show_lock"
+                       :locked="false"
+                       @refresh="onActorChange"
+                       @friend="onActorFriendClick"
+                       @download="singleShowDownload"
+                       @lock="onActorLockClick"/>
         </el-space>
         <!-- a line per actor -->
-        <el-space v-if="actor_show_line" direction="vertical" size="small" :fill="true">
+        <el-space v-if="actor_show_line" direction="vertical" size="small" fill>
             <ActorLine v-for="actor_data in actor_list"
                        :actor_data="actor_data"
-                       :key="actor_data.id"/>
+                       :key="actor_data.uuid"/>
         </el-space>
     </el-space>
     <!-- download  dialog -->
@@ -162,23 +153,27 @@ import ActorLine from "./ActorLine.vue";
 import Posts from "./Posts.vue";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
+import ActorData from "../data/ActorData";
 
 export default {
     components: {SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
     data() {
         return {
             filter_condition: new ActorFilterData(),
+            locked_actor_list: [] as ActorElement[],
             actor_list: [] as ActorElement[],
             // actor_cards: {} as Map<Number, ActorCard>,
             page_size: 12,
             page_index: 1,
             actor_count: 0,
             active_parts: ['filter'],
-            linked_list: [] as ActorElement[],
             download_actor_ids: [] as number[],
             download_limit: null as DownloadLimitForm,
             actor_show_type: ActorShowType.Card,
             is_show_post: false,
+            is_show_batch_op: false,
+            is_batch_select_all: false,
+            is_show_lock: false
         }
     },
     computed: {
@@ -188,9 +183,6 @@ export default {
             cached_page_index: "page_index",
         }),
         ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
-        show_link() {
-            return this.active_parts.includes('link')
-        },
         is_show_download() {
             return this.download_actor_ids.length > 0
         },
@@ -213,9 +205,10 @@ export default {
             getTagsFromServer: 'getFromServer',
         }),
         ...mapActions(ActorFilterStore, {
-            saveFilterCondition: "setFilter",
             savePageIndex: "setPageIndex",
             savePageSize: "setPageSize",
+            getDowningFromServer: "getDowningFromServer",
+            is_actor_downing: "is_downing",
         }),
         ...mapActions(ActorGroupStore, {
             getGroupsFromServer: 'getFromServer',
@@ -233,20 +226,12 @@ export default {
             const [ok, actor_list] = await getActorList(this.filter_condition, this.page_size, (this.page_index - 1) * this.page_size)
             if (ok) {
                 this.actor_list = ToActorElements(actor_list)
+                await this.getDowningFromServer()
             } else {
                 this.actor_list = []
             }
         },
-        onFilterChange() {
-            // console.log("on filter change")
-            this.savePageIndex(1)
-            this.page_index = 1
-            this.actor_list = []
-            this.actor_count = 0
-        },
         async onFilterSubmit() {
-            this.saveFilterCondition(this.filter_condition)
-
             this.actor_list = []
             this.actor_count = 0
             const [ok, actor_count] = await getActorCount(this.filter_condition)
@@ -278,51 +263,81 @@ export default {
                 this.actor_list = []
             }
         },
-        async onActorLinkClick(actor_data: ActorElement) {
-            this.linked_list.push(actor_data)
+        getSelectedActorIds() {
+            let actor_ids = []
+            for (const actor of this.locked_actor_list) {
+                if (actor.selected) {
+                    actor_ids.push(actor.data.actor_id)
+                }
+            }
+            for (const actor of this.actor_list) {
+                if (actor.selected) {
+                    actor_ids.push(actor.data.actor_id)
+                }
+            }
+            return actor_ids
+        },
+        onBatchOpChange(val: boolean) {
+            if (!val) {
+                this.is_batch_select_all = false
+                this.batchSelectAll(false)
+            }
+        },
+        batchSelectAll(val: boolean) {
+            for (const actor of this.locked_actor_list) {
+                actor.selected = val
+            }
+            for (const actor of this.actor_list) {
+                actor.selected = val
+            }
         },
         async linkActors() {
-            if (this.linked_list.length < 2) {
-                logWarn("No actor to link")
+            let actor_ids = this.getSelectedActorIds()
+            if (actor_ids.length < 2) {
+                logWarn("Not enough actors to link")
                 return
             }
-
-            const actor_ids = this.linked_list.map((actor) => actor.data.actor_id)
             const [ok, actor_map] = await linkSameActors(actor_ids)
             if (ok) {
-                for (const actor_data of this.linked_list) {
-                    const actor_id = actor_data.data.actor_id
-                    if (actor_id in actor_map) {
-                        actor_data.data = actor_map[actor_id]
-                    }
-                }
-            } else {
-                this.linked_list = []
+                this.refreshActors(actor_map)
+                this.batchSelectAll(false)
             }
         },
 
         async unlinkActors() {
-            if (this.linked_list.length == 0) {
+            let actor_ids = this.getSelectedActorIds()
+            if (actor_ids.length == 0) {
                 logWarn("No actor to unlink")
                 return
             }
 
-            const actor_ids = this.linked_list.map((actor) => actor.data.actor_id)
             const [ok, actor_map] = await unlinkSameActors(actor_ids)
             if (ok) {
-                for (const actor_data of this.linked_list) {
-                    const actor_id = actor_data.data.actor_id
-                    if (actor_id in actor_map) {
-                        actor_data.data = actor_map[actor_id]
-                    }
-                }
-            } else {
-                this.linked_list = []
+                this.refreshActors(actor_map)
+                this.batchSelectAll(false)
             }
         },
 
-        clearLinkedActors() {
-            this.linked_list = []
+        onActorLockClick(actor_data: ActorElement, val: boolean) {
+            if (val) {
+                this.locked_actor_list.push(actor_data)
+
+                for (let i = 0; i < this.actor_list.length; i++) {
+                    if (this.actor_list[i].data.actor_id == actor_data.data.actor_id) {
+                        this.actor_list.splice(i, 1)
+                        break
+                    }
+                }
+            } else {
+                this.actor_list.unshift(actor_data)
+
+                for (let i = 0; i < this.locked_actor_list.length; i++) {
+                    if (this.locked_actor_list[i].data.actor_id == actor_data.data.actor_id) {
+                        this.locked_actor_list.splice(i, 1)
+                        break
+                    }
+                }
+            }
         },
 
         showDownloadLimit(actor_ids: number[]) {
@@ -337,14 +352,19 @@ export default {
         },
 
         batchShowDownload() {
-            let name_list = this.actor_list.map(element => element.data.actor_id)
-            this.showDownloadLimit(name_list)
+            let actor_ids = this.getSelectedActorIds()
+            if (actor_ids.length == 0) {
+                logWarn("No actor to download")
+                return
+            }
+            this.showDownloadLimit(actor_ids)
         },
 
         async onSubmitDownload() {
             let [ok, _] = await downloadByActorIds(this.download_limit, this.download_actor_ids)
             this.onDownloadClose()
             if (ok) {
+                await this.getDowningFromServer()
                 logInfo("download started")
             }
         },
@@ -354,33 +374,48 @@ export default {
         },
 
         async batchSetGroup(group_id: number) {
-            let id_list = this.actor_list.map(element => element.data.actor_id)
-            let [ok, actor_list] = await batchChangeActorGroup(id_list, group_id)
+            let actor_ids = this.getSelectedActorIds()
+            if (actor_ids.length == 0) {
+                logWarn("No actor to set group")
+                return
+            }
+            let [ok, actor_map] = await batchChangeActorGroup(actor_ids, group_id)
             if (ok) {
-                this.actor_list = ToActorElements(actor_list)
-            } else {
-                this.actor_list = []
+                this.refreshActors(actor_map)
+                this.batchSelectAll(false)
+            }
+        },
+
+        refreshActors(actor_map: Map<number, ActorData>) {
+            for (const actor_data of this.locked_actor_list) {
+                const actor = actor_map.get(actor_data.data.actor_id)
+                if (actor) {
+                    actor_data.data = actor
+                    console.log(`actor changed: ${actor_data.data.actor_name}`)
+                }
+            }
+            for (const actor_data of this.actor_list) {
+                const actor = actor_map.get(actor_data.data.actor_id)
+                if (actor) {
+                    actor_data.data = actor
+                    console.log(`actor changed: ${actor_data.data.actor_name}`)
+                }
             }
         },
 
         showPosts() {
             this.is_show_post = true
         },
-
-        onActivePartChange() {
-            if (!this.show_link) {
-                this.linked_list = []
-            }
-        }
     },
     watch: {},
     async mounted() {
-        this.filter_condition = this.cached_filter_condition
+        this.filter_condition = this.cached_filter_condition.clone()
         this.page_size = this.cached_page_size
         this.page_index = this.cached_page_index
 
         await this.getTagsFromServer()
         await this.getGroupsFromServer()
+        await this.getDowningFromServer()
     }
 }
 

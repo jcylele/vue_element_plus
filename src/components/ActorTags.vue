@@ -1,7 +1,7 @@
 <template>
   <el-container>
     <el-main>
-      <el-space direction="vertical" :fill="true">
+      <el-space direction="vertical" fill>
         <NewActorTag @tag_added="refreshTags"/>
         <el-text style="font-size: 24px;font-style: oblique">
           Drag Elements Below To Set Tags Priorities

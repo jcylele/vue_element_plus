@@ -1,125 +1,119 @@
 <template>
-  <el-space direction="vertical" alignment="flex-start">
-    <el-text style="font-size: 24px">
-      Choose Tag
-    </el-text>
-    <el-select v-model="cur_tag_id"
-               @change="onCheckedTagChange"
-               style="width: 120px;"
-               filterable clearable>
-      <el-option
-          v-for="actor_tag in actor_tag_list"
-          :key="actor_tag.tag_id"
-          :label="actor_tag.tag_name"
-          :value="actor_tag.tag_id"
-      />
-    </el-select>
-    <div id="tag_scores" style="width: 640px;height: 480px"></div>
-  </el-space>
+    <el-space direction="vertical" alignment="flex-start">
+        <el-button type="primary"
+                   @click="is_choosing_tags = true">
+            Choose Tags
+        </el-button>
+        <div id="tag_scores" style="width: 1280px;height: 600px"></div>
+    </el-space>
+    <el-dialog v-model="is_choosing_tags"
+               :title="actor.actor_name"
+               width="67%">
+        <ActorTagChooser :actor="actor"
+                         @submit="onSubmitTag"
+                         @cancel="onCancelTag"
+        />
+    </el-dialog>
 </template>
 
 <script lang="ts">
 import * as echarts from 'echarts/core'
 import {BarChart} from "echarts/charts";
-
+import 'echarts/lib/component/legend'
 import {
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  TransformComponent
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent,
 } from "echarts/components";
 
 import {LabelLayout, UniversalTransition} from 'echarts/features'
 
 import {CanvasRenderer} from 'echarts/renderers'
 
-import type {
-  BarSeriesOption
-} from 'echarts/charts'
-
-import type {
-  TitleComponentOption,
-  GridComponentOption
-} from "echarts/components";
-import type {
-  ComposeOption
-} from 'echarts/core'
-
-type TagScoresOption = ComposeOption<| BarSeriesOption
-    | TitleComponentOption
-    | GridComponentOption>;
 
 echarts.use([
-  BarChart,
-  TooltipComponent,
-  GridComponent,
-  DatasetComponent,
-  TransformComponent,
-  LabelLayout,
-  UniversalTransition,
-  CanvasRenderer
+    BarChart,
+    TooltipComponent,
+    GridComponent,
+    DatasetComponent,
+    TransformComponent,
+    LabelLayout,
+    UniversalTransition,
+    CanvasRenderer
 ]);
 
-import {mapState} from "pinia";
+import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../../store/ActorTagStore";
 import {getScoresByTag} from "../../ctrls/ChartCtrl";
-import {MAX_SCORE, Star_Colors} from "../../data/Consts";
+import {MAX_SCORE} from "../../data/Consts";
 import {ECharts} from "echarts";
+import ActorData from "../../data/ActorData";
+import ActorTagChooser from "../ActorTagChooser.vue";
+import {tag_score_option, tag_score_series_item} from "../../data/ChartOptionData";
 
 export default {
-  name: "TagScoresChart",
-  data() {
-    return {
-      cur_tag_id: 0,
-      tagChart: undefined as ECharts,
-      chart_option: {
-        xAxis: {
-          type: 'category',
-          data: []
-        },
-        yAxis: {
-          type: 'value'
-        },
-        series: [{
-          type: 'bar',
-          data: [],
-          color: []
-        }]
-      } as TagScoresOption
-    }
-  },
-  computed: {
-    ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
-  },
-  methods: {
-    async onCheckedTagChange() {
-      const [ok, score_list] = await getScoresByTag(this.cur_tag_id)
-      if (ok) {
-        this.refreshChart(score_list)
-      }
+    name: "TagScoresChart",
+    components: {ActorTagChooser},
+    data() {
+        return {
+            is_choosing_tags: false,
+            tagChart: undefined as ECharts,
+            actor: new ActorData(),
+        }
     },
-
-    refreshChart(score_list) {
-      this.chart_option.series[0].data = score_list
-      this.tagChart.setOption(this.chart_option)
+    computed: {
+        ...mapState(ActorTagStore, {actor_tag_list: 'sorted_list'}),
     },
+    methods: {
+        ...mapActions(ActorTagStore, {
+            getTagStyleName: 'getStyleName',
+            getTagName: 'getName',
+        }),
+        async onSubmitTag(new_tag_list: number[]) {
+            this.is_choosing_tags = false
+            this.actor.tag_ids = new_tag_list
+            const [ok, score_arr] = await getScoresByTag(new_tag_list)
+            if (ok) {
+                this.refreshChart(score_arr)
+            }
+        },
+        onCancelTag() {
+            this.is_choosing_tags = false
+        },
+        refreshChart(score_arr) {
+            console.log(score_arr)
+            const chart_option = tag_score_option
+            // x axis 0-10
+            const x_axis = []
+            for (let i = 0; i <= MAX_SCORE; i++) {
+                x_axis.push(i)
+            }
+            chart_option.xAxis[0].data = x_axis
 
-    initChartOption() {
-      const colors = []
-      const x_axis = []
-      for (let i = 0; i <= MAX_SCORE; i++) {
-        x_axis.push(i)
-        colors.push(Star_Colors[Math.ceil(i / 2)])
-      }
-      this.chart_option.series[0].color = colors
-      this.chart_option.xAxis.data = x_axis
-    }
-  },
-  mounted() {
-    console.log(`Tag Scores Chart mounted`)
-    this.tagChart = echarts.init(document.getElementById('tag_scores'));
-    this.initChartOption()
-  },
+            // legend and series
+            const tag_names = this.actor.tag_ids.map(tag_id => this.getTagName(tag_id))
+            chart_option.legend.data = tag_names;
+
+            const series_items = []
+            for (let i = 0; i < score_arr.length; i++) {
+                const series_item = Object.assign({}, tag_score_series_item);
+                series_item.name = tag_names[i]
+                series_item.data = score_arr[i]
+                series_items.push(series_item)
+            }
+            chart_option.series = series_items
+
+            this.tagChart.setOption(chart_option, true)
+        },
+    },
+    mounted() {
+        console.log(`Tag Scores Chart mounted`)
+        this.tagChart = echarts.init(document.getElementById('tag_scores'));
+
+        this.actor.actor_name = "fake actor"
+        this.actor.tag_ids = []
+    },
 }
 
 </script>

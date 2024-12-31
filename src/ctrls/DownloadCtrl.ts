@@ -4,11 +4,12 @@ import {
     GroupDownloadForm,
     DownloadLimitForm,
     ActorIdDownloadForm,
-    UrlDownloadForm
+    UrlDownloadForm, BaseDownloadForm
 } from "../data/SimpleForms";
 import TaskData from "../data/TaskData";
+import {BASE_URL} from "../data/Consts";
 
-const baseUrl = "http://127.0.0.1:8000/api/download"
+const baseUrl = `${BASE_URL}/api/download`
 
 
 export async function downloadNewActors(category: number, download_limit: DownloadLimitForm) {
@@ -65,6 +66,19 @@ export async function downloadByUrls(category: number, download_limit: DownloadL
     return [true, response.value]
 }
 
+export async function resumeDownload(download_limit: DownloadLimitForm) {
+    let url = `${baseUrl}/resume`
+    const urlDownForm = new BaseDownloadForm()
+    urlDownForm.download_limit = download_limit
+
+    const [ok, response] = await fetchPost(url, urlDownForm)
+    if (!ok) {
+        return [ok, response]
+    }
+
+    return [true, response.value]
+}
+
 export async function getAllTasks() {
     const url = `${baseUrl}/list`
     const [ok, response] = await fetchGet(url)
@@ -103,3 +117,10 @@ export async function cleanFiles() {
     const [ok, response] = await fetchGet(url)
     return [ok, response]
 }
+
+export async function getActorIds() {
+    const url = `${baseUrl}/actor_ids`
+    const [ok, response] = await fetchGet(url)
+    return [ok, response]
+}
+

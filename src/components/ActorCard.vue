@@ -7,96 +7,128 @@
         <!-- actor avatar -->
         <div class="avatar">
             <el-image class="avatar-img" :src="actor.icon"/>
+
             <svg-icon v-if="actor.has_main_actor"
-                      size="30px" name="friend"
-                      style="position: absolute;top: 0;left: 15px;"
+                      size="30px" name="avatar"
+                      class="avatar-friend"
                       @click="findLinkedActor"/>
 
-            <svg-icon v-if="show_link"
-                      size="30px" name="top"
-                      style="position: absolute;top: 0;right: 15px;"
-                      class="blink-class"
-                      @click="onLinkClick"/>
+            <svg-icon v-if="show_lock"
+                      size="30px"
+                      :name=" locked ? 'locked' : 'lock'"
+                      class="avatar-lock  blink-class"
+                      @click="onLockClick"/>
 
+            <svg-icon v-if="!show_lock && locked"
+                      size="30px"
+                      name="locked"
+                      class="avatar-lock"/>
+
+            <svg-icon v-if="show_select"
+                      size="30px"
+                      :name=" actor_data.selected ? 'completed' : 'minus'"
+                      class="avatar-select"
+                      @click="onSelectCLick"/>
+            <!-- Stars -->
             <el-rate class="avatar-rate"
                      v-model="actor.show_score"
                      :colors="star_colors"
                      void-color="#777777"
                      :max="6"
-                     size="large"
                      @change="changeScore"
                      allow-half/>
         </div>
 
         <!-- actor name, click to open menu items -->
-        <el-popover trigger="click" placement="top"
-                    v-model:visible="is_show_op"
-                    :popper-style="{'border-color': group_color, 'width': 300}"
-                    popper-class="op_popper"
-                    :offset="6">
-            <template #reference>
-                <el-text class="actor_name" :style="{'color': group_color}">
-                    {{ actor.actor_name }}
-                </el-text>
-            </template>
-            <template #default>
-                <el-space direction="vertical" alignment="center">
-                    <el-space direction="horizontal">
-                        <el-button class="pop-button"
-                                   type="primary"
-                                   @click="showPosts">
-                            Show Posts
-                        </el-button>
-                        <el-button class="pop-button"
-                                   type="primary"
-                                   @click="gotoActorPage">
-                            Go To Page
-                        </el-button>
+        <!-- downloading related icons -->
+        <div class="actor_name_line">
+            <el-popover trigger="click" placement="top"
+                        v-model:visible="is_show_op"
+                        :popper-style="{'border-color': group_color, 'width': 300}"
+                        popper-class="op_popper"
+                        :offset="6">
+                <template #reference>
+                    <el-text class="actor_name" :style="{'color': group_color}">
+                        {{ actor.actor_name }}
+                    </el-text>
+                </template>
+                <template #default>
+                    <el-space direction="vertical" alignment="center">
+                        <el-space direction="horizontal">
+                            <el-button class="pop-button"
+                                       type="primary"
+                                       @click="showPosts">
+                                Show Posts
+                            </el-button>
+                            <el-button class="pop-button"
+                                       type="primary"
+                                       @click="gotoActorPage">
+                                Go To Page
+                            </el-button>
+                        </el-space>
+                        <el-space direction="horizontal" v-if="hasFolder()">
+                            <el-button class="pop-button"
+                                       type="warning"
+                                       @click="resetPosts">
+                                Reset Posts
+                            </el-button>
+                            <el-button class="pop-button"
+                                       type="warning"
+                                       @click="clearFolder">
+                                Clear Folder
+                            </el-button>
+                        </el-space>
+                        <el-space direction="horizontal" v-if="hasFolder()">
+                            <el-button class="pop-button"
+                                       type="success"
+                                       @click="toDownload"
+                                       v-if="hasFolder()">
+                                Download
+                            </el-button>
+                            <el-button class="pop-button"
+                                       type="success"
+                                       @click="openFolder"
+                                       v-if="hasFolder()">
+                                Open Folder
+                            </el-button>
+                        </el-space>
                     </el-space>
-                    <el-space direction="horizontal" v-if="hasFolder()">
-                        <el-button class="pop-button"
-                                   type="warning"
-                                   @click="resetPosts">
-                            Reset Posts
-                        </el-button>
-                        <el-button class="pop-button"
-                                   type="warning"
-                                   @click="clearFolder">
-                            Clear Folder
-                        </el-button>
-                    </el-space>
-                    <el-space direction="horizontal" v-if="hasFolder()">
-                        <el-button class="pop-button"
-                                   type="success"
-                                   @click="toDownload"
-                                   v-if="hasFolder()">
-                            Download
-                        </el-button>
-                        <el-button class="pop-button"
-                                   type="success"
-                                   @click="openFolder"
-                                   v-if="hasFolder()">
-                            Open Folder
-                        </el-button>
-                    </el-space>
-                </el-space>
-            </template>
-        </el-popover>
+                </template>
+            </el-popover>
+            <svg-icon v-if="is_downing" name="download"
+                      style="color: lightskyblue"
+                      size="24px" class="blink-class"/>
+            <svg-icon v-if="is_video_all" name="file_checked"
+                      style="color: orange"
+                      size="24px"/>
+        </div>
 
         <!-- actor post info -->
         <el-space direction="vertical"
                   v-if="actor.file_info"
-                  alignment="start"
-                  style="gap: 1px 0px;padding-left: 15px">
-            <el-text style="font-size: 18px; color: black;" tag="ins">
+                  style="gap: 1px 0"
+                  fill>
+            <el-text style="color: black;text-align: center" tag="ins">
                 {{ actor.post_desc }}
             </el-text>
             <!-- actor res info -->
-            <el-text v-for="res_file_info in actor.file_info.res_info"
-                     :class="'res' + res_file_info.res_state"
-                     style="font-size: 14px; ">
-                {{ actor.formatResFileInfo(res_file_info) }}
-            </el-text>
+            <el-space v-for="res_file_info in actor.file_info.res_info"
+                      direction="horizontal"
+                      style="gap: 0 3px"
+                      :class="res_file_info.res_state_class">
+                <el-text class="res_info">
+                    {{ res_file_info.str_state }}
+                </el-text>
+                <el-text class="res_info">
+                    {{ res_file_info.str_size }}
+                </el-text>
+                <el-text class="res_info">
+                    {{ res_file_info.str_img_count }}
+                </el-text>
+                <el-text class="res_info">
+                    {{ res_file_info.str_video_count }}
+                </el-text>
+            </el-space>
         </el-space>
 
         <!--actor remark + category + edit button -->
@@ -119,16 +151,38 @@
                 </el-option>
             </el-select>
             <!-- click to edit tags -->
-            <svg-icon @click="startEditTag()"
-                      size="24px"
-                      name="edit"/>
+            <svg-icon v-if="has_tag" size="24px" name="edit" @click="startEditTag"/>
+            <el-popover v-else placement="right" trigger="click"
+                        :popper-style="{'border-color': group_color, 'width': 260}">
+                <template #reference>
+                    <svg-icon size="24px" name="edit"/>
+                </template>
+                <el-space direction="vertical" size="small" fill>
+                    <el-text style="font-style: italic">
+                        click to apply tags to actor
+                    </el-text>
+                    <el-space v-for="tag_record in tag_history"
+                              direction="horizontal" size="small"
+                              alignment="flex-start"
+                              style="border: 1px solid ; border-radius: 4px; padding: 2px;"
+                              @click="onSubmitTag(tag_record.tags)">
+                        <el-tag v-for="tag_id in tag_record.tags"
+                                :class="getTagStyleName(tag_id)"
+                                round>
+                            {{ getTagName(tag_id) }}
+                        </el-tag>
+                    </el-space>
+                    <el-button size="default" type="primary" @click="startEditTag">
+                        Choose Other Tags
+                    </el-button>
+                </el-space>
+            </el-popover>
         </el-space>
 
         <!--actor tags-->
         <el-space wrap style="margin-top: 5px">
             <el-tag v-for="tag_id in actor.tag_ids"
                     :class="getTagStyleName(tag_id)"
-                    style="font-size: 18px"
                     round>
                 {{ getTagName(tag_id) }}
             </el-tag>
@@ -164,7 +218,7 @@ import ActorData from "../data/ActorData";
 import {
     ChangeActorTag,
     changeActorGroup,
-    openActorFolder, changeActorRemark, getFileInfo, changeActorScore, clearActorFolder, resetActorPosts
+    openActorFolder, changeActorRemark, getActorFileInfo, changeActorScore, clearActorFolder, resetActorPosts
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -177,6 +231,8 @@ import {ActorGroupStore} from "../store/ActorGroupStore";
 import ActorGroupData from "../data/ActorGroupData";
 import {Star_Colors} from "../data/Consts";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
+import {ActorFilterStore} from "../store/ActorFilterStore";
+import ActorFileInfo from "../data/FileInfo";
 
 export default {
     name: "ActorCard",
@@ -184,12 +240,20 @@ export default {
     // props from parent
     props: {
         actor_data: ActorElement,
-        show_link: Boolean
+        locked: Boolean,
+        show_lock: Boolean,
+        show_select: Boolean
     },
     computed: {
         ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
+        ...mapState(ActorTagStore, {
+            tag_history: 'tag_history',
+        }),
         actor(): ActorData {
             return this.actor_data.data
+        },
+        has_tag(): boolean {
+            return this.actor_data.data.tag_ids.length > 0
         },
         star_colors() {
             return Star_Colors
@@ -198,9 +262,15 @@ export default {
             let group = this.getActorGroup(this.actor_data.data.actor_group_id)
             return group.group_color
         },
+        is_downing(): boolean {
+            return this.is_actor_downing(this.actor_data.data.actor_id)
+        },
+        is_video_all(): boolean {
+            return this.hasFolder() && this.actor_data.data.is_video_all
+        },
     },
     // declare emitted events to parent
-    emits: ['refresh', 'link', 'download', 'friend'],
+    emits: ['refresh', 'link', 'download', 'friend', 'lock'],
     data() {
         return {
             is_show_remark: false,
@@ -219,10 +289,15 @@ export default {
             compareActorTagId: 'compareTagId',
             getTagStyleName: 'getStyleName',
             getTagName: 'getName',
+            addTagRecord: 'addRecord',
         }),
 
         ...mapActions(ActorGroupStore, {
             getActorGroup: 'get',
+        }),
+
+        ...mapActions(ActorFilterStore, {
+            is_actor_downing: "is_downing",
         }),
 
         getActorGroupData(): ActorGroupData {
@@ -283,7 +358,9 @@ export default {
         },
         async onSubmitTag(new_tag_list: number[]) {
             this.is_editing_tags = false
-
+            if (new_tag_list.length > 0) {
+                this.addTagRecord(new_tag_list)
+            }
             //request
             const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
             this.onRecvActorMsg(ok, new_actor, "change tags succeed")
@@ -309,8 +386,11 @@ export default {
         async findLinkedActor() {
             this.$emit('friend', this.actor_data)
         },
-        onLinkClick() {
-            this.$emit('link', this.actor_data)
+        onLockClick() {
+            this.$emit('lock', this.actor_data, !this.locked)
+        },
+        onSelectCLick() {
+            this.actor_data.selected = !this.actor_data.selected
         },
         startEditRemark() {
             this.is_show_remark = true
@@ -327,13 +407,13 @@ export default {
             this.onRecvActorMsg(ok, new_actor, "change remark succeed")
         },
         async getFileInfo() {
-            const [ok, file_info] = await getFileInfo(this.actor.actor_id)
+            const [ok, file_info] = await getActorFileInfo(this.actor.actor_id)
             if (ok) {
                 this.setFileInfo(file_info)
             }
         },
         setFileInfo(file_info) {
-            this.actor.file_info = file_info
+            this.actor.file_info = new ActorFileInfo(file_info)
         },
     }
     ,
@@ -343,16 +423,27 @@ export default {
 <style scoped>
 
 .actor_name {
-    font-size: 20px;
-    word-wrap: anywhere;
+    font-size: 22px;
+    word-wrap: nowrap;
     text-align: center;
 }
 
+.actor_name_line {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    background-color: #000000a0;
+}
+
 .actor_card {
+    position: relative;
     border: 1px solid;
     padding: 2px;
     box-shadow: 2px 2px;
     width: 210px;
+    background-color: var(--el-card-bg-color);
 }
 
 .avatar {
@@ -377,14 +468,39 @@ export default {
     transform: translateX(-50%);
 }
 
+.avatar-lock {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.avatar-select {
+    position: absolute;
+    top: 0;
+    right: 15px;
+}
+
+.avatar-friend {
+    position: absolute;
+    top: 0;
+    left: 15px;
+}
+
 .pop-button {
     width: 126px;
     height: 32px;
+}
+
+.res_info {
+    width: 50px;
+    text-align: right;
+    text-wrap: nowrap;
     font-size: 16px;
 }
 
 .blink-class {
-    animation: blink 1s linear infinite;
+    animation: blink 1s ease-in-out infinite;
 }
 
 @keyframes blink {
@@ -398,22 +514,5 @@ export default {
         opacity: 0.5;
     }
 }
-
-.res1 {
-    color: darkgreen;
-}
-
-.res2 {
-    color: hotpink;
-}
-
-.res3 {
-    color: orangered;
-}
-
-.res4 {
-    color: blue;
-}
-
 
 </style>

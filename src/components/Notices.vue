@@ -1,6 +1,6 @@
 <template>
     <el-container>
-        <el-aside width="140px">
+        <el-aside width="var(--el-aside-width)">
             <el-menu
                 mode="vertical"
                 text-color="#000000"
@@ -18,17 +18,19 @@
                     <el-table-column prop="notice_param0" :label="label_names[0]" min-width="180px"/>
                     <el-table-column prop="notice_param1" :label="label_names[1]" min-width="180px"/>
                     <el-table-column prop="notice_param2" :label="label_names[2]" min-width="180px"/>
-                    <el-table-column v-if="is_unlinked_actor" prop="sub_string01" label="sub_string" min-width="180px"/>
                     <el-table-column label="Op" min-width="250px">
                         <template #default="scope">
-                            <el-button v-if="is_unlinked_actor" type="primary"
-                                       @click="toActors(scope.row.sub_string01)">Search
+                            <el-button v-if="is_cur_same_name" type="primary"
+                                       @click="toActors(scope.row.notice_param0)">
+                                Search
                             </el-button>
-                            <el-button type="danger" @click="delNotice(scope.row.notice_id)">Delete</el-button>
+                            <el-button type="danger" @click="delNotice(scope.row.notice_id)">
+                                Delete
+                            </el-button>
                         </template>
                     </el-table-column>
                 </el-table>
-                <el-button type="danger" size="default" @click="deleteAll">Stop All</el-button>
+                <el-button type="danger" size="default" @click="deleteAll">Delete All</el-button>
             </el-space>
         </el-main>
     </el-container>
@@ -36,11 +38,12 @@
 
 <script lang="ts">
 import {Notice_Param_Names, Notice_Type_Options} from "../data/Consts";
-import {NoticeType} from "../data/Enums"
+import {MainMenu, NoticeType} from "../data/Enums"
 import NoticeData from "../data/NoticeData";
 import {deleteNotice, delNoticesByType, getNotices} from "../ctrls/NoticeCtrl";
 import {mapActions} from "pinia";
 import {ActorFilterStore} from "../store/ActorFilterStore";
+import {SubMenuStore} from "../store/SubMenuStore";
 import ActorFilterData from "../data/ActorFilterData";
 
 export default {
@@ -58,8 +61,8 @@ export default {
         notice_type_list() {
             return Notice_Type_Options
         },
-        is_unlinked_actor() {
-            return this.cur_notice_type === NoticeType.UnlinkedActor
+        is_cur_same_name() {
+            return this.cur_notice_type == NoticeType.SameActorName
         }
     },
 
@@ -67,7 +70,13 @@ export default {
         ...mapActions(ActorFilterStore, {
             saveFilterCondition: "setFilter",
         }),
+        ...mapActions(SubMenuStore, {
+            setSubMenu: "set",
+            getSubMenu: "get",
+        }),
         async onNoticeTypeChange(index: string) {
+            this.setSubMenu(MainMenu.Notices, index)
+
             this.cur_notice_type = parseInt(index)
             this.label_names = Notice_Param_Names[this.cur_notice_type]
             const [ok, new_list] = await getNotices(this.cur_notice_type)
@@ -93,12 +102,18 @@ export default {
             }
         },
 
-        async toActors(sub_string: string) {
+        toActors(actor_name: string) {
             const filter_condition = new ActorFilterData()
-            filter_condition.name = sub_string
+            filter_condition.name = actor_name
             filter_condition.show_name = true
             this.saveFilterCondition(filter_condition)
             this.$router.push("/actors")
+        }
+    },
+    mounted() {
+        let sub_menu = this.getSubMenu(MainMenu.Notices)
+        if (sub_menu) {
+            this.onNoticeTypeChange(sub_menu)
         }
     }
 }
