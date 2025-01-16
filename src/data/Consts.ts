@@ -61,16 +61,16 @@ export const Star_Colors = {
 }
 
 export const Tag_Colors = [
-    "#0000FF",
-    "#40a0ff",
-    "#79cff4",
-    "#78f3e0",
-    "#7cf88c",
-    "#bdc846",
-    "#df9800",
-    "#e674b5",
-    "#ff0080",
-    "#787878",
+    "#0000EE",
+    "#3030EE",
+    "#6060EE",
+    "#9F9EEE",
+    "#7EEE00",
+    "#BECE00",
+    "#EEAE00",
+    "#EE707B",
+    "#EE007F",
+    "#434343",
 ]
 
 export const Actor_Show_Options: CommonOption[] = [

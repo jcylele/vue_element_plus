@@ -21,10 +21,10 @@
                 {{ actor.actor_name }}
             </el-text>
             <el-space direction="horizontal" wrap>
-                <svg-icon @click="onStartEditTag"
+                <svg-icon @click="startEditTag"
                           size="24px" name="edit"/>
                 <el-tag v-for="tag_id in actor.tag_ids"
-                        :class="getTagStyleName(tag_id)"
+                        :style="{'background': getTagBgColor(tag_id)}"
                         round>
                     {{ getTagName(tag_id) }}
                 </el-tag>
@@ -104,7 +104,7 @@ export default {
         }),
         ...mapActions(ActorTagStore, {
             compareActorTagId: 'compareTagId',
-            getTagStyleName: 'getStyleName',
+            getTagBgColor: 'getBgColor',
             getTagName: 'getName',
         }),
 

@@ -49,14 +49,6 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             return this.list.compareItem(tag_a, tag_b)
         },
 
-        getStyleName(tag_id: number): string {
-            const tag = this.get(tag_id)
-            if (tag) {
-                const num = Math.floor(tag.tag_priority / 100)
-                return `tag_${num}`
-            }
-            return "tag_error"
-        },
         getBgColor(tag_id: number): string {
             const tag = this.get(tag_id)
             if (tag) {

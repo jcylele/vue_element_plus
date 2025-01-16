@@ -1,5 +1,5 @@
 import EditableData from "./EditableData";
-import {str_res_state} from "./Consts";
+import {str_res_state, video_state_color} from "./Consts";
 
 const GB1 = 1024 * 1024 * 1024
 
@@ -13,8 +13,8 @@ class ResFileInfo extends EditableData {
         super(json_data);
     }
 
-    public get res_state_class() {
-        return `res${this.res_state}`
+    public get res_state_color(): string {
+        return video_state_color[this.res_state]
     }
 
     public get str_img_count() {
@@ -33,6 +33,25 @@ class ResFileInfo extends EditableData {
         let size = this.res_size / GB1
         size = Math.floor(size * 100) / 100
         return `${size}G`
+    }
+
+    public get col_count() {
+        return 4
+    }
+
+    public col_val(index: number): string {
+        switch (index) {
+            case 1:
+                return this.str_state
+            case 2:
+                return this.str_size
+            case 3:
+                return this.str_img_count
+            case 4:
+                return this.str_video_count
+            default:
+                return "???"
+        }
     }
 
     public get desc() {

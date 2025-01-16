@@ -19,7 +19,7 @@
                 </div>
                 <div v-else-if="actor_log.log_type == ActorLogType.Tag">
                     <el-tag v-for="tag_id in actor_log.tag_id_list"
-                            :class="getTagStyleName(tag_id)"
+                            :style="{'background': getTagBgColor(tag_id)}"
                             style="margin-right: 10px"
                             round>
                         {{ getTagName(tag_id) }}
@@ -81,7 +81,7 @@ export default {
     },
     methods: {
         ...mapActions(ActorTagStore, {
-            getTagStyleName: 'getStyleName',
+            getTagBgColor: 'getBgColor',
             getTagName: 'getName',
         }),
 

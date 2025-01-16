@@ -121,19 +121,11 @@
             <!-- actor res info -->
             <el-space v-for="res_file_info in actor.file_info.res_info"
                       direction="horizontal"
-                      style="gap: 0 3px"
-                      :class="res_file_info.res_state_class">
-                <el-text class="res_info">
-                    {{ res_file_info.str_state }}
-                </el-text>
-                <el-text class="res_info">
-                    {{ res_file_info.str_size }}
-                </el-text>
-                <el-text class="res_info">
-                    {{ res_file_info.str_img_count }}
-                </el-text>
-                <el-text class="res_info">
-                    {{ res_file_info.str_video_count }}
+                      style="gap: 0 3px">
+                <el-text v-for="index in res_file_info.col_count"
+                         class="res_info"
+                         :style="{'color': res_file_info.res_state_color}">
+                    {{ res_file_info.col_val(index) }}
                 </el-text>
             </el-space>
         </el-space>
@@ -170,7 +162,7 @@
                     </el-text>
                     <div class="recent_tag_row">
                         <el-tag v-for="tag_id in sorted_tag_history"
-                                :class="getTagStyleName(tag_id)"
+                                :style="{'background': getTagBgColor(tag_id)}"
                                 @click="onApplyTag(tag_id)"
                                 round>
                             {{ getTagName(tag_id) }}
@@ -186,13 +178,13 @@
         <!--actor tags-->
         <el-space wrap style="margin-top: 5px">
             <el-tag v-for="tag_id in actor.tag_ids"
-                    :class="getTagStyleName(tag_id)"
+                    :style="{'background': getTagBgColor(tag_id)}"
                     round>
                 {{ getTagName(tag_id) }}
             </el-tag>
         </el-space>
     </el-space>
-    <!-- actor remark editing dialog-->
+    <!-- dialog: actor remark editing-->
     <el-dialog v-model="is_show_remark"
                :title="actor.actor_name"
                width="600px">
@@ -200,7 +192,7 @@
                       @submit="onSubmitRemark"
                       @cancel="onCancelRemark"/>
     </el-dialog>
-    <!-- actor tags editing dialog-->
+    <!-- dialog: actor tags editing dialog-->
     <el-dialog v-model="is_editing_tags"
                :title="actor.actor_name"
                width="67%">
@@ -209,13 +201,13 @@
                          @cancel="onCancelAddTag"
         />
     </el-dialog>
-    <!-- actor posts dialog-->
+    <!-- dialog: actor posts -->
     <el-dialog v-model="is_show_post"
                :title="actor.actor_name"
                width=720px>
         <Posts :specific_actor_id="actor.actor_id"/>
     </el-dialog>
-    <!-- actor logs dialog-->
+    <!-- dialog: actor logs -->
     <el-dialog v-model="is_show_log"
                :title="actor.actor_name"
                width=720px>
@@ -303,7 +295,7 @@ export default {
     methods: {
         ...mapActions(ActorTagStore, {
             compareActorTagId: 'compareTagId',
-            getTagStyleName: 'getStyleName',
+            getTagBgColor: 'getBgColor',
             getTagName: 'getName',
             addTagRecord: 'addRecord',
         }),
@@ -441,8 +433,7 @@ export default {
         setFileInfo(file_info) {
             this.actor.file_info = new ActorFileInfo(file_info)
         },
-    }
-    ,
+    },
 }
 </script>
 
