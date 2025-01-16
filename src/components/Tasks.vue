@@ -79,6 +79,8 @@
 import {getAllTasks, cleanFiles, stopAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
 import TaskData from "../data/TaskData";
 import {logInfo} from "../ctrls/FetchCtrl";
+import {mapActions} from "pinia";
+import {BadgeStore} from "../store/BadgeStore";
 
 export default {
     name: "Tasks",
@@ -88,11 +90,15 @@ export default {
         }
     },
     methods: {
+        ...mapActions(BadgeStore, {
+            setTaskCount: 'setTaskCount',
+        }),
         async stopTask(uid: number) {
             const [ok, ret] = await stopTask(uid)
             if (ok) {
                 logInfo("stop task succeed")
                 this.task_list.splice(this.task_list.findIndex((task: any) => task.uid === uid), 1)
+                this.setTaskCount(this.task_list.length)
             }
         },
 
@@ -101,6 +107,7 @@ export default {
             if (ok) {
                 logInfo("stop all task succeed")
                 this.task_list = []
+                this.setTaskCount(0)
             }
         },
 
@@ -108,6 +115,7 @@ export default {
             const [ok, ret] = await getAllTasks()
             if (ok) {
                 this.task_list = ret
+                this.setTaskCount(ret.length)
             }
         },
 

@@ -58,6 +58,10 @@
     color: var(--el-border-color);
 }
 
+.el-pagination {
+    --el-pagination-font-size: 18px;
+}
+
 .el-icon {
     width: 1.5em;
     height: 1.5em;

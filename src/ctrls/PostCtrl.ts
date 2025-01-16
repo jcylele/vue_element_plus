@@ -41,8 +41,3 @@ export async function setPostComment(post_id: string, comment: string) {
     form.comment = comment
     return await fetchPost(url, form)
 }
-
-export async function getVideoStates(actor_id: number) {
-    const url = `${baseUrl}/video_states/${actor_id}`
-    return await fetchGet(url)
-}

@@ -4,7 +4,7 @@
                    @click="is_choosing_tags = true">
             Choose Tags
         </el-button>
-        <div id="tag_scores" style="width: 1280px;height: 600px"></div>
+        <div ref="dom_tag_scores" style="width: 1280px;height: 480px"></div>
     </el-space>
     <el-dialog v-model="is_choosing_tags"
                :title="actor.actor_name"
@@ -47,19 +47,63 @@ import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../../store/ActorTagStore";
 import {getScoresByTag} from "../../ctrls/ChartCtrl";
 import {MAX_SCORE} from "../../data/Consts";
-import {ECharts} from "echarts";
 import ActorData from "../../data/ActorData";
 import ActorTagChooser from "../ActorTagChooser.vue";
-import {tag_score_option, tag_score_series_item} from "../../data/ChartOptionData";
+import {ref} from "vue";
 
 export default {
     name: "TagScoresChart",
     components: {ActorTagChooser},
+    setup() {
+        const dom_tag_scores = ref(null)
+        return {
+            dom_tag_scores
+        }
+    },
     data() {
         return {
             is_choosing_tags: false,
-            tagChart: undefined as ECharts,
             actor: new ActorData(),
+            tag_scores_chart: undefined as BarChart,
+            tag_scores_option: {
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'shadow'
+                    }
+                },
+                legend: {
+                    data: [] // dynamic data
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: [] // dynamic data
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value'
+                    }
+                ],
+                series: []  //template: tag_score_series_item
+            },
+            tag_scores_series_item: {
+                name: '', // dynamic data
+                type: 'bar',
+                label: {
+                    show: true,
+                    position: 'top',
+                    distance: 15,
+                    align: 'center',
+                    verticalAlign: 'middle',
+                    fontSize: 16,
+                },
+                emphasis: {
+                    focus: 'series'
+                },
+                data: [] // dynamic data
+            },
         }
     },
     computed: {
@@ -67,7 +111,7 @@ export default {
     },
     methods: {
         ...mapActions(ActorTagStore, {
-            getTagStyleName: 'getStyleName',
+            getTagBgColor: 'getBgColor',
             getTagName: 'getName',
         }),
         async onSubmitTag(new_tag_list: number[]) {
@@ -83,33 +127,39 @@ export default {
         },
         refreshChart(score_arr) {
             console.log(score_arr)
-            const chart_option = tag_score_option
-            // x axis 0-10
+            // x axis 0-12
             const x_axis = []
             for (let i = 0; i <= MAX_SCORE; i++) {
                 x_axis.push(i)
             }
-            chart_option.xAxis[0].data = x_axis
+            this.tag_scores_option.xAxis[0].data = x_axis
 
-            // legend and series
-            const tag_names = this.actor.tag_ids.map(tag_id => this.getTagName(tag_id))
-            chart_option.legend.data = tag_names;
+            // legend
+            const legend_names = this.actor.tag_ids.map(tag_id => this.getTagName(tag_id))
+            this.tag_scores_option.legend.data = legend_names
 
+            // series
             const series_items = []
             for (let i = 0; i < score_arr.length; i++) {
-                const series_item = Object.assign({}, tag_score_series_item);
-                series_item.name = tag_names[i]
+                const series_item = Object.assign({}, this.tag_scores_series_item)
+                series_item.name = legend_names[i]
                 series_item.data = score_arr[i]
                 series_items.push(series_item)
             }
-            chart_option.series = series_items
+            this.tag_scores_option.series = series_items
 
-            this.tagChart.setOption(chart_option, true)
+            this.tag_scores_chart.setOption(this.tag_scores_option, true)
         },
     },
     mounted() {
         console.log(`Tag Scores Chart mounted`)
-        this.tagChart = echarts.init(document.getElementById('tag_scores'));
+        // 2. 判断 dom 是否为空或未定义
+        if (this.tag_scores_chart != null && this.tag_scores_chart != "" && this.tag_scores_chart != undefined) {
+            // 3. 已存在则调用 dispose() 方法销毁
+            this.tag_scores_chart.dispose();
+        }
+        this.tag_scores_chart = echarts.init(this.dom_tag_scores);
+
 
         this.actor.actor_name = "fake actor"
         this.actor.tag_ids = []

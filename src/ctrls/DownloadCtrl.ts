@@ -79,6 +79,11 @@ export async function resumeDownload(download_limit: DownloadLimitForm) {
     return [true, response.value]
 }
 
+export async function getTaskCount() {
+    const url = `${baseUrl}/count`
+    return  await fetchGet(url)
+}
+
 export async function getAllTasks() {
     const url = `${baseUrl}/list`
     const [ok, response] = await fetchGet(url)

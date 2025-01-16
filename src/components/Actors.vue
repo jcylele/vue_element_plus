@@ -16,6 +16,11 @@
                 background
                 style="margin: 5px"
             />
+            <el-button type="primary" @click="showPosts">
+                Search Posts
+            </el-button>
+        </el-space>
+        <el-space direction="horizontal" size="large" spacer="|">
             <el-select v-model="actor_show_type" style="min-width: 100px">
                 <el-option
                     v-for="option in actor_show_options"
@@ -23,11 +28,9 @@
                     :value="option.value"
                 />
             </el-select>
-            <el-button type="primary" @click="showPosts">
-                Search Posts
-            </el-button>
             <el-checkbox v-model="is_show_lock"
                          label="Lock"
+                         @change="onLockChange"
                          size="default" border/>
             <div>
                 <el-checkbox v-model="is_show_batch_op"
@@ -72,8 +75,7 @@
             </div>
         </el-space>
         <!-- a big card per actor -->
-        <el-space v-if="actor_show_card" direction="horizontal"
-                  class="card_row" alignment="stretch" style="gap: 15px 15px">
+        <div v-if="actor_show_card" class="card_row">
             <!-- TODO change is not triggered, why   -->
             <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
             <ActorCard v-for="actor_data in locked_actor_list"
@@ -96,9 +98,11 @@
                        @friend="onActorFriendClick"
                        @download="singleShowDownload"
                        @lock="onActorLockClick"/>
-        </el-space>
+        </div>
         <!-- a line per actor -->
-        <el-space v-if="actor_show_line" direction="vertical" size="small" fill>
+        <el-space v-if="actor_show_line"
+                  class="line_row"
+                  direction="vertical" size="small" fill>
             <ActorLine v-for="actor_data in actor_list"
                        :actor_data="actor_data"
                        :key="actor_data.uuid"/>
@@ -154,6 +158,8 @@ import Posts from "./Posts.vue";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorData from "../data/ActorData";
+import {BadgeStore} from "../store/BadgeStore";
+
 
 export default {
     components: {SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
@@ -209,6 +215,9 @@ export default {
             savePageSize: "setPageSize",
             getDowningFromServer: "getDowningFromServer",
             is_actor_downing: "is_downing",
+        }),
+        ...mapActions(BadgeStore, {
+            fetchTaskCount: 'fetchTaskCount',
         }),
         ...mapActions(ActorGroupStore, {
             getGroupsFromServer: 'getFromServer',
@@ -276,6 +285,11 @@ export default {
                 }
             }
             return actor_ids
+        },
+        onLockChange(val: boolean) {
+            if (!val) {
+                this.locked_actor_list = []
+            }
         },
         onBatchOpChange(val: boolean) {
             if (!val) {
@@ -364,6 +378,7 @@ export default {
             let [ok, _] = await downloadByActorIds(this.download_limit, this.download_actor_ids)
             this.onDownloadClose()
             if (ok) {
+                await this.fetchTaskCount()
                 await this.getDowningFromServer()
                 logInfo("download started")
             }
@@ -391,14 +406,14 @@ export default {
                 const actor = actor_map.get(actor_data.data.actor_id)
                 if (actor) {
                     actor_data.data = actor
-                    console.log(`actor changed: ${actor_data.data.actor_name}`)
+                    console.log(`actor replaced: ${actor.actor_name}`)
                 }
             }
             for (const actor_data of this.actor_list) {
                 const actor = actor_map.get(actor_data.data.actor_id)
                 if (actor) {
                     actor_data.data = actor
-                    console.log(`actor changed: ${actor_data.data.actor_name}`)
+                    console.log(`actor replaced: ${actor.actor_name}`)
                 }
             }
         },
@@ -427,7 +442,15 @@ export default {
     min-height: 100px;
     min-width: 300px;
     display: flex;
+    flex-direction: row;
     flex-wrap: wrap;
-    size: 0
+    margin-top: 15px;
+    gap: 10px 10px;
+    align-items: stretch;
+}
+
+.line_row {
+    margin-top: 15px;
+    gap: 15px 15px;
 }
 </style>

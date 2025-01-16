@@ -24,9 +24,11 @@ export enum ActorShowType {
 }
 
 export enum NoticeType {
+    All = 0,
     UnlinkedActor = 1,
     InvalidPost = 2,
-    SameActorName = 3
+    SameActorName = 3,
+    HasLinkedAccount = 4,
 }
 
 export enum ResState {
@@ -52,4 +54,11 @@ export enum ActorLogType {
     Unlink = 8,
     PostCount = 9,
     ClearFolder = 10,
+}
+
+export enum ResSizeUnit {
+    B = 1,
+    KB = 1024,
+    MB = 1024 * 1024,
+    GB = 1024 * 1024 * 1024
 }

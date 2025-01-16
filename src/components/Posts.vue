@@ -1,5 +1,5 @@
 <template>
-    <el-space direction="vertical" size="small" fill style="padding-bottom: 5px">
+    <el-space direction="vertical" size="small" fill style="padding:5px 5px">
         <!-- search line -->
         <el-space direction="horizontal" size="small">
             <el-input v-if="conditionForm.fixed_actor_id != 0" disabled>
@@ -32,7 +32,7 @@
                 </el-radio>
             </el-radio-group>
         </el-space>
-        <el-divider style="margin: 5px 0"/>
+        <el-divider style="margin: 5px 0;"/>
         <!-- posts -->
         <el-space v-for="post_info in post_list"
                   direction="horizontal">
@@ -52,37 +52,22 @@
                 {{ post_info.comment }}
             </el-text>
         </el-space>
-        <!-- video states -->
-        <el-space direction="horizontal" size="small">
-            <el-text style="font-size: 24px;width: 80px;color: hotpink">
-                Video States
-            </el-text>
-            <el-space direction="vertical" style="gap: 0px 0px" fill>
-                <el-space v-for="line in video_state_list"
-                          direction="horizontal"
-                          alignment="start"
-                          style="height: 26px;gap: 0px 0px">
-                    <el-text v-for="video_state in line"
-                             :class="'res' + video_state[0]"
-                             style="font-size: 20px;">
-                        {{ '●'.repeat(video_state[1]) }}
-                    </el-text>
-                </el-space>
-            </el-space>
-        </el-space>
         <el-divider style="margin: 5px 0"/>
+        <!-- video sizes -->
+        <VideoSizesChart v-if="has_actor_id" :actor_id="specific_actor_id"/>
     </el-space>
 </template>
 
 <script lang="ts">
-import {getPostCountList, getPosts, getVideoStates, setPostComment} from "../ctrls/PostCtrl";
+import {getPostCountList, getPosts, setPostComment} from "../ctrls/PostCtrl";
 import {PostConditionForm, PostData} from "../data/PostData";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import {ActorPostInfo} from "../data/WebData";
-
+import VideoSizesChart from "./Chart/VideoSizesChart.vue";
 
 export default {
     name: "Posts",
+    components: {VideoSizesChart},
     // props from parent
     props: {
         specific_actor_id: {
@@ -90,13 +75,16 @@ export default {
             required: false,
         },
     },
+    computed: {
+        has_actor_id() {
+            return this.conditionForm.actor_id !== 0
+        }
+    },
     data() {
         return {
             conditionForm: PostConditionForm,
             actor_post_list: [] as ActorPostInfo[],
             post_list: [] as PostData[],
-            video_state_list: [] as [number, number][][],
-            video_state_per_line: 40,
         }
     },
     methods: {
@@ -116,7 +104,6 @@ export default {
             }
             if (this.conditionForm.actor_id !== 0) {
                 this.getActorPosts()
-                this.getActorVideoStates()
             } else {
                 this.getActorNames()
             }
@@ -130,7 +117,6 @@ export default {
         },
         async onActorChanged() {
             await this.getActorPosts()
-            await this.getActorVideoStates()
         },
         async getActorPosts() {
             const [ok, new_list] = await getPosts(this.conditionForm)
@@ -149,52 +135,10 @@ export default {
                 post_info.is_editing = true
             }
         },
-        async getActorVideoStates() {
-            console.log(`getActorVideoStates ${this.conditionForm.actor_id}`)
-            const [ok, new_list] = await getVideoStates(this.conditionForm.actor_id)
-            if (ok) {
-                this.video_state_list = this.splitVideoStates(new_list)
-            }
-        },
-        /***
-         * split video states into lines
-         * @param video_states [state, count][]
-         * @returns  [state, count][][]
-         */
-        splitVideoStates(video_states: [number, number][]): [number, number][][] {
-            let ret = [] as [number, number][][]
-            let cur_line = []
-            let left_state_count = this.video_state_per_line
-            for (let i = 0; i < video_states.length; i++) {
-                let [state, count] = video_states[i]
-                let overflow = count - left_state_count
-                if (overflow >= 0) {
-                    cur_line.push([state, left_state_count])
-                    ret.push(cur_line)
-                    cur_line = []
-                    left_state_count = this.video_state_per_line
-
-                    if (overflow > 0) {
-                        video_states[i] = [state, overflow]
-                        i--
-                    }
-                } else {
-                    cur_line.push([state, count])
-                    left_state_count -= count
-                }
-            }
-            if (cur_line.length > 0) {
-                ret.push(cur_line)
-            }
-            return ret
-        }
     },
     mounted() {
         // console.log(`posts of ${this.specific_actor_id}`)
         this.conditionForm = new PostConditionForm(this.specific_actor_id)
-        if (this.specific_actor_id !== 0) {
-            this.getActorVideoStates()
-        }
     }
 }
 </script>

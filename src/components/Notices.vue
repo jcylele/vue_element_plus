@@ -7,8 +7,13 @@
                 active-text-color="#a0a0fb"
                 @select="onNoticeTypeChange">
                 <el-menu-item v-for="nt in notice_type_list"
-                              :index="nt.value.toString()">
-                    {{ nt.label }}
+                              :index="nt.value.toString()"
+                              style="justify-content: flex-end">
+                    <el-badge v-if="getNoticeCount(nt.value) > 0"
+                              :value="getNoticeCount(nt.value)">
+                        {{ nt.label }}
+                    </el-badge>
+                    <span v-else>{{ nt.label }}</span>
                 </el-menu-item>
             </el-menu>
         </el-aside>
@@ -20,7 +25,7 @@
                     <el-table-column prop="notice_param2" :label="label_names[2]" min-width="180px"/>
                     <el-table-column label="Op" min-width="250px">
                         <template #default="scope">
-                            <el-button v-if="is_cur_same_name" type="primary"
+                            <el-button v-if="is_search_actor_name" type="primary"
                                        @click="toActors(scope.row.notice_param0)">
                                 Search
                             </el-button>
@@ -45,6 +50,7 @@ import {mapActions} from "pinia";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import {SubMenuStore} from "../store/SubMenuStore";
 import ActorFilterData from "../data/ActorFilterData";
+import {BadgeStore} from "../store/BadgeStore";
 
 export default {
     name: "Notices",
@@ -53,7 +59,7 @@ export default {
         return {
             cur_notice_type: 0,
             label_names: ["", "", ""],
-            notice_list: [] as NoticeData[]
+            notice_list: [] as NoticeData[],
         }
     },
 
@@ -61,8 +67,9 @@ export default {
         notice_type_list() {
             return Notice_Type_Options
         },
-        is_cur_same_name() {
+        is_search_actor_name() {
             return this.cur_notice_type == NoticeType.SameActorName
+                || this.cur_notice_type == NoticeType.HasLinkedAccount
         }
     },
 
@@ -74,6 +81,11 @@ export default {
             setSubMenu: "set",
             getSubMenu: "get",
         }),
+        ...mapActions(BadgeStore, {
+            getNoticeCount: "getNoticeCount",
+            setNoticeCount: "setNoticeCount",
+        }),
+
         async onNoticeTypeChange(index: string) {
             this.setSubMenu(MainMenu.Notices, index)
 
@@ -82,6 +94,7 @@ export default {
             const [ok, new_list] = await getNotices(this.cur_notice_type)
             if (ok) {
                 this.notice_list = new_list
+                this.setNoticeCount(this.cur_notice_type, new_list.length)
             }
         },
 
@@ -91,6 +104,7 @@ export default {
                 const index = this.notice_list.findIndex((item) => item.notice_id === notice_id)
                 if (index !== -1) {
                     this.notice_list.splice(index, 1)
+                    this.setNoticeCount(this.cur_notice_type, this.notice_list.length)
                 }
             }
         },
@@ -99,6 +113,7 @@ export default {
             const [ok, _] = await delNoticesByType(this.cur_notice_type)
             if (ok) {
                 this.notice_list = []
+                this.setNoticeCount(this.cur_notice_type, 0)
             }
         },
 
@@ -108,9 +123,9 @@ export default {
             filter_condition.show_name = true
             this.saveFilterCondition(filter_condition)
             this.$router.push("/actors")
-        }
+        },
     },
-    mounted() {
+    async mounted() {
         let sub_menu = this.getSubMenu(MainMenu.Notices)
         if (sub_menu) {
             this.onNoticeTypeChange(sub_menu)

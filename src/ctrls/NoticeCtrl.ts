@@ -5,6 +5,20 @@ import {BASE_URL} from "../data/Consts";
 
 const baseUrl = `${BASE_URL}/api/notice`
 
+export async function getNoticeCountMap() {
+    const url = `${baseUrl}/count_map`
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [ok, response]
+    }
+    const count_map = new Map<NoticeType, number>()
+    for (const json_obj of response) {
+        console.log(json_obj.notice_type, json_obj.count)
+        count_map.set(json_obj.notice_type, json_obj.count)
+    }
+    return [true, count_map]
+}
+
 export async function getNotices(notice_type: NoticeType) {
     const url = `${baseUrl}/list/${notice_type}`
     const [ok, response] = await fetchGet(url)

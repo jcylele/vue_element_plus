@@ -14,13 +14,13 @@
                       @click="findLinkedActor"/>
 
             <svg-icon v-if="show_lock"
-                      size="30px"
+                      size="40px"
                       :name=" locked ? 'locked' : 'lock'"
                       class="avatar-lock  blink-class"
                       @click="onLockClick"/>
 
             <svg-icon v-if="!show_lock && locked"
-                      size="30px"
+                      size="40px"
                       name="locked"
                       class="avatar-lock"/>
 
@@ -160,7 +160,7 @@
             <!-- click to edit tags -->
             <svg-icon v-if="has_tag" size="24px" name="edit" @click="startEditTag"/>
             <el-popover v-else placement="right" trigger="click"
-                        :popper-style="{'border-color': group_color, 'width': 260}">
+                        :popper-style="{'border-color': group_color, 'width': 300}">
                 <template #reference>
                     <svg-icon size="24px" name="edit"/>
                 </template>
@@ -168,17 +168,14 @@
                     <el-text style="font-style: italic">
                         click to apply tags to actor
                     </el-text>
-                    <el-space v-for="tag_record in tag_history"
-                              direction="horizontal" size="small"
-                              alignment="flex-start"
-                              style="border: 1px solid ; border-radius: 4px; padding: 2px;"
-                              @click="onSubmitTag(tag_record.tags)">
-                        <el-tag v-for="tag_id in tag_record.tags"
+                    <div class="recent_tag_row">
+                        <el-tag v-for="tag_id in sorted_tag_history"
                                 :class="getTagStyleName(tag_id)"
+                                @click="onApplyTag(tag_id)"
                                 round>
                             {{ getTagName(tag_id) }}
                         </el-tag>
-                    </el-space>
+                    </div>
                     <el-button size="default" type="primary" @click="startEditTag">
                         Choose Other Tags
                     </el-button>
@@ -264,6 +261,9 @@ export default {
         ...mapState(ActorTagStore, {
             tag_history: 'tag_history',
         }),
+        sorted_tag_history(): number[] {
+            return this.tag_history.sort(this.compareActorTagId)
+        },
         actor(): ActorData {
             return this.actor_data.data
         },
@@ -371,6 +371,9 @@ export default {
         },
         startEditTag() {
             this.is_editing_tags = true
+        },
+        async onApplyTag(tag_id: number) {
+            await this.onSubmitTag([tag_id])
         },
         async onSubmitTag(new_tag_list: number[]) {
             this.is_editing_tags = false
@@ -493,7 +496,7 @@ export default {
 
 .avatar-lock {
     position: absolute;
-    top: -30px;
+    top: -35px;
     left: 50%;
     transform: translateX(-50%);
 }
@@ -522,8 +525,22 @@ export default {
     font-size: 16px;
 }
 
+.recent_tag_row {
+    width: 280px;
+
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+
+    padding: 5px;
+    gap: 5px 5px;
+
+    border: 1px solid;
+    border-radius: 4px;
+}
+
 .blink-class {
-    animation: blink 1s ease-in-out infinite;
+    animation: blink 1.5s ease-in-out infinite;
 }
 
 @keyframes blink {

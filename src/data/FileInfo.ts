@@ -1,6 +1,6 @@
 import EditableData from "./EditableData";
+import {str_res_state} from "./Consts";
 
-const str_res_state = ["未下载", "已下载", "大文件", "已删除"]
 const GB1 = 1024 * 1024 * 1024
 
 class ResFileInfo extends EditableData {
@@ -13,7 +13,7 @@ class ResFileInfo extends EditableData {
         super(json_data);
     }
 
-    public get res_state_class (){
+    public get res_state_class() {
         return `res${this.res_state}`
     }
 
@@ -26,7 +26,7 @@ class ResFileInfo extends EditableData {
     }
 
     public get str_state() {
-        return str_res_state[this.res_state - 1]
+        return str_res_state[this.res_state]
     }
 
     public get str_size() {
@@ -38,7 +38,7 @@ class ResFileInfo extends EditableData {
     public get desc() {
         let size = this.res_size / GB1
         size = Math.floor(size * 100) / 100
-        return `${str_res_state[this.res_state - 1]}: ${size}G(${this.img_count}P,${this.video_count}V)`
+        return `${str_res_state[this.res_state]}: ${size}G(${this.img_count}P,${this.video_count}V)`
     }
 }
 

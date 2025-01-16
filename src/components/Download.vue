@@ -79,6 +79,7 @@ import {DownloadType} from "../data/Enums";
 import {logError, logInfo, logWarn} from "../ctrls/FetchCtrl";
 import {Download_Options} from "../data/Consts";
 import {CommonOption} from "../data/Interfaces";
+import {BadgeStore} from "../store/BadgeStore";
 
 export default {
 
@@ -123,6 +124,9 @@ export default {
         },
     },
     methods: {
+        ...mapActions(BadgeStore, {
+            fetchTaskCount: 'fetchTaskCount',
+        }),
         ...mapActions(ActorGroupStore, {
             getGroupsFromServer: 'getFromServer',
             getGroup: 'get',
@@ -165,6 +169,7 @@ export default {
                     break
             }
             if (ok) {
+                await this.fetchTaskCount()
                 logInfo("download started")
             }
         },

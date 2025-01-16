@@ -1,56 +1,53 @@
 <template>
     <el-space direction="vertical" size="small" style="width: 100%" fill>
         <!-- posts -->
-        <el-row v-for="actor_log in actor_log_list">
-            <!-- type -->
-            <el-col :span="4" style="align-content: center">
-                <el-text>
-                    {{ actor_log.log_type_name }}
-                </el-text>
-            </el-col>
-            <!-- params -->
-            <el-col :span="20" v-if="actor_log.log_type == ActorLogType.Group">
-                <el-text :style="{'color': getGroupColor(actor_log.group_id)}">
-                    {{ getGroupName(actor_log.group_id) }}
-                </el-text>
-            </el-col>
-            <el-col :span="20" v-else-if="actor_log.log_type == ActorLogType.Score">
-                <el-rate v-model="actor_log.show_score"
-                         :colors="star_colors"
-                         void-color="#777777"
-                         :max="6"
-                         style="background-color: #1a1a1a50;"
-                         disabled allow-half/>
-            </el-col>
-            <el-col :span="20" v-else-if="actor_log.log_type == ActorLogType.Tag">
-                <el-tag v-for="tag_id in actor_log.tag_id_list"
-                        :class="getTagStyleName(tag_id)"
-                        style="margin: 0 2px"
-                        round>
-                    {{ getTagName(tag_id) }}
-                </el-tag>
-            </el-col>
-            <el-col :span="20" v-else-if="actor_log.log_type == ActorLogType.Remark">
-                <el-text class="log-remark">
-                    {{ actor_log.remark }}
-                </el-text>
-            </el-col>
-            <el-col :span="20" v-else-if="actor_log.log_type == ActorLogType.Link">
-                <el-text v-for="actor_name in actor_log.actor_names">
-                    {{ actor_name }}
-                </el-text>
-            </el-col>
-            <el-col :span="20" v-else-if="actor_log.log_type == ActorLogType.PostCount">
-                <el-text>
-                    {{ actor_log.post_count }}
-                </el-text>
-            </el-col>
-            <el-col :span="20" v-else>
-                <el-text>
-                    {{ actor_log.log_param }}
-                </el-text>
-            </el-col>
-        </el-row>
+        <el-form label-width="auto" label-position="left">
+            <el-form-item v-for="actor_log in actor_log_list"
+                          :label="actor_log.log_type_name">
+                <div v-if="actor_log.log_type == ActorLogType.Group">
+                    <el-text :style="{'color': getGroupColor(actor_log.group_id)}">
+                        {{ getGroupName(actor_log.group_id) }}
+                    </el-text>
+                </div>
+                <div v-else-if="actor_log.log_type == ActorLogType.Score">
+                    <el-rate v-model="actor_log.show_score"
+                             :colors="star_colors"
+                             void-color="#777777"
+                             :max="6"
+                             style="background-color: #1a1a1a50;"
+                             disabled allow-half/>
+                </div>
+                <div v-else-if="actor_log.log_type == ActorLogType.Tag">
+                    <el-tag v-for="tag_id in actor_log.tag_id_list"
+                            :class="getTagStyleName(tag_id)"
+                            style="margin-right: 10px"
+                            round>
+                        {{ getTagName(tag_id) }}
+                    </el-tag>
+                </div>
+                <div v-else-if="actor_log.log_type == ActorLogType.Remark">
+                    <el-text class="log-remark">
+                        {{ actor_log.remark }}
+                    </el-text>
+                </div>
+                <div v-else-if="actor_log.log_type == ActorLogType.Link">
+                    <el-text v-for="actor_name in actor_log.actor_names"
+                             style="margin-right:10px;text-decoration-line: underline">
+                        {{ actor_name }}
+                    </el-text>
+                </div>
+                <div v-else-if="actor_log.log_type == ActorLogType.PostCount">
+                    <el-text>
+                        {{ actor_log.post_count }}
+                    </el-text>
+                </div>
+                <div v-else>
+                    <el-text>
+                        {{ actor_log.log_param }}
+                    </el-text>
+                </div>
+            </el-form-item>
+        </el-form>
     </el-space>
 </template>
 
@@ -100,6 +97,7 @@ export default {
         },
     },
     mounted() {
+        console.log(`actor logs of ${this.specific_actor_id}`)
         this.getLogs()
     }
 }
@@ -108,7 +106,6 @@ export default {
 <style scoped>
 
 .log-remark {
-    //color: hotpink;
     white-space: pre-wrap;
     word-break: break-all;
 }

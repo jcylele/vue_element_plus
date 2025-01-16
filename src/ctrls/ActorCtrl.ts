@@ -4,6 +4,7 @@ import ActorFilterData from "../data/ActorFilterData";
 import {Base64} from "js-base64";
 import {BatchActorGroup} from "../data/SimpleForms";
 import {BASE_URL} from "../data/Consts";
+import ResSizeCount from "../data/ResSizeCount";
 
 const baseUrl = `${BASE_URL}/api/actor`
 
@@ -24,11 +25,25 @@ export async function getActorList(filter_condition: ActorFilterData, limit: num
     if (!ok) {
         return [ok, response]
     }
+
+    return [true, toActorList(response)]
+}
+
+function toActorList(json_obj): ActorData[] {
     const list = []
-    for (const json_data of response) {
+    for (const json_data of json_obj) {
         list.push(new ActorData(json_data))
     }
-    return [true, list]
+    return list
+}
+
+function toActorMap(json_obj): Map<number, ActorData> {
+    const map = new Map<number, ActorData>()
+    for (const json_data of json_obj) {
+        const actor = new ActorData(json_data)
+        map.set(actor.actor_id, actor)
+    }
+    return map
 }
 
 export async function linkSameActors(actor_ids: number[]) {
@@ -38,12 +53,7 @@ export async function linkSameActors(actor_ids: number[]) {
         return [false, response]
     }
 
-    const map = new Map<number, ActorData>()
-    for (const json_data of response) {
-        const actor = new ActorData(json_data)
-        map[actor.actor_id] = actor
-    }
-    return [true, map]
+    return [true, toActorMap(response)]
 }
 
 export async function unlinkSameActors(actor_ids: number[]) {
@@ -53,12 +63,7 @@ export async function unlinkSameActors(actor_ids: number[]) {
         return [false, response]
     }
 
-    const map = {}
-    for (const json_data of response) {
-        const actor = new ActorData(json_data)
-        map[actor.actor_id] = actor
-    }
-    return [true, map]
+    return [true, toActorMap(response)]
 }
 
 
@@ -72,12 +77,7 @@ export async function batchChangeActorGroup(actor_ids: number[], group_id: numbe
         return [false, response]
     }
 
-    const map = {}
-    for (const json_data of response) {
-        const actor = new ActorData(json_data)
-        map[actor.actor_id] = actor
-    }
-    return [true, map]
+    return [true, toActorMap(response)]
 }
 
 export async function getActor(actor_id: number) {
@@ -174,9 +174,25 @@ export async function getLinkedActors(actor_id: number) {
         return [false, response]
     }
 
-    const list = []
-    for (const json_data of response) {
-        list.push(new ActorData(json_data))
+    return [true, toActorList(response)]
+}
+
+export async function getVideoStates(actor_id: number) {
+    const url = `${baseUrl}/${actor_id}/video_states`
+    return await fetchGet(url)
+}
+
+
+export async function getVideoSizes(actor_id: number) {
+    const url = `${baseUrl}/${actor_id}/video_sizes`
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [false, response]
     }
-    return [true, list]
+    const rsc_list: ResSizeCount[] = []
+    for (const json_obj of response) {
+        const rsc = new ResSizeCount(json_obj)
+        rsc_list.push(rsc)
+    }
+    return [true, rsc_list]
 }

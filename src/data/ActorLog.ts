@@ -22,6 +22,11 @@ export default class ActorLog extends EditableData {
         return parseInt(this.log_param) / 2
     }
 
+    public set show_score(val: number) {
+        // this.log_param = (val * 2).toString()
+        // do nothing, just to support v-model
+    }
+
     public get remark(): string {
         return this.log_param
     }

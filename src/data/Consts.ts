@@ -1,9 +1,34 @@
-import {ActorLogType, ActorShowType, DownloadType, NoticeType, PostFilter, SortType} from "./Enums";
+import {
+    ActorLogType,
+    ActorShowType,
+    DownloadType,
+    NoticeType,
+    PostFilter,
+    ResSizeUnit,
+    ResState,
+    SortType
+} from "./Enums";
 import {CommonOption, SortOption} from "./Interfaces";
 
 export const BASE_URL = "http://127.0.0.1:7878"
 
 export const MAX_SCORE = 12
+
+export const ResStateList: ResState[] = [ResState.Del, ResState.Skip, ResState.Init, ResState.Down]
+export const video_state_color = {
+    [ResState.Init]: "darkgreen",
+    [ResState.Down]: "hotpink",
+    [ResState.Skip]: "orangered",
+    [ResState.Del]: "blue",
+}
+export const str_res_state = {
+    [ResState.Init]: "未下载",
+    [ResState.Down]: "已下载",
+    [ResState.Skip]: "大文件",
+    [ResState.Del]: "已删除",
+}
+
+export const ResSizeList = [ResSizeUnit.GB, ResSizeUnit.MB, ResSizeUnit.KB, ResSizeUnit.B]
 
 export const Sort_Options: SortOption[] = [
     {id: 0, label: "None", sort_type: SortType.Default, sort_asc: false},
@@ -35,15 +60,29 @@ export const Star_Colors = {
     6: '#7F00FF'
 }
 
+export const Tag_Colors = [
+    "#0000FF",
+    "#40a0ff",
+    "#79cff4",
+    "#78f3e0",
+    "#7cf88c",
+    "#bdc846",
+    "#df9800",
+    "#e674b5",
+    "#ff0080",
+    "#787878",
+]
+
 export const Actor_Show_Options: CommonOption[] = [
     {label: "Card", value: ActorShowType.Card},
     {label: "Line", value: ActorShowType.Line},
 ]
 
 export const Notice_Type_Options: CommonOption[] = [
-    {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
     {label: "Invalid Post", value: NoticeType.InvalidPost},
+    {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
     {label: "Same Actor Name", value: NoticeType.SameActorName},
+    {label: "Has Linked Account", value: NoticeType.HasLinkedAccount},
 ]
 
 export const Notice_Param_Names =
@@ -51,10 +90,11 @@ export const Notice_Param_Names =
         [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2"],
         [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
         [NoticeType.SameActorName]: ["actor_name"],
+        [NoticeType.HasLinkedAccount]: ["actor_name"],
     }
 
 export const Actor_Log_Type_Names = {
-    [ActorLogType.Add]: "Create Actor",
+    [ActorLogType.Add]: "Actor Created",
     [ActorLogType.Group]: "Set Group",
     [ActorLogType.Score]: "Set Score",
     [ActorLogType.Tag]: "Set Tags",
@@ -62,6 +102,6 @@ export const Actor_Log_Type_Names = {
     [ActorLogType.Remark]: "Set Remark",
     [ActorLogType.Link]: "Link",
     [ActorLogType.Unlink]: "Unlink",
-    [ActorLogType.PostCount]: "Set Post Count",
+    [ActorLogType.PostCount]: "Post Count",
     [ActorLogType.ClearFolder]: "Clear Folder",
 }
