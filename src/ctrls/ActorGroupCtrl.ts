@@ -1,6 +1,7 @@
 import {fetchDelete, fetchGet, fetchPost} from "./FetchCtrl";
 import ActorGroupData from "../data/ActorGroupData";
 import {BASE_URL} from "../data/Consts";
+import ActorGroupCond from "../data/ActorGroupCond";
 
 const baseUrl = `${BASE_URL}/api/actor_group`
 
@@ -55,4 +56,10 @@ export async function delActorGroup(group_id: number) {
         return [false, response]
     }
     return [true, response.value]
+}
+
+
+export async function setGroupCondition(group_id: number, cond_list: ActorGroupCond[]) {
+    const url = `${baseUrl}/${group_id}/set_condition`
+    return await fetchPost(url, cond_list)
 }

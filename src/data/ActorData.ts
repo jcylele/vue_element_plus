@@ -8,8 +8,10 @@ import ActorFileInfo from "./FileInfo";
 export default class ActorData extends EditableData {
     actor_id: number
     actor_name: string
+    actor_platform: string
     actor_group_id: number
     score: number
+    icon: string
     href: string
     has_main_actor: boolean
     remark: string
@@ -85,9 +87,5 @@ export default class ActorData extends EditableData {
 
     hasTag(tag_id: number) {
         return this.tag_ids.indexOf(tag_id) >= 0
-    }
-
-    get icon() {
-        return `http://localhost:1314/_icon/${this.actor_name}.jfif`
     }
 }

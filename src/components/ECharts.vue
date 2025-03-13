@@ -3,12 +3,17 @@
         <el-aside width="var(--el-aside-width)">
             <el-menu
                 mode="vertical"
-                text-color="#000000"
-                active-text-color="#a0a0fb"
+                class="el-aside-menu"
                 @select="onMenuItemSelect">
-                <el-menu-item index="tag_relatives">Tag Relatives</el-menu-item>
-                <el-menu-item index="tag_scores">Tag Scores</el-menu-item>
-                <el-menu-item index="score_tags">Score Tags</el-menu-item>
+                <el-menu-item index="tag_relatives" class="el-aside-menu-item">
+                    Tag Relatives
+                </el-menu-item>
+                <el-menu-item index="tag_scores" class="el-aside-menu-item">
+                    Tag Scores
+                </el-menu-item>
+                <el-menu-item index="score_tags" class="el-aside-menu-item">
+                    Score Tags
+                </el-menu-item>
             </el-menu>
         </el-aside>
         <el-main>

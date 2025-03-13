@@ -9,11 +9,12 @@ export enum DownloadType {
     Category,
     Url,
     Resume,
+    Manual
 }
 
 export enum SortType {
     Default,
-    Star,
+    Score,
     TotalPostCount,
     CategoryTime,
 }
@@ -29,6 +30,7 @@ export enum NoticeType {
     InvalidPost = 2,
     SameActorName = 3,
     HasLinkedAccount = 4,
+    SimilarActorName = 5,
 }
 
 export enum ResState {
@@ -61,4 +63,11 @@ export enum ResSizeUnit {
     KB = 1024,
     MB = 1024 * 1024,
     GB = 1024 * 1024 * 1024
+}
+
+export enum GroupCondType {
+    MinScore = 0,   // param: score
+    MaxScore = 1,   // param: score
+    HasAnyTag = 2,  // param: bool
+    Linked = 3      // param: bool
 }

@@ -11,7 +11,10 @@ export default class ActorLog extends EditableData {
     }
 
     public get tag_id_list(): number[] {
-        return this.log_param.split('\n').map(a => parseInt(a))
+        console.log(`this.log_param = ${this.log_param}`)
+        return this.log_param.split('\n').filter((str_tag_id) => {
+            return str_tag_id
+        }).map(a => parseInt(a))
     }
 
     public get group_id(): number {

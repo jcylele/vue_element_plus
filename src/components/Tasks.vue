@@ -3,7 +3,6 @@
         <el-main>
             <el-space direction="vertical">
                 <el-space direction="horizontal" size="large">
-                    <el-button type="info" size="default" @click="clean">Remove Outdated Files</el-button>
                     <el-button type="danger" size="default" @click="stopAll">Stop All</el-button>
                     <el-button type="primary" size="default" @click="getAll">Refresh</el-button>
                 </el-space>
@@ -14,30 +13,30 @@
                             <el-space direction="vertical">
                                 <el-space direction="horizontal">
                                     <el-tag v-if="scope.row.download_limit.actor_count > 0" type="success" size="small"
-                                            effect="dark">
+                                            effect="plain">
                                         {{ scope.row.download_limit.actor_count }} actors
                                     </el-tag>
-                                    <el-tag type="success" size="small" effect="dark">
+                                    <el-tag type="success" size="small" effect="plain">
                                         {{ scope.row.download_limit.post_desc() }}
                                     </el-tag>
                                 </el-space>
                                 <el-space direction="horizontal">
                                     <el-tag v-if="scope.row.download_limit.total_file_size > 0" type="success"
-                                            size="small" effect="dark">
+                                            size="small" effect="plain">
                                         Total {{ scope.row.download_limit.total_file_size_desc() }}
                                     </el-tag>
                                     <el-tag v-if="scope.row.download_limit.file_size > 0" type="success" size="small"
-                                            effect="dark">
+                                            effect="plain">
                                         Single {{ scope.row.download_limit.file_size_desc() }}
                                     </el-tag>
                                 </el-space>
                                 <el-space direction="horizontal">
                                     <el-tag v-if="scope.row.download_limit.allow_img" type="success" size="small"
-                                            effect="dark">
+                                            effect="plain">
                                         images
                                     </el-tag>
                                     <el-tag v-if="scope.row.download_limit.allow_video" type="success" size="small"
-                                            effect="dark">
+                                            effect="plain">
                                         videos
                                     </el-tag>
                                 </el-space>
@@ -47,7 +46,7 @@
                     <el-table-column prop="worker_count" label="workers" min-width="200px">
                         <template #default="scope">
                             <el-space direction="vertical">
-                                <el-tag size="small" effect="dark" v-for="(count, name) in scope.row.worker_count"
+                                <el-tag size="small" effect="plain" v-for="(count, name) in scope.row.worker_count"
                                         :key="name">
                                     {{ name }}:{{ count }}
                                 </el-tag>
@@ -57,7 +56,7 @@
                     <el-table-column prop="queue_count" label="queues" min-width="200px">
                         <template #default="scope">
                             <el-space direction="vertical">
-                                <el-tag size="small" effect="dark" v-for="(count, name) in scope.row.queue_count"
+                                <el-tag size="small" effect="plain" v-for="(count, name) in scope.row.queue_count"
                                         :key="name">
                                     {{ name }}:{{ count }}
                                 </el-tag>
@@ -76,7 +75,7 @@
 </template>
 
 <script lang="ts">
-import {getAllTasks, cleanFiles, stopAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
+import {getAllTasks, stopAllTasks, stopTask} from "../ctrls/DownloadCtrl.js";
 import TaskData from "../data/TaskData";
 import {logInfo} from "../ctrls/FetchCtrl";
 import {mapActions} from "pinia";
@@ -116,13 +115,6 @@ export default {
             if (ok) {
                 this.task_list = ret
                 this.setTaskCount(ret.length)
-            }
-        },
-
-        async clean() {
-            const [ok, ret] = await cleanFiles()
-            if (ok) {
-                logInfo("clean outdated files succeed")
             }
         },
     },

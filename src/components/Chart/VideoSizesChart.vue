@@ -50,7 +50,7 @@ export default {
                 legend: {
                     orient: 'vertical',
                     right: '5%',
-                    top: 'center',
+                    top: '5%',
                     data: [] // dynamic data
                 },
                 xAxis: [
@@ -90,7 +90,7 @@ export default {
             }
         },
         refreshChart(rsc_list: ResSizeCount[]) {
-            console.log(rsc_list)
+            // console.log(rsc_list)
             this.video_sizes_option.yAxis[0].data = rsc_list.map(rsc => rsc.str_size)
 
             this.video_sizes_option.legend.data = ResStateList.map(res_state => str_res_state[res_state])

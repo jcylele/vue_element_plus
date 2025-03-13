@@ -4,7 +4,7 @@ import {getActorTagList} from "../ctrls/ActorTagCtrl";
 import SortedList from "../data/SortedList";
 import {Tag_Colors} from "../data/Consts";
 
-const MAX_TAG_HISTORY = 10
+const MAX_TAG_HISTORY = 12
 
 export const ActorTagStore = defineStore('ActorTagStore', {
     state: () => ({
@@ -19,7 +19,26 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             return state.list.sorted_list
         },
         tag_history: (state) => {
-            return state.history_list
+            const tag_id_arr: number[][] = []
+            for (let i = 0; i < 10; i++) {
+                tag_id_arr.push([])
+            }
+
+            for (const tag_id of state.history_list) {
+                const tag: ActorTagData = state.get(tag_id)
+                const group = Math.floor(tag.tag_priority / 100)
+                tag_id_arr[group].push(tag.tag_id)
+            }
+
+            const tag_id_arr2: number[][] = []
+            for (let i = 9; i >= 0; i--) {
+                const tag_list = tag_id_arr[i]
+                if (tag_list.length > 0) {
+                    tag_list.sort(state.compareTagId)
+                    tag_id_arr2.push(tag_list)
+                }
+            }
+            return tag_id_arr2
         }
     },
     actions: {

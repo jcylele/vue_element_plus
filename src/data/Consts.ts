@@ -8,7 +8,7 @@ import {
     ResState,
     SortType
 } from "./Enums";
-import {CommonOption, SortOption} from "./Interfaces";
+import {CommonOption} from "./Interfaces";
 
 export const BASE_URL = "http://127.0.0.1:7878"
 
@@ -16,10 +16,10 @@ export const MAX_SCORE = 12
 
 export const ResStateList: ResState[] = [ResState.Del, ResState.Skip, ResState.Init, ResState.Down]
 export const video_state_color = {
-    [ResState.Init]: "darkgreen",
+    [ResState.Init]: "green",
     [ResState.Down]: "hotpink",
     [ResState.Skip]: "orangered",
-    [ResState.Del]: "blue",
+    [ResState.Del]: "#409eff",
 }
 export const str_res_state = {
     [ResState.Init]: "未下载",
@@ -30,16 +30,16 @@ export const str_res_state = {
 
 export const ResSizeList = [ResSizeUnit.GB, ResSizeUnit.MB, ResSizeUnit.KB, ResSizeUnit.B]
 
-export const Sort_Options: SortOption[] = [
-    {id: 0, label: "None", sort_type: SortType.Default, sort_asc: false},
-    {id: 1, label: "Star Desc", sort_type: SortType.Star, sort_asc: false},
-    {id: 2, label: "Post Count Asc", sort_type: SortType.TotalPostCount, sort_asc: true},
-    {id: 3, label: "Category Time Asc", sort_type: SortType.CategoryTime, sort_asc: true},
-]
-
 export const Post_Filter_Options: CommonOption[] = [
     {label: "Normal", value: PostFilter.Normal},
     {label: "Current", value: PostFilter.Old},
+]
+
+export const Sort_Options: CommonOption[] = [
+    {label: "None", value: SortType.Default},
+    {label: "Score", value: SortType.Score},
+    {label: "TotalPostCount", value: SortType.TotalPostCount},
+    {label: "CategoryTime", value: SortType.CategoryTime},
 ]
 
 export const Download_Options: CommonOption[] = [
@@ -47,6 +47,7 @@ export const Download_Options: CommonOption[] = [
     {label: "By Category", value: DownloadType.Category},
     {label: "Specific Urls", value: DownloadType.Url},
     {label: "Resume Files", value: DownloadType.Resume},
+    {label: "Manual", value: DownloadType.Manual},
 ]
 
 
@@ -70,7 +71,7 @@ export const Tag_Colors = [
     "#EEAE00",
     "#EE707B",
     "#EE007F",
-    "#434343",
+    "#787878",
 ]
 
 export const Actor_Show_Options: CommonOption[] = [
@@ -83,6 +84,7 @@ export const Notice_Type_Options: CommonOption[] = [
     {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
     {label: "Same Actor Name", value: NoticeType.SameActorName},
     {label: "Has Linked Account", value: NoticeType.HasLinkedAccount},
+    {label: "Similar Actor Name", value: NoticeType.SimilarActorName},
 ]
 
 export const Notice_Param_Names =
@@ -90,7 +92,8 @@ export const Notice_Param_Names =
         [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2"],
         [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
         [NoticeType.SameActorName]: ["actor_name"],
-        [NoticeType.HasLinkedAccount]: ["actor_name"],
+        [NoticeType.HasLinkedAccount]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
+        [NoticeType.SimilarActorName]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
     }
 
 export const Actor_Log_Type_Names = {

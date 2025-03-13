@@ -13,7 +13,7 @@
         <el-form :model="download_limit"
                  label-width="200px" label-position="left">
             <el-form-item label="Actor Count">
-                <el-input-number v-model="download_limit.actor_count" :min="0" :max="200" :step="5"/>
+                <el-input-number v-model="download_limit.actor_count" :min="0" :max="1000" :step="50"/>
             </el-form-item>
             <el-form-item label="Post Filter">
                 <el-radio-group v-model="download_limit.post_filter">
@@ -24,7 +24,7 @@
                 </el-radio-group>
             </el-form-item>
             <el-form-item label="Post Count">
-                <el-input-number v-model="download_limit.post_count" :min="0" :max="9999" :step="50"/>
+                <el-input-number v-model="download_limit.post_count" :min="0" :max="1000" :step="50"/>
             </el-form-item>
             <el-form-item label="Total File Size(MB)">
                 <el-input-number v-model="download_limit.show_total_file_size" :min="0" :max="10240" :step="512"/>

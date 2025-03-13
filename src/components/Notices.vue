@@ -1,16 +1,16 @@
 <template>
     <el-container>
-        <el-aside width="var(--el-aside-width)">
+        <el-aside width="var(--el-aside-width)" style="padding: 0 10px">
             <el-menu
                 mode="vertical"
-                text-color="#000000"
-                active-text-color="#a0a0fb"
+                class="el-aside-menu"
                 @select="onNoticeTypeChange">
                 <el-menu-item v-for="nt in notice_type_list"
                               :index="nt.value.toString()"
-                              style="justify-content: flex-end">
+                              class="el-aside-menu-item">
                     <el-badge v-if="getNoticeCount(nt.value) > 0"
-                              :value="getNoticeCount(nt.value)">
+                              :value="getNoticeCount(nt.value)"
+                              :max="999">
                         {{ nt.label }}
                     </el-badge>
                     <span v-else>{{ nt.label }}</span>
@@ -18,20 +18,35 @@
             </el-menu>
         </el-aside>
         <el-main>
-            <el-space direction="vertical">
+            <el-space v-if="cur_notice_type != 0" direction="vertical">
+                <el-pagination
+                    v-model:current-page="page_index"
+                    :page-size="page_size"
+                    :total="notice_count"
+                    @current-change="onPageChange"
+                    layout="total, prev, pager, next"
+                    background
+                    style="margin: 5px"
+                />
                 <el-table :data="notice_list" border class="wrap_line">
-                    <el-table-column prop="notice_param0" :label="label_names[0]" min-width="180px"/>
-                    <el-table-column prop="notice_param1" :label="label_names[1]" min-width="180px"/>
-                    <el-table-column prop="notice_param2" :label="label_names[2]" min-width="180px"/>
-                    <el-table-column label="Op" min-width="250px">
+                    <el-table-column
+                        v-for="(label, index) in label_names"
+                        :key="index"
+                        :prop="`notice_param${index}`"
+                        :label="label"
+                        :width="200"
+                    />
+                    <el-table-column label="Op" :width="200">
                         <template #default="scope">
-                            <el-button v-if="is_search_actor_name" type="primary"
-                                       @click="toActors(scope.row.notice_param0)">
-                                Search
-                            </el-button>
-                            <el-button type="danger" @click="delNotice(scope.row.notice_id)">
-                                Delete
-                            </el-button>
+                            <el-space direction="horizontal" size="small">
+                                <el-button v-if="is_search_actor_name" type="primary"
+                                           @click="toActors(scope.row)">
+                                    Search
+                                </el-button>
+                                <el-button type="danger" @click="delNotice(scope.row.notice_id)">
+                                    Delete
+                                </el-button>
+                            </el-space>
                         </template>
                     </el-table-column>
                 </el-table>
@@ -58,8 +73,11 @@ export default {
     data() {
         return {
             cur_notice_type: 0,
-            label_names: ["", "", ""],
+            label_names: [] as string[],
             notice_list: [] as NoticeData[],
+            notice_count: 0,
+            page_index: 1,
+            page_size: 50,
         }
     },
 
@@ -67,9 +85,8 @@ export default {
         notice_type_list() {
             return Notice_Type_Options
         },
-        is_search_actor_name() {
-            return this.cur_notice_type == NoticeType.SameActorName
-                || this.cur_notice_type == NoticeType.HasLinkedAccount
+        is_search_actor_name(): boolean {
+            return this.cur_notice_type != NoticeType.InvalidPost
         }
     },
 
@@ -91,11 +108,10 @@ export default {
 
             this.cur_notice_type = parseInt(index)
             this.label_names = Notice_Param_Names[this.cur_notice_type]
-            const [ok, new_list] = await getNotices(this.cur_notice_type)
-            if (ok) {
-                this.notice_list = new_list
-                this.setNoticeCount(this.cur_notice_type, new_list.length)
-            }
+            this.notice_count = this.getNoticeCount(this.cur_notice_type)
+            this.page_index = 1
+
+            await this.onPageChange()
         },
 
         async delNotice(notice_id: number) {
@@ -104,7 +120,8 @@ export default {
                 const index = this.notice_list.findIndex((item) => item.notice_id === notice_id)
                 if (index !== -1) {
                     this.notice_list.splice(index, 1)
-                    this.setNoticeCount(this.cur_notice_type, this.notice_list.length)
+                    this.notice_count -= 1
+                    this.setNoticeCount(this.cur_notice_type, this.notice_count)
                 }
             }
         },
@@ -112,23 +129,47 @@ export default {
         async deleteAll() {
             const [ok, _] = await delNoticesByType(this.cur_notice_type)
             if (ok) {
+                this.notice_count = 0
                 this.notice_list = []
                 this.setNoticeCount(this.cur_notice_type, 0)
             }
         },
 
-        toActors(actor_name: string) {
+        formatActorName(notice: NoticeData): string {
+            switch (this.cur_notice_type) {
+                case NoticeType.SameActorName:
+                    return `${notice.notice_param0}||`
+                case NoticeType.UnlinkedActor:
+                    return `${notice.notice_param0}||${notice.notice_param1}||`
+                case NoticeType.HasLinkedAccount:
+                case NoticeType.SimilarActorName:
+                    return `${notice.notice_param0}||${notice.notice_param1}||${notice.notice_param2}||${notice.notice_param3}||`
+                default:
+                    return ""
+            }
+        },
+
+        toActors(notice: NoticeData) {
+            const actor_name = this.formatActorName(notice)
             const filter_condition = new ActorFilterData()
             filter_condition.name = actor_name
             filter_condition.show_name = true
             this.saveFilterCondition(filter_condition)
             this.$router.push("/actors")
         },
-    },
+
+        async onPageChange() {
+            const [ok, new_list] = await getNotices(this.cur_notice_type, this.page_size, (this.page_index - 1) * this.page_size)
+            if (ok) {
+                this.notice_list = new_list
+            }
+        }
+    }
+    ,
     async mounted() {
         let sub_menu = this.getSubMenu(MainMenu.Notices)
         if (sub_menu) {
-            this.onNoticeTypeChange(sub_menu)
+            await this.onNoticeTypeChange(sub_menu)
         }
     }
 }

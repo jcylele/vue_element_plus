@@ -7,7 +7,6 @@
             <el-checkbox size="default" border v-model="filter_condition.show_score">Star</el-checkbox>
             <el-checkbox size="default" border v-model="filter_condition.show_name">Name/Link</el-checkbox>
             <el-checkbox size="default" border v-model="filter_condition.show_remark">Remark</el-checkbox>
-            <el-checkbox size="default" border v-model="filter_condition.show_sort">Sort</el-checkbox>
         </el-space>
 
         <el-space direction="vertical" style="padding: 5px">
@@ -33,7 +32,10 @@
                         size="large"
                         active-text="All"
                         inactive-text="None"
-                        style="margin: 0 10px"
+                        class="empty_bg"
+                        style="padding: 0 10px"
+                        width="80px"
+                        inline-prompt
                     />
 
                 </el-form-item>
@@ -82,14 +84,8 @@
                 <el-form-item label="Name" v-if="filter_condition.show_name">
                     <el-input v-model="filter_condition.name"
                               @change="onAnyConditionChange"
-                              style="width: 200px; font-size: 24px;"
+                              style="width: 300px; font-size: 24px;"
                               clearable/>
-                    <el-checkbox v-model="filter_condition.linked"
-                                 @change="onAnyConditionChange"
-                                 style="margin-left: 10px;font-size: 24px;"
-                                 border>
-                        Linked
-                    </el-checkbox>
                 </el-form-item>
 
                 <!-- remark -->
@@ -107,16 +103,26 @@
                 </el-form-item>
 
                 <!-- Sort_Options -->
-                <el-form-item label="Sort" v-if="filter_condition.show_sort">
-                    <el-select v-model="filter_condition.show_sort_id"
-                               @change="onAnyConditionChange"
-                               style="width: 200px;">
-                        <el-option
-                            v-for="sort_option in sort_option_list"
-                            :label="sort_option.label"
-                            :value="sort_option.id"
-                        />
-                    </el-select>
+                <el-form-item label="Sort">
+                    <div v-for="sort_item in filter_condition.sort_items"
+                         class="sort_item">
+                        <el-select v-model="sort_item.sort_type"
+                                   style="width: 150px">
+                            <el-option
+                                v-for="option in sort_option_list"
+                                :label="option.label"
+                                :value="option.value"
+                            />
+                        </el-select>
+                        <svg-icon :name="sort_item.icon"
+                                  size="30px"
+                                  @click="sort_item.switch()"/>
+                    </div>
+                    <el-button style="font-size: 28px"
+                               @click="filter_condition.addSortItem()"
+                               plain>
+                        +
+                    </el-button>
                 </el-form-item>
             </el-form>
             <!-- buttons -->
@@ -146,6 +152,7 @@ import {ActorTagStore} from "../store/ActorTagStore";
 import {ActorGroupStore} from "../store/ActorGroupStore";
 import {Sort_Options, Star_Colors} from "../data/Consts";
 import {ActorFilterStore} from "../store/ActorFilterStore";
+import SvgIcon from "./SvgIcon/index.vue";
 
 export default {
     name: "ActorFilter",
@@ -155,7 +162,7 @@ export default {
     },
     // declare emitted events to parent
     emits: ['submit'],
-    components: {NewActorTag},
+    components: {SvgIcon, NewActorTag},
     data() {
         return {
             cond_changed: false,
@@ -209,6 +216,7 @@ export default {
         },
         async onFilterSubmit() {
             this.cond_changed = false
+            this.filter_condition.simplifySortItems()
             this.saveFilterCondition(this.filter_condition)
             this.$emit('submit')
         },
@@ -234,5 +242,13 @@ export default {
 </script>
 
 <style scoped>
-
+.sort_item {
+    display: flex;
+    flex-direction: row;
+    margin-right: 10px;
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 5px;
+    border-color: var(--el-border-color);
+}
 </style>

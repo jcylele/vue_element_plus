@@ -25,6 +25,10 @@ export class GroupDownloadForm extends BaseDownloadForm {
     actor_group_id: number
 }
 
+export class NewDownloadForm extends GroupDownloadForm {
+    from_start: boolean
+}
+
 export class UrlDownloadForm extends GroupDownloadForm {
     urls: ActorUrl[]
 }

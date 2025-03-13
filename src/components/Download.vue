@@ -19,7 +19,7 @@
             <el-select
                 v-model="actor_category"
                 placeholder="Select"
-                style="width: 100px"
+                style="width: 130px"
             >
                 <el-option
                     v-for="group in down_group_list"
@@ -31,6 +31,11 @@
             <el-text v-if="by_category">
                 (including {{ actor_count }} actors)
             </el-text>
+            <el-checkbox v-else-if="by_new"
+                         v-model="from_start"
+                         label="From Start"
+                         style="margin-left: 10px;font-size: 24px;"
+                         border/>
         </el-space>
 
         <!-- url block -->
@@ -69,7 +74,13 @@
 <script lang="ts">
 
 import {ActorUrl, DownloadLimitForm} from "../data/SimpleForms";
-import {downloadByGroup, downloadByUrls, downloadNewActors, resumeDownload,} from "../ctrls/DownloadCtrl";
+import {
+    downloadByGroup,
+    downloadByUrls,
+    downloadNewActors,
+    manualDownload,
+    resumeDownload,
+} from "../ctrls/DownloadCtrl";
 import {mapActions, mapState} from "pinia";
 import DownloadLimit from "./DownloadLimit.vue";
 import {getActorCount} from "../ctrls/ActorCtrl";
@@ -90,6 +101,7 @@ export default {
             download_limit: new DownloadLimitForm(),
             actor_category: 0,
             actor_count: 0,
+            from_start: false,
             actor_urls: [] as ActorUrl[],
         }
     },
@@ -115,6 +127,9 @@ export default {
         },
         by_url(): boolean {
             return this.down_type === DownloadType.Url
+        },
+        by_new(): boolean {
+            return this.down_type === DownloadType.New
         },
         down_type_list(): CommonOption[] {
             return Download_Options
@@ -148,21 +163,24 @@ export default {
             let ret = ""
             switch (this.down_type) {
                 case DownloadType.New: {
-                    [ok, ret] = await downloadNewActors(this.actor_category, this.download_limit)
+                    [ok, ret] = await downloadNewActors(this.download_limit, this.actor_category, this.from_start)
                     break
                 }
                 case DownloadType.Category:
-                    [ok, ret] = await downloadByGroup(this.actor_category, this.download_limit)
+                    [ok, ret] = await downloadByGroup(this.download_limit, this.actor_category)
                     break
                 case DownloadType.Url:
                     if (this.actor_urls.length == 0) {
                         logWarn("no url is assigned")
                         return
                     }
-                    [ok, ret] = await downloadByUrls(this.actor_category, this.download_limit, this.actor_urls)
+                    [ok, ret] = await downloadByUrls(this.download_limit, this.actor_category, this.actor_urls)
                     break
                 case DownloadType.Resume:
                     [ok, ret] = await resumeDownload(this.download_limit)
+                    break
+                case DownloadType.Manual:
+                    [ok, ret] = await manualDownload(this.download_limit, this.actor_category)
                     break
                 default:
                     logError("invalid download type")

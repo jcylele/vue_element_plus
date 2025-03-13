@@ -1,0 +1,11 @@
+html.dark {
+    --el-card-bg-color: #283028;
+
+    --me-header-bg-color: #0b4d0b;
+    --me-even-bg-color: #303f07;
+    --me-odd-bg-color: #073f30;
+}
+
+html.dark .el-tag__content {
+    text-shadow: 1px 1px #b0b0b0;
+}

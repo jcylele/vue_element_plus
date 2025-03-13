@@ -8,34 +8,40 @@
         <div class="avatar">
             <el-image class="avatar-img" :src="actor.icon"/>
 
+            <el-text class="avatar-platform">
+                {{ actor.actor_platform }}
+            </el-text>
+
             <svg-icon v-if="actor.has_main_actor"
-                      size="30px" name="avatar"
+                      size="40px" name="avatar"
                       class="avatar-friend"
                       @click="findLinkedActor"/>
 
-            <svg-icon v-if="show_lock"
-                      size="40px"
-                      :name=" locked ? 'locked' : 'lock'"
-                      class="avatar-lock  blink-class"
-                      @click="onLockClick"/>
+            <div v-if="linked_group_ids.length > 1"
+                 class="avatar-group">
+                <svg-icon v-for="group_id in linked_group_ids"
+                          size="10px" name="circle"
+                          :style="{'color': getGroupColor(group_id)}"/>
+            </div>
 
-            <svg-icon v-if="!show_lock && locked"
+
+            <svg-icon v-if="locked"
                       size="40px"
                       name="locked"
                       class="avatar-lock"/>
 
             <svg-icon v-if="show_select"
-                      size="30px"
+                      size="40px"
                       :name=" actor_data.selected ? 'completed' : 'minus'"
                       class="avatar-select"
                       @click="onSelectCLick"/>
             <!-- Stars -->
             <el-rate class="avatar-rate"
                      v-model="actor.show_score"
+                     @change="changeScore"
                      :colors="star_colors"
                      void-color="#777777"
                      :max="6"
-                     @change="changeScore"
                      allow-half/>
         </div>
 
@@ -78,6 +84,18 @@
                                 Clear Folder
                             </el-button>
                         </el-space>
+                        <el-space direction="horizontal">
+                            <el-button class="pop-button"
+                                       type="primary"
+                                       @click="showVideoSizes">
+                                Video Sizes
+                            </el-button>
+                            <el-button class="pop-button"
+                                       type="primary"
+                                       @click="showLogs">
+                                Show Logs
+                            </el-button>
+                        </el-space>
                         <el-space direction="horizontal" v-if="hasFolder()">
                             <el-button class="pop-button"
                                        type="success"
@@ -92,22 +110,9 @@
                                 Open Folder
                             </el-button>
                         </el-space>
-                        <el-space direction="horizontal">
-                            <el-button class="pop-button"
-                                       type="primary"
-                                       @click="showLogs">
-                                Show Logs
-                            </el-button>
-                        </el-space>
                     </el-space>
                 </template>
             </el-popover>
-            <svg-icon v-if="is_downing" name="download"
-                      style="color: lightskyblue"
-                      size="24px" class="blink-class"/>
-            <svg-icon v-if="is_video_all" name="file_checked"
-                      style="color: orange"
-                      size="24px"/>
         </div>
 
         <!-- actor post info -->
@@ -115,9 +120,18 @@
                   v-if="actor.file_info"
                   style="gap: 1px 0"
                   fill>
-            <el-text style="color: black;text-align: center" tag="ins">
-                {{ actor.post_desc }}
-            </el-text>
+            <div class="post_line">
+                <el-text class="post_count" tag="ins">
+                    {{ actor.post_desc }}
+                </el-text>
+                <svg-icon v-if="is_downing" name="download"
+                          style="color: deepskyblue"
+                          size="24px" class="blink-class"/>
+                <svg-icon v-if="is_video_all" name="file_checked"
+                          style="color: orange"
+                          size="24px"/>
+            </div>
+
             <!-- actor res info -->
             <el-space v-for="res_file_info in actor.file_info.res_info"
                       direction="horizontal"
@@ -129,71 +143,79 @@
                 </el-text>
             </el-space>
         </el-space>
+        <el-text v-else style="font-size: 16px;font-style: italic">
+            loading file info
+        </el-text>
 
-        <!--actor remark + category + edit button -->
-        <el-space direction="horizontal" alignment="stretch">
+        <!--actor remark + group + edit button -->
+        <div style="display: flex;flex-direction: row;align-items: stretch;gap: 0 5px">
             <!-- actor remark -->
             <svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'"
                       @click="startEditRemark"
-                      size="24px"/>
-            <!-- actor category -->
+                      size="32px"
+                      style="width: 32px;height: 32px"/>
+            <!-- actor group -->
             <el-select v-model="actor.actor_group_id"
                        @change="setActorGroup"
-                       style="width: 140px">
+                       placement="right"
+                       style="flex-grow: 1">
                 <el-option
                     v-for="group in group_list"
                     :label="group.group_name"
                     :value="group.group_id"
                     :style="{'color': group.group_color, 'text-decoration':'underline' }"
                 >
-                    {{ group.show_content }}
+                    {{ group.group_name }}
                 </el-option>
             </el-select>
             <!-- click to edit tags -->
-            <svg-icon v-if="has_tag" size="24px" name="edit" @click="startEditTag"/>
+            <svg-icon v-if="has_tag" size="32px" name="edit" @click="startEditTag"/>
             <el-popover v-else placement="right" trigger="click"
                         :popper-style="{'border-color': group_color, 'width': 300}">
                 <template #reference>
-                    <svg-icon size="24px" name="edit"/>
+                    <svg-icon size="32px" name="edit"/>
                 </template>
                 <el-space direction="vertical" size="small" fill>
                     <el-text style="font-style: italic">
                         click to apply tags to actor
                     </el-text>
-                    <div class="recent_tag_row">
-                        <el-tag v-for="tag_id in sorted_tag_history"
-                                :style="{'background': getTagBgColor(tag_id)}"
+                    <el-space v-for="tag_ids in tag_history" size="small" class="tag_history_row">
+                        <el-tag v-for="tag_id in tag_ids"
                                 @click="onApplyTag(tag_id)"
+                                :style="getTagStyle(tag_id)"
+                                effect="plain"
                                 round>
                             {{ getTagName(tag_id) }}
                         </el-tag>
-                    </div>
+                    </el-space>
                     <el-button size="default" type="primary" @click="startEditTag">
                         Choose Other Tags
                     </el-button>
                 </el-space>
             </el-popover>
-        </el-space>
+        </div>
 
         <!--actor tags-->
         <el-space wrap style="margin-top: 5px">
             <el-tag v-for="tag_id in actor.tag_ids"
-                    :style="{'background': getTagBgColor(tag_id)}"
+                    :style="getTagStyle(tag_id)"
+                    effect="plain"
                     round>
                 {{ getTagName(tag_id) }}
             </el-tag>
         </el-space>
     </el-space>
     <!-- dialog: actor remark editing-->
-    <el-dialog v-model="is_show_remark"
+    <el-dialog v-model="card_dialog.is_show_remark"
                :title="actor.actor_name"
-               width="600px">
+               width="720px">
         <RemarkEditor :actor="actor"
                       @submit="onSubmitRemark"
-                      @cancel="onCancelRemark"/>
+                      @cancel="onCancelRemark"
+                      @posts="showPosts"/>
     </el-dialog>
     <!-- dialog: actor tags editing dialog-->
-    <el-dialog v-model="is_editing_tags"
+    <el-dialog v-model="card_dialog.is_show_tags"
                :title="actor.actor_name"
                width="67%">
         <ActorTagChooser :actor="actor"
@@ -202,13 +224,19 @@
         />
     </el-dialog>
     <!-- dialog: actor posts -->
-    <el-dialog v-model="is_show_post"
+    <el-dialog v-model="card_dialog.is_show_posts"
                :title="actor.actor_name"
                width=720px>
         <Posts :specific_actor_id="actor.actor_id"/>
     </el-dialog>
+    <!-- dialog: actor video sizes chart -->
+    <el-dialog v-model="card_dialog.is_show_video_sizes"
+               :title="actor.actor_name"
+               width=720px>
+        <VideoSizesChart :actor_id="actor.actor_id"/>
+    </el-dialog>
     <!-- dialog: actor logs -->
-    <el-dialog v-model="is_show_log"
+    <el-dialog v-model="card_dialog.is_show_logs"
                :title="actor.actor_name"
                width=720px>
         <ActorLogs :specific_actor_id="actor.actor_id"/>
@@ -220,7 +248,12 @@ import ActorData from "../data/ActorData";
 import {
     ChangeActorTag,
     changeActorGroup,
-    openActorFolder, changeActorRemark, getActorFileInfo, changeActorScore, clearActorFolder, resetActorPosts
+    openActorFolder,
+    changeActorRemark,
+    getActorFileInfo,
+    changeActorScore,
+    clearActorFolder,
+    resetActorPosts, getLinkedActorGroupIds
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -236,16 +269,18 @@ import {Star_Colors} from "../data/Consts";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import ActorFileInfo from "../data/FileInfo";
+import VideoSizesChart from "./Chart/VideoSizesChart.vue";
+import {ActorResult} from "../data/WebData";
+import {ActorCardDialog, EActorDialog} from "../data/ActorCardDialog";
 
 
 export default {
     name: "ActorCard",
-    components: {SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts},
+    components: {VideoSizesChart, SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts},
     // props from parent
     props: {
         actor_data: ActorElement,
         locked: Boolean,
-        show_lock: Boolean,
         show_select: Boolean
     },
     computed: {
@@ -253,9 +288,6 @@ export default {
         ...mapState(ActorTagStore, {
             tag_history: 'tag_history',
         }),
-        sorted_tag_history(): number[] {
-            return this.tag_history.sort(this.compareActorTagId)
-        },
         actor(): ActorData {
             return this.actor_data.data
         },
@@ -277,20 +309,19 @@ export default {
         },
     },
     // declare emitted events to parent
-    emits: ['refresh', 'link', 'download', 'friend', 'lock'],
+    emits: ['refresh', 'download', 'friend', 'update'],
     data() {
         return {
-            is_show_remark: false,
-            is_editing_tags: false,
-            is_show_post: false,
             is_show_op: false,
-            is_show_log: false
+            card_dialog: new ActorCardDialog(),
+            linked_group_ids: [],
         }
     },
     mounted() {
         // console.log(`mounted[${this.actor_data.id}]: ${this.actor.actor_name}`)
         this.actor.sortTags(this.compareActorTagId)
         this.getFileInfo()
+        this.getLinkedGroups()
     },
     methods: {
         ...mapActions(ActorTagStore, {
@@ -302,11 +333,19 @@ export default {
 
         ...mapActions(ActorGroupStore, {
             getActorGroup: 'get',
+            getGroupColor: 'getColor'
         }),
 
         ...mapActions(ActorFilterStore, {
             is_actor_downing: "is_downing",
         }),
+
+        getTagStyle(tag_id: number) {
+            return {
+                "color": this.getTagBgColor(tag_id),
+                "border-color": this.getTagBgColor(tag_id),
+            }
+        },
 
         getActorGroupData(): ActorGroupData {
             let group_id = this.actor_data.data.actor_group_id
@@ -318,27 +357,34 @@ export default {
             return group.has_folder
         },
 
-        onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
-            if (ok) {
-                this.actor_data.data = new_actor
-                this.actor.sortTags(this.compareActorTagId)
-                this.$emit('refresh', this.actor_data)
-                logInfo(msg)
-                // request file info
-                this.getFileInfo()
+        onRecvActorMsg(actor_result: ActorResult) {
+            this.actor_data.data = actor_result.actor
+            this.actor_data.data.sortTags(this.compareActorTagId)
+            this.$emit('refresh', this.actor_data)
+            if (actor_result.succeed) {
+                logInfo(actor_result.msg)
+            } else {
+                logWarn(actor_result.msg)
             }
+            //
+            this.getFileInfo()
+            this.getLinkedGroups()
+        },
+
+        hideOp() {
+            this.is_show_op = false
         },
 
         gotoActorPage() {
-            this.is_show_op = false
+            this.hideOp()
             window.open(this.actor.href, '_blank', 'noreferrer');
         },
         openFolder() {
-            this.is_show_op = false
+            this.hideOp()
             openActorFolder(this.actor.actor_id)
         },
         async clearFolder() {
-            this.is_show_op = false
+            this.hideOp()
             const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
             if (ok) {
                 this.setFileInfo(file_info)
@@ -346,7 +392,7 @@ export default {
             }
         },
         async resetPosts() {
-            this.is_show_op = false
+            this.hideOp()
             const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
             if (ok) {
                 this.setFileInfo(file_info)
@@ -354,75 +400,81 @@ export default {
             }
         },
         async setActorGroup() {
-            if (this.actor.tag_ids.length == 0) {
-                logWarn("add any tag before setting category")
-                return
+            const [ok, ar] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
+            if (ok) {
+                this.onRecvActorMsg(ar)
             }
-            const [ok, new_actor] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
-            this.onRecvActorMsg(ok, new_actor, "change category succeed")
         },
         startEditTag() {
-            this.is_editing_tags = true
+            this.showDialog(EActorDialog.tags)
         },
         async onApplyTag(tag_id: number) {
             await this.onSubmitTag([tag_id])
         },
         async onSubmitTag(new_tag_list: number[]) {
-            this.is_editing_tags = false
+            this.showDialog(EActorDialog.none)
             if (new_tag_list.length > 0) {
                 this.addTagRecord(new_tag_list)
             }
             //request
-            const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
-            this.onRecvActorMsg(ok, new_actor, "change tags succeed")
+            const [ok, ar_map] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
+            if (ok) {
+                this.$emit('update', ar_map)
+            }
         },
         async onCancelAddTag() {
-            this.is_editing_tags = false
+            this.showDialog(EActorDialog.none)
         },
 
         toDownload() {
-            this.is_show_op = false
+            this.hideOp()
             this.$emit('download', this.actor_data)
         },
 
+        showDialog(type: EActorDialog) {
+            this.hideOp()
+            this.card_dialog.showDialog(type)
+        },
+
         showPosts() {
-            this.is_show_op = false
-            this.is_show_post = true
-            this.is_show_log = false
+            this.showDialog(EActorDialog.post)
         },
 
         showLogs() {
-            this.is_show_op = false
-            this.is_show_post = false
-            this.is_show_log = true
+            this.showDialog(EActorDialog.log)
+        },
+
+        showVideoSizes() {
+            this.showDialog(EActorDialog.video_sizes)
         },
 
         async changeScore() {
-            const [ok, new_actor] = await changeActorScore(this.actor.actor_id, this.actor.score)
-            this.onRecvActorMsg(ok, new_actor, "change score succeed")
+            const [ok, ar_map] = await changeActorScore(this.actor.actor_id, this.actor.score)
+            if (ok) {
+                this.$emit('update', ar_map)
+            }
         },
         async findLinkedActor() {
             this.$emit('friend', this.actor_data)
-        },
-        onLockClick() {
-            this.$emit('lock', this.actor_data, !this.locked)
         },
         onSelectCLick() {
             this.actor_data.selected = !this.actor_data.selected
         },
         startEditRemark() {
-            this.is_show_remark = true
+            this.showDialog(EActorDialog.remark)
         },
         onCancelRemark() {
-            this.is_show_remark = false
+            this.showDialog(EActorDialog.none)
         },
         async onSubmitRemark(new_remark: string) {
-            this.is_show_remark = false
+            this.showDialog(EActorDialog.none)
             if (new_remark == this.actor.remark) {
                 return
             }
-            const [ok, new_actor] = await changeActorRemark(this.actor.actor_id, new_remark)
-            this.onRecvActorMsg(ok, new_actor, "change remark succeed")
+            const [ok, ar] = await changeActorRemark(this.actor.actor_id, new_remark)
+            if (ok) {
+                this.onRecvActorMsg(ar)
+            }
         },
         async getFileInfo() {
             const [ok, file_info] = await getActorFileInfo(this.actor.actor_id)
@@ -433,6 +485,15 @@ export default {
         setFileInfo(file_info) {
             this.actor.file_info = new ActorFileInfo(file_info)
         },
+        async getLinkedGroups() {
+            if (!this.actor.has_main_actor) {
+                return
+            }
+            const [ok, gids] = await getLinkedActorGroupIds(this.actor.actor_id)
+            if (ok) {
+                this.linked_group_ids = gids
+            }
+        }
     },
 }
 </script>
@@ -441,7 +502,7 @@ export default {
 
 .actor_name {
     font-size: 22px;
-    word-wrap: nowrap;
+    word-wrap: break-word;
     text-align: center;
 }
 
@@ -452,6 +513,19 @@ export default {
     justify-content: center;
     gap: 5px;
     background-color: #000000a0;
+}
+
+.post_count {
+    color: var(--el-text-color);
+    text-align: center
+}
+
+.post_line {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
 }
 
 .actor_card {
@@ -498,10 +572,35 @@ export default {
     right: 15px;
 }
 
+.avatar-platform {
+    position: absolute;
+    top: 0;
+    right: 20px;
+
+    font-size: 18px;
+    font-style: italic;
+    color: darkorange;
+
+    text-shadow: 1px 1px lightcoral;
+}
+
 .avatar-friend {
     position: absolute;
     top: 0;
     left: 15px;
+}
+
+.avatar-group {
+    position: absolute;
+    top: 37px;
+    left: 5px;
+
+    width: 60px;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }
 
 .pop-button {
@@ -516,22 +615,9 @@ export default {
     font-size: 16px;
 }
 
-.recent_tag_row {
-    width: 280px;
-
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-
-    padding: 5px;
-    gap: 5px 5px;
-
+.tag_history_row {
     border: 1px solid;
-    border-radius: 4px;
-}
-
-.blink-class {
-    animation: blink 1.5s ease-in-out infinite;
+    padding: 2px;
 }
 
 @keyframes blink {

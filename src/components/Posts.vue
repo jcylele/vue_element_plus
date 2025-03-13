@@ -2,9 +2,6 @@
     <el-space direction="vertical" size="small" fill style="padding:5px 5px">
         <!-- search line -->
         <el-space direction="horizontal" size="small">
-            <el-input v-if="conditionForm.fixed_actor_id != 0" disabled>
-                {{ conditionForm.fixed_actor_id }}
-            </el-input>
             <el-input v-model="conditionForm.post_id_prefix"
                       placeholder="Post Id Prefix"
                       clearable
@@ -52,9 +49,6 @@
                 {{ post_info.comment }}
             </el-text>
         </el-space>
-        <el-divider style="margin: 5px 0"/>
-        <!-- video sizes -->
-        <VideoSizesChart v-if="has_actor_id" :actor_id="specific_actor_id"/>
     </el-space>
 </template>
 
@@ -63,11 +57,10 @@ import {getPostCountList, getPosts, setPostComment} from "../ctrls/PostCtrl";
 import {PostConditionForm, PostData} from "../data/PostData";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import {ActorPostInfo} from "../data/WebData";
-import VideoSizesChart from "./Chart/VideoSizesChart.vue";
 
 export default {
     name: "Posts",
-    components: {VideoSizesChart},
+    components: {},
     // props from parent
     props: {
         specific_actor_id: {
@@ -75,11 +68,7 @@ export default {
             required: false,
         },
     },
-    computed: {
-        has_actor_id() {
-            return this.conditionForm.actor_id !== 0
-        }
-    },
+    computed: {},
     data() {
         return {
             conditionForm: PostConditionForm,

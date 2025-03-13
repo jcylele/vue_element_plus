@@ -1,29 +1,40 @@
 <template>
-    <el-space direction="vertical" fill>
-        <el-text style="font-size: 24px;font-weight: bold; color: hotpink;">
-            Remarks
-        </el-text>
-        <el-space direction="horizontal">
-            <el-input v-model="remark"
-                      class="remark-input"
-                      type="textarea"
-                      @change="onRemarkChange"/>
-            <el-space direction="vertical" v-if="remark_changed">
-                <el-button type="primary" style="width: 80px" @click="onSubmit">
+    <el-space direction="vertical" fill style="width: 100%">
+
+        <el-space direction="vertical" fill>
+            <el-space direction="horizontal" alignment="stretch">
+                <el-text style="font-size: 24px;font-weight: bold; color: hotpink;">
+                    Remarks
+                </el-text>
+                <el-button type="primary" style="margin-left: 20px" @click="onSubmit">
                     Save
                 </el-button>
-                <el-button type="warning" style="width: 80px" @click="onCancel">
+                <el-button type="warning" @click="onCancel">
                     Cancel
                 </el-button>
             </el-space>
+            <el-input v-model="remark"
+                      class="remark-input"
+                      type="textarea"
+                      @change="onRemarkChange"
+                      autosize/>
         </el-space>
-
         <el-divider style="margin: 5px"/>
-        <el-space v-for="post in actor.commented_posts"
+        <el-space v-if="actor.commented_posts.length == 0" direction="horizontal">
+            <el-text style="font-size: 22px; color: royalblue;">
+                No Commented Post
+            </el-text>
+        </el-space>
+        <el-space v-else v-for="post in actor.commented_posts"
                   direction="horizontal" alignment="center">
-            <el-text style="font-size: 24px; color: royalblue;">
+            <el-text style="font-size: 22px; color: royalblue;">
                 {{ post.post_id }}: {{ post.comment }}
             </el-text>
+        </el-space>
+        <el-space direction="horizontal">
+            <el-button type="primary" @click="toPosts" plain>
+                Edit Posts
+            </el-button>
         </el-space>
     </el-space>
 </template>
@@ -37,6 +48,7 @@ export default {
     props: {
         actor: ActorData,
     },
+    emits: ["submit", "cancel", "posts"],
     data() {
         return {
             remark: "",
@@ -53,6 +65,9 @@ export default {
         onCancel() {
             this.$emit("cancel")
         },
+        toPosts() {
+            this.$emit("posts")
+        }
     },
     mounted() {
         this.remark = this.actor.remark
@@ -62,7 +77,6 @@ export default {
 
 <style scoped>
 .remark-input {
-    width: 480px;
     font-size: 24px;
     --el-input-text-color: hotpink;
 }

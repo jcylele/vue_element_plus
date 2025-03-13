@@ -2,6 +2,7 @@ import {createApp} from 'vue'
 import {createPinia} from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
+import 'element-plus/theme-chalk/dark/css-vars.css'
 import {createRouter, createWebHashHistory} from "vue-router";
 
 import Home from "./Home.vue";
@@ -14,6 +15,7 @@ const ActorGroups = () => import("./components/ActorGroups.vue")
 const ECharts = () => import("./components/ECharts.vue")
 const Tasks = () => import("./components/Tasks.vue")
 const Notices = () => import("./components/Notices.vue")
+const Others = () => import("./components/Others.vue")
 const TagScoresChart = () => import("./components/Chart/TagScoresChart.vue")
 const ScoreTagsChart = () => import("./components/Chart/ScoreTagsChart.vue")
 const TagRelativeChart = () => import("./components/Chart/TagRelativeChart.vue")
@@ -24,6 +26,7 @@ import 'virtual:svg-icons-register'
 
 // Importing the global css file
 import "./global.css"
+import "./dark_global.css"
 
 
 // 1. 定义路由组件.
@@ -50,6 +53,7 @@ const routes = [
     {path: '/download', component: Download},
     {path: '/tasks', component: Tasks},
     {path: '/notices', component: Notices},
+    {path: '/others', component: Others},
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置

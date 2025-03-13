@@ -16,15 +16,15 @@
       "name": "Init",
       "actor_count": 50,
       "post_count": 50,
-      "show_file_size": 5,
-      "show_total_file_size": 128,
+      "show_file_size": 4,
+      "show_total_file_size": 64,
       "allow_video": false
     },
     {
       "name": "Cur_Init",
       "post_filter": 1,
-      "show_file_size": 5,
-      "show_total_file_size": 128,
+      "show_file_size": 4,
+      "show_total_file_size": 64,
       "allow_video": false
     },
     {

@@ -1,10 +1,45 @@
-import {Sort_Options} from "./Consts";
 import {SortType} from "./Enums";
 
+
+class SortItem {
+    sort_type: SortType
+    sort_asc: boolean
+
+    constructor() {
+        this.sort_type = SortType.Default
+        this.sort_asc = true
+    }
+
+    clone() {
+        const item = new SortItem()
+        item.copy(this)
+        return item
+    }
+
+    copy(item: SortItem) {
+        this.sort_type = item.sort_type
+        this.sort_asc = item.sort_asc
+    }
+
+    get icon(): string {
+        if (this.sort_asc) {
+            return "up"
+        } else {
+            return "down"
+        }
+    }
+
+    switch() {
+        this.sort_asc = !this.sort_asc
+    }
+}
+
 export default class ActorFilterData {
+    /**
+     * category, tag, score, name, remark
+     */
     show_rows: boolean[]
     name: string
-    linked: boolean
     group_id_list: number[]
     all_group_list: number[]
     tag_list: number[]
@@ -12,12 +47,10 @@ export default class ActorFilterData {
     min_score: number
     max_score: number
 
-    sort_id: number
-    sort_type: SortType
-    sort_asc: boolean
-
     remark_str: string
     remark_any: boolean
+
+    sort_items: SortItem[]
 
     get show_category() {
         return this.show_rows[0]
@@ -36,7 +69,7 @@ export default class ActorFilterData {
 
     set show_tag(val: boolean) {
         this.show_rows[1] = val
-        if (!val){
+        if (!val) {
             this.resetTags()
         }
     }
@@ -63,23 +96,12 @@ export default class ActorFilterData {
         }
     }
 
-    get show_sort() {
+    get show_remark() {
         return this.show_rows[4]
     }
 
-    set show_sort(val: boolean) {
-        this.show_rows[4] = val
-        if (!val) {
-            this.resetSort()
-        }
-    }
-
-    get show_remark() {
-        return this.show_rows[5]
-    }
-
     set show_remark(val: boolean) {
-        this.show_rows[5] = val
+        this.show_rows[4] = val
         if (!val) {
             this.resetRemark()
         }
@@ -101,23 +123,30 @@ export default class ActorFilterData {
         this.max_score = val * 2
     }
 
-    get show_sort_id() {
-        return this.sort_id
+    addSortItem() {
+        this.sort_items.push(new SortItem())
     }
 
-    set show_sort_id(val: number) {
-        this.sort_id = val
-        for (const option of Sort_Options) {
-            if (option.id == val) {
-                this.sort_type = option.sort_type
-                this.sort_asc = option.sort_asc
-                return
+    /**
+     * remove default, only keep first one for each SortType
+     */
+    simplifySortItems() {
+        const filtered = []
+        const typeSet = new Set<SortType>()
+        for (const item of this.sort_items) {
+            if (item.sort_type == SortType.Default) {
+                continue
+            }
+            if (!typeSet.has(item.sort_type)) {
+                typeSet.add(item.sort_type)
+                filtered.push(item)
             }
         }
+        this.sort_items = filtered
     }
 
     constructor() {
-        this.show_rows = new Array(6).fill(false)
+        this.show_rows = new Array(5).fill(false)
         this.all_group_list = []
         this.reset()
     }
@@ -127,8 +156,9 @@ export default class ActorFilterData {
         this.resetTags()
         this.resetScores()
         this.resetName()
-        this.resetSort()
         this.resetRemark()
+
+        this.resetSort()
     }
 
     clone() {
@@ -140,15 +170,15 @@ export default class ActorFilterData {
     copy(data: ActorFilterData) {
         this.show_rows = data.show_rows.slice()
         this.name = data.name
-        this.linked = data.linked
         this.group_id_list = data.group_id_list.slice()
         this.tag_list = data.tag_list.slice()
         this.no_tag = data.no_tag
         this.min_score = data.min_score
         this.max_score = data.max_score
-        this.show_sort_id = data.show_sort_id
         this.remark_str = data.remark_str
         this.remark_any = data.remark_any
+
+        this.sort_items = data.sort_items.map(item => item.clone())
     }
 
     setAllGroupList(list: number[]) {
@@ -192,11 +222,10 @@ export default class ActorFilterData {
 
     resetName() {
         this.name = ""
-        this.linked = false
     }
 
     resetSort() {
-        this.show_sort_id = 0
+        this.sort_items = []
     }
 
     resetRemark() {

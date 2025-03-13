@@ -19,8 +19,8 @@ export async function getNoticeCountMap() {
     return [true, count_map]
 }
 
-export async function getNotices(notice_type: NoticeType) {
-    const url = `${baseUrl}/list/${notice_type}`
+export async function getNotices(notice_type: NoticeType, limit: number = 0, start: number = 0) {
+    const url = `${baseUrl}/list/${notice_type}?limit=${limit}&offset=${start}`
     const [ok, response] = await fetchGet(url)
     if (!ok) {
         return [ok, response]

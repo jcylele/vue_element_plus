@@ -1,5 +1,6 @@
 import EditableData from "./EditableData";
 import {ISortItem} from "./Interfaces";
+import ActorGroupCond from "./ActorGroupCond";
 
 export default class ActorGroupData extends EditableData implements ISortItem {
     readonly group_id: number
@@ -8,6 +9,8 @@ export default class ActorGroupData extends EditableData implements ISortItem {
     group_color: string
     has_folder: boolean
     group_priority: number
+
+    cond_list: ActorGroupCond[]
 
     constructor(json_data?) {
         super(json_data);
@@ -18,6 +21,11 @@ export default class ActorGroupData extends EditableData implements ISortItem {
             this.group_color = "#000000"
             this.has_folder = false
             this.group_priority = 0
+        } else {
+            this.cond_list = []
+            for (const json_obj of json_data.cond_list) {
+                this.cond_list.push(new ActorGroupCond(json_obj.cond_type, json_obj.cond_param))
+            }
         }
     }
 
