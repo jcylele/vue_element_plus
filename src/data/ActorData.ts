@@ -13,7 +13,7 @@ export default class ActorData extends EditableData {
     score: number
     icon: string
     href: string
-    has_main_actor: boolean
+    is_linked: boolean
     remark: string
     commented_posts: PostData[]
     tag_ids: number[]

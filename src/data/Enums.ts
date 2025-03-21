@@ -71,3 +71,8 @@ export enum GroupCondType {
     HasAnyTag = 2,  // param: bool
     Linked = 3      // param: bool
 }
+
+export enum ResType {
+    Image = 1,
+    Video = 2,
+}

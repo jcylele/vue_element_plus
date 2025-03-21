@@ -9,6 +9,7 @@
         <div style="position: relative;margin: 10px;height: 100px;width: 100px">
             <el-image :src="actor.icon"/>
             <el-rate v-model="actor.show_score"
+                     @change="changeScore"
                      :colors="star_colors"
                      void-color="#777777"
                      size="small"
@@ -72,11 +73,10 @@ import {ActorGroupStore} from "../store/ActorGroupStore.js";
 import {mapActions} from "pinia";
 import {Star_Colors} from "../data/Consts";
 import {ActorTagStore} from "../store/ActorTagStore";
-import {changeActorRemark, ChangeActorTag} from "../ctrls/ActorCtrl";
+import {changeActorRemark, changeActorScore, ChangeActorTag} from "../ctrls/ActorCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import RemarkEditor from "./RemarkEditor.vue";
 import ActorTagChooser from "./ActorTagChooser.vue";
-import {logInfo} from "../ctrls/FetchCtrl";
 
 export default {
     name: "ActorLine",
@@ -92,6 +92,7 @@ export default {
             return Star_Colors
         }
     },
+    emits: ['update'],
     data() {
         return {
             is_show_remark: false,
@@ -126,8 +127,17 @@ export default {
             if (new_remark == this.actor.remark) {
                 return
             }
-            const [ok, new_actor] = await changeActorRemark(this.actor.actor_id, new_remark)
-            this.onRecvActorMsg(ok, new_actor, "change remark succeed")
+            const [ok, actor_map] = await changeActorRemark(this.actor.actor_id, new_remark)
+            if (ok) {
+                this.$emit('update', actor_map)
+            }
+        },
+
+        async changeScore(){
+            const [ok, actor_map] = await changeActorScore(this.actor.actor_id, this.actor.score)
+            if (ok) {
+                this.$emit('update', actor_map)
+            }
         },
 
         startEditTag() {
@@ -137,19 +147,13 @@ export default {
             this.is_editing_tags = false
 
             //request
-            const [ok, new_actor] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
-            this.onRecvActorMsg(ok, new_actor, "change tags succeed")
+            const [ok, actor_map] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
+            if (ok) {
+                this.$emit('update', actor_map)
+            }
         },
         async onCancelAddTag() {
             this.is_editing_tags = false
-        },
-
-        onRecvActorMsg(ok: boolean, new_actor: ActorData, msg: string) {
-            if (ok) {
-                this.actor_data.data = new_actor
-                this.actor.sortTags(this.compareActorTagId)
-                logInfo(msg)
-            }
         },
     },
     mounted() {

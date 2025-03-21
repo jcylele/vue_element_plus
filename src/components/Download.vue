@@ -73,7 +73,7 @@
 
 <script lang="ts">
 
-import {ActorUrl, DownloadLimitForm} from "../data/SimpleForms";
+import {ActorUrl, DownloadLimitForm} from "../data/DownloadForms";
 import {
     downloadByGroup,
     downloadByUrls,

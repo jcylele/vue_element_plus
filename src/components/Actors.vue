@@ -67,7 +67,7 @@
                 <el-button type="danger" size="default" @click="unlinkActors">
                     Unlink
                 </el-button>
-                <el-button type="primary" size="default" @click="linkActors">
+                <el-button type="primary" size="default" @click="onLinkClick">
                     Link
                 </el-button>
             </el-space>
@@ -134,13 +134,21 @@
                width=720px>
         <Posts :specific_actor_id="0"></Posts>
     </el-dialog>
+    <el-dialog v-model="is_show_link_preview"
+               title="Link Preview"
+               :before-close="onLinkPreviewClose"
+               width="720px">
+        <ActorLinkPreview :actors="link_actor_list"
+                          @submit="onLinkPreviewSubmit"
+                          @cancel="onLinkPreviewClose"/>
+    </el-dialog>
 </template>
 
 <script lang="ts">
 import ActorFilterData from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
-import {ActorElement, ToActorElements} from "../data/ArrayElement";
+import {ActorElement} from "../data/ArrayElement";
 import {
     batchChangeActorGroup, getActor,
     getActorCount,
@@ -151,7 +159,7 @@ import {
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {ActorFilterStore} from "../store/ActorFilterStore";
-import {DownloadLimitForm} from "../data/SimpleForms";
+import {DownloadLimitForm} from "../data/DownloadForms";
 import {downloadByActorIds} from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
 import {ActorGroupStore} from "../store/ActorGroupStore";
@@ -163,11 +171,12 @@ import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorData from "../data/ActorData";
 import {BadgeStore} from "../store/BadgeStore";
-import {ActorResult} from "../data/WebData";
+import {ActorListResult, ActorResult} from "../data/WebData";
+import ActorLinkPreview from "./ActorLinkPreview.vue";
 
 
 export default {
-    components: {SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
+    components: {ActorLinkPreview, SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
     data() {
         return {
             filter_condition: new ActorFilterData(),
@@ -180,6 +189,7 @@ export default {
             active_parts: ['filter'],
             download_actor_ids: [] as number[],
             download_limit: null as DownloadLimitForm,
+            link_actor_list: [] as ActorData[],
             actor_show_type: ActorShowType.Card,
             is_show_post: false,
             is_show_batch_op: false,
@@ -199,6 +209,9 @@ export default {
         download_title() {
             const count = this.download_actor_ids.length
             return `${count} actors`
+        },
+        is_show_link_preview() {
+            return this.link_actor_list.length > 0
         },
         actor_show_options() {
             return Actor_Show_Options
@@ -226,6 +239,10 @@ export default {
         ...mapActions(ActorGroupStore, {
             getGroupsFromServer: 'getFromServer',
         }),
+
+        showPosts() {
+            this.is_show_post = true
+        },
 
         async handleSizeChange(val: number) {
             this.page_size = val
@@ -276,19 +293,28 @@ export default {
                 this.refreshActorIds()
             }
         },
-        getSelectedActorIds() {
-            let actor_ids = []
+
+        // region batch, select, lock
+
+        _getSelected(converter: Function) {
+            let result_list = []
             for (const actor of this.locked_actor_list) {
                 if (actor.selected) {
-                    actor_ids.push(actor.data.actor_id)
+                    result_list.push(converter(actor))
                 }
             }
             for (const actor of this.actor_list) {
                 if (actor.selected) {
-                    actor_ids.push(actor.data.actor_id)
+                    result_list.push(converter(actor))
                 }
             }
-            return actor_ids
+            return result_list
+        },
+        getSelectedActors() {
+            return this._getSelected(actor => actor.data)
+        },
+        getSelectedActorIds() {
+            return this._getSelected(actor => actor.data.actor_id)
         },
         onBatchOpChange(val: boolean) {
             if (!val) {
@@ -304,31 +330,18 @@ export default {
                 actor.selected = val
             }
         },
-        async linkActors() {
-            let actor_ids = this.getSelectedActorIds()
-            if (actor_ids.length < 2) {
-                logWarn("Not enough actors to link")
-                return
-            }
-            const [ok, ar_map] = await linkSameActors(actor_ids)
-            if (ok) {
-                this.refreshActors(ar_map)
-            }
-        },
 
-        async unlinkActors() {
+        async batchSetGroup(group_id: number) {
             let actor_ids = this.getSelectedActorIds()
             if (actor_ids.length == 0) {
-                logWarn("No actor to unlink")
+                logWarn("No actor to set group")
                 return
             }
-
-            const [ok, ar_map] = await unlinkSameActors(actor_ids)
+            let [ok, actor_map] = await batchChangeActorGroup(actor_ids, group_id)
             if (ok) {
-                this.refreshActors(ar_map)
+                this.refreshActors(actor_map)
             }
         },
-
 
         lockActors(lock: boolean) {
             let locked_actor_list = []
@@ -358,27 +371,49 @@ export default {
             this.batchSelectAll(false)
         },
 
-        onActorLockClick(actor_data: ActorElement, val: boolean) {
-            if (val) {
-                this.locked_actor_list.push(actor_data)
+        // endregion
 
-                for (let i = 0; i < this.actor_list.length; i++) {
-                    if (this.actor_list[i].data.actor_id == actor_data.data.actor_id) {
-                        this.actor_list.splice(i, 1)
-                        break
-                    }
-                }
-            } else {
-                this.actor_list.unshift(actor_data)
+        // region link
 
-                for (let i = 0; i < this.locked_actor_list.length; i++) {
-                    if (this.locked_actor_list[i].data.actor_id == actor_data.data.actor_id) {
-                        this.locked_actor_list.splice(i, 1)
-                        break
-                    }
-                }
+        onLinkClick() {
+            const link_actor_list = this.getSelectedActors()
+            if (link_actor_list.length < 2) {
+                logWarn("Not enough actors to link")
+                return
+            }
+            this.link_actor_list = link_actor_list
+        },
+
+        onLinkPreviewClose() {
+            this.link_actor_list = []
+        },
+
+        async onLinkPreviewSubmit(score: number, remark: string, tag_list: number[]) {
+            console.log("link preview submit")
+            const actor_ids = this.link_actor_list.map(actor => actor.actor_id)
+            const [ok, actor_map] = await linkSameActors(actor_ids, score, remark, tag_list)
+            if (ok) {
+                this.link_actor_list = []
+                this.refreshActors(actor_map)
             }
         },
+
+        async unlinkActors() {
+            let actor_ids = this.getSelectedActorIds()
+            if (actor_ids.length == 0) {
+                logWarn("No actor to unlink")
+                return
+            }
+
+            const [ok, actor_map] = await unlinkSameActors(actor_ids)
+            if (ok) {
+                this.refreshActors(actor_map)
+            }
+        },
+
+        // endregion
+
+        // region download
 
         showDownloadLimit(actor_ids: number[]) {
             this.download_actor_ids = actor_ids
@@ -414,40 +449,21 @@ export default {
             this.download_actor_ids = []
         },
 
-        async batchSetGroup(group_id: number) {
-            let actor_ids = this.getSelectedActorIds()
-            if (actor_ids.length == 0) {
-                logWarn("No actor to set group")
-                return
-            }
-            let [ok, ar_map] = await batchChangeActorGroup(actor_ids, group_id)
-            if (ok) {
-                this.refreshActors(ar_map)
-            }
-        },
+        // endregion
 
-        innerRefreshActors(ar_map: Map<number, ActorResult>, actor_list: ActorElement[]) {
+        innerRefreshActors(ar_map: Map<number, ActorData>, actor_list: ActorElement[]) {
             for (const actor_data of actor_list) {
-                const ar = ar_map.get(actor_data.data.actor_id)
-                if (ar) {
-                    actor_data.data = ar.actor
-                    if (ar.succeed) {
-                        logInfo(ar.msg)
-                    } else {
-                        logWarn(ar.msg)
-                    }
+                const new_actor = ar_map.get(actor_data.data.actor_id)
+                if (new_actor) {
+                    actor_data.data = new_actor
                 }
             }
         },
 
-        refreshActors(ar_map: Map<number, ActorResult>) {
-            this.innerRefreshActors(ar_map, this.locked_actor_list)
-            this.innerRefreshActors(ar_map, this.actor_list)
+        refreshActors(actor_map: Map<number, ActorData>) {
+            this.innerRefreshActors(actor_map, this.locked_actor_list)
+            this.innerRefreshActors(actor_map, this.actor_list)
             this.batchSelectAll(false)
-        },
-
-        showPosts() {
-            this.is_show_post = true
         },
 
         refreshActorIds(actor_ids: number[] = null) {

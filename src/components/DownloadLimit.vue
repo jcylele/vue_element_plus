@@ -26,23 +26,30 @@
             <el-form-item label="Post Count">
                 <el-input-number v-model="download_limit.post_count" :min="0" :max="1000" :step="50"/>
             </el-form-item>
-            <el-form-item label="Total File Size(MB)">
+            <el-form-item label="Res Type">
+                <el-radio-group v-model="download_limit.res_type">
+                    <el-radio v-for="pf in res_type_list"
+                              :value="pf.value">
+                        {{ pf.label }}
+                    </el-radio>
+                </el-radio-group>
+            </el-form-item>
+            <el-form-item label="Res Count">
+                <el-input-number v-model="download_limit.file_count" :min="0" :max="200" :step="20"/>
+            </el-form-item>
+            <el-form-item label="Total Res Size(MB)">
                 <el-input-number v-model="download_limit.show_total_file_size" :min="0" :max="10240" :step="512"/>
             </el-form-item>
-            <el-form-item label="Single File Size(MB)">
-                <el-input-number v-model="download_limit.show_file_size" :min="0" :max="1024" :step="20"/>
-            </el-form-item>
-            <el-form-item label="File Types">
-                <el-checkbox v-model="download_limit.allow_img" label="Images" size="large"/>
-                <el-checkbox v-model="download_limit.allow_video" label="Videos" size="large"/>
+            <el-form-item label="Single Res Size(MB)">
+                <el-input-number v-model="download_limit.show_single_file_size" :min="0" :max="1024" :step="20"/>
             </el-form-item>
         </el-form>
     </el-space>
 </template>
 
 <script lang="ts">
-import {DownloadLimitForm} from "../data/SimpleForms";
-import {Post_Filter_Options} from "../data/Consts"
+import {DownloadLimitForm} from "../data/DownloadForms";
+import {Post_Filter_Options, Res_Type_Options} from "../data/Consts"
 import downJson from "../assets/down.json"
 
 export default {
@@ -64,6 +71,9 @@ export default {
 
         post_filter_list() {
             return Post_Filter_Options
+        },
+        res_type_list() {
+            return Res_Type_Options
         }
     },
     watch: {

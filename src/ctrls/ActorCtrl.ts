@@ -1,35 +1,56 @@
 import ActorData from "../data/ActorData";
-import {fetchGet, fetchPatch, fetchPost, logWarn} from "./FetchCtrl";
+import {fetchGet, fetchPatch, fetchPost, logInfo, logWarn} from "./FetchCtrl";
 import ActorFilterData from "../data/ActorFilterData";
 import {Base64} from "js-base64";
-import {BatchActorGroup} from "../data/SimpleForms";
 import {BASE_URL} from "../data/Consts";
 import ResSizeCount from "../data/ResSizeCount";
-import {ActorResult} from "../data/WebData";
+import {ActorListResult, ActorResult, BaseResult} from "../data/WebData";
 
 const baseUrl = `${BASE_URL}/api/actor`
 
-function _toActorResult(json_obj): ActorResult {
-    return new ActorResult(json_obj)
+class BatchActorGroup {
+    actor_ids: number[]
+    group_id: number
 }
 
-function _toActorList(json_data): ActorData[] {
-    const list = []
-    for (const json_obj of json_data) {
-        list.push(new ActorData(json_obj))
+class LinkActorForm {
+    actor_ids: number[]
+    score: number
+    tag_list: number[]
+    remark: string
+}
+
+function logResult(br: BaseResult) {
+    if (br.succeed) {
+        logInfo(br.msg)
+    } else {
+        logWarn(br.msg)
     }
-    return list
 }
 
-function _toActorResultMap(json_data): Map<number, ActorResult> {
-    const map = new Map<number, ActorResult>()
-    for (const json_obj of json_data) {
-        const ar = _toActorResult(json_obj)
-        map.set(ar.actor.actor_id, ar)
+function _onActorListResult(response): Map<number, ActorData> {
+    const alr = new ActorListResult(response)
+    logResult(alr)
+    return alr.actor_map
+}
+
+
+function _onActorResult(response): ActorData {
+    const ar = new ActorResult(response)
+    logResult(ar)
+    return ar.actor
+}
+
+
+function _onActorResultList(response): Map<number, ActorData> {
+    const actor_map = new Map<number, ActorData>()
+    for (const json_obj of response) {
+        const ar = new ActorResult(json_obj)
+        logResult(ar)
+        actor_map.set(ar.actor.actor_id, ar.actor)
     }
-    return map
+    return actor_map
 }
-
 
 export async function getActorCount(filter_condition: ActorFilterData) {
     const url = `${baseUrl}/count`
@@ -46,14 +67,20 @@ export async function getActorIds(filter_condition: ActorFilterData, limit: numb
     return await fetchPost(url, filter_condition)
 }
 
-export async function linkSameActors(actor_ids: number[]) {
+export async function linkSameActors(actor_ids: number[], score: number, remark: string, tag_list: number[]) {
     const url = `${baseUrl}/link`;
-    const [ok, response] = await fetchPost(url, actor_ids)
+    const form = new LinkActorForm()
+    form.actor_ids = actor_ids
+    form.score = score
+    form.remark = remark
+    form.tag_list = tag_list
+    const [ok, response] = await fetchPost(url, form)
     if (!ok) {
         return [false, response]
     }
 
-    return [true, _toActorResultMap(response)]
+    const actor_map = _onActorListResult(response)
+    return [true, actor_map]
 }
 
 export async function unlinkSameActors(actor_ids: number[]) {
@@ -63,7 +90,8 @@ export async function unlinkSameActors(actor_ids: number[]) {
         return [false, response]
     }
 
-    return [true, _toActorResultMap(response)]
+    const actor_map = _onActorListResult(response)
+    return [true, actor_map]
 }
 
 
@@ -77,7 +105,8 @@ export async function batchChangeActorGroup(actor_ids: number[], group_id: numbe
         return [false, response]
     }
 
-    return [true, _toActorResultMap(response)]
+    const actor_map = _onActorResultList(response)
+    return [true, actor_map]
 }
 
 export async function getActor(actor_id: number) {
@@ -96,7 +125,7 @@ export async function changeActorGroup(actor_id: number, group_id: number) {
     if (!ok) {
         return [false, response]
     }
-    return [true, _toActorResult(response)]
+    return [true, _onActorResult(response)]
 }
 
 export async function changeActorScore(actor_id: number, score: number) {
@@ -105,7 +134,9 @@ export async function changeActorScore(actor_id: number, score: number) {
     if (!ok) {
         return [false, response]
     }
-    return [true, _toActorResultMap(response)]
+
+    const actor_map = _onActorListResult(response)
+    return [true, actor_map]
 }
 
 export async function changeActorRemark(actor_id: number, remark: string) {
@@ -115,7 +146,20 @@ export async function changeActorRemark(actor_id: number, remark: string) {
     if (!ok) {
         return [false, response]
     }
-    return [true, _toActorResult(response)]
+
+    const actor_map = _onActorListResult(response)
+    return [true, actor_map]
+}
+
+export async function ChangeActorTag(actor_id: number, tag_list: number[]) {
+    let url = `${baseUrl}/${actor_id}/tag`;
+    const [ok, response] = await fetchPost(url, tag_list)
+    if (!ok) {
+        return [false, response]
+    }
+
+    const actor_map = _onActorListResult(response)
+    return [true, actor_map]
 }
 
 export async function openActorFolder(actor_id: number) {
@@ -131,15 +175,6 @@ export async function resetActorPosts(actor_id: number) {
 export async function clearActorFolder(actor_id: number) {
     const url = `${baseUrl}/${actor_id}/clear`;
     return await fetchGet(url)
-}
-
-export async function ChangeActorTag(actor_id: number, tag_list: number[]) {
-    let url = `${baseUrl}/${actor_id}/tag`;
-    const [ok, response] = await fetchPost(url, tag_list)
-    if (!ok) {
-        return [false, response]
-    }
-    return [true, _toActorResultMap(response)]
 }
 
 

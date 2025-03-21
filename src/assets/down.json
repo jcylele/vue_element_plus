@@ -3,10 +3,10 @@
     "actor_count": 0,
     "post_count": 0,
     "post_filter": 0,
-    "show_file_size": 0,
-    "show_total_file_size": 0,
-    "allow_video": true,
-    "allow_img": true
+    "res_type": 1,
+    "file_count": 100,
+    "show_single_file_size": 0,
+    "show_total_file_size": 0
   },
   "presets": [
     {
@@ -16,27 +16,25 @@
       "name": "Init",
       "actor_count": 50,
       "post_count": 50,
-      "show_file_size": 4,
-      "show_total_file_size": 64,
-      "allow_video": false
+      "show_single_file_size": 4,
+      "show_total_file_size": 64
     },
     {
       "name": "Cur_Init",
       "post_filter": 1,
-      "show_file_size": 4,
-      "show_total_file_size": 64,
-      "allow_video": false
+      "show_single_file_size": 4,
+      "show_total_file_size": 64
     },
     {
       "name": "Cur_Video",
       "post_filter": 1,
-      "show_total_file_size": 1024,
-      "allow_img": false
+      "res_type": 2,
+      "show_total_file_size": 1024
     },
     {
       "name": "All_Video",
-      "show_total_file_size": 1024,
-      "allow_img": false
+      "res_type": 2,
+      "show_total_file_size": 1024
     }
   ]
 }

@@ -53,12 +53,6 @@ class ResFileInfo extends EditableData {
                 return "???"
         }
     }
-
-    public get desc() {
-        let size = this.res_size / GB1
-        size = Math.floor(size * 100) / 100
-        return `${str_res_state[this.res_state]}: ${size}G(${this.img_count}P,${this.video_count}V)`
-    }
 }
 
 export default class ActorFileInfo extends EditableData {

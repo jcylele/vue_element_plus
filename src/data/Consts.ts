@@ -5,8 +5,8 @@ import {
     NoticeType,
     PostFilter,
     ResSizeUnit,
-    ResState,
-    SortType
+    ResState, ResType,
+    SortType, TaskArchive
 } from "./Enums";
 import {CommonOption} from "./Interfaces";
 
@@ -33,6 +33,11 @@ export const ResSizeList = [ResSizeUnit.GB, ResSizeUnit.MB, ResSizeUnit.KB, ResS
 export const Post_Filter_Options: CommonOption[] = [
     {label: "Normal", value: PostFilter.Normal},
     {label: "Current", value: PostFilter.Old},
+]
+
+export const Res_Type_Options: CommonOption[] = [
+    {label: "Image", value: ResType.Image},
+    {label: "Video", value: ResType.Video},
 ]
 
 export const Sort_Options: CommonOption[] = [

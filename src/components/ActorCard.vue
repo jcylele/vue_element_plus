@@ -12,7 +12,7 @@
                 {{ actor.actor_platform }}
             </el-text>
 
-            <svg-icon v-if="actor.has_main_actor"
+            <svg-icon v-if="actor.is_linked"
                       size="40px" name="avatar"
                       class="avatar-friend"
                       @click="findLinkedActor"/>
@@ -327,6 +327,7 @@ export default {
         ...mapActions(ActorTagStore, {
             compareActorTagId: 'compareTagId',
             getTagBgColor: 'getBgColor',
+            getTagStyle: 'getStyle',
             getTagName: 'getName',
             addTagRecord: 'addRecord',
         }),
@@ -340,13 +341,6 @@ export default {
             is_actor_downing: "is_downing",
         }),
 
-        getTagStyle(tag_id: number) {
-            return {
-                "color": this.getTagBgColor(tag_id),
-                "border-color": this.getTagBgColor(tag_id),
-            }
-        },
-
         getActorGroupData(): ActorGroupData {
             let group_id = this.actor_data.data.actor_group_id
             return this.getActorGroup(group_id)
@@ -357,15 +351,10 @@ export default {
             return group.has_folder
         },
 
-        onRecvActorMsg(actor_result: ActorResult) {
-            this.actor_data.data = actor_result.actor
-            this.actor_data.data.sortTags(this.compareActorTagId)
+        onRecvActorMsg(actor: ActorData) {
+            actor.sortTags(this.compareActorTagId)
+            this.actor_data.data = actor
             this.$emit('refresh', this.actor_data)
-            if (actor_result.succeed) {
-                logInfo(actor_result.msg)
-            } else {
-                logWarn(actor_result.msg)
-            }
             //
             this.getFileInfo()
             this.getLinkedGroups()
@@ -417,9 +406,9 @@ export default {
                 this.addTagRecord(new_tag_list)
             }
             //request
-            const [ok, ar_map] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
+            const [ok, actor_map] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
             if (ok) {
-                this.$emit('update', ar_map)
+                this.$emit('update', actor_map)
             }
         },
         async onCancelAddTag() {
@@ -449,9 +438,9 @@ export default {
         },
 
         async changeScore() {
-            const [ok, ar_map] = await changeActorScore(this.actor.actor_id, this.actor.score)
+            const [ok, actor_map] = await changeActorScore(this.actor.actor_id, this.actor.score)
             if (ok) {
-                this.$emit('update', ar_map)
+                this.$emit('update', actor_map)
             }
         },
         async findLinkedActor() {
@@ -471,9 +460,9 @@ export default {
             if (new_remark == this.actor.remark) {
                 return
             }
-            const [ok, ar] = await changeActorRemark(this.actor.actor_id, new_remark)
+            const [ok, actor_map] = await changeActorRemark(this.actor.actor_id, new_remark)
             if (ok) {
-                this.onRecvActorMsg(ar)
+                this.$emit('update', actor_map)
             }
         },
         async getFileInfo() {
@@ -486,7 +475,7 @@ export default {
             this.actor.file_info = new ActorFileInfo(file_info)
         },
         async getLinkedGroups() {
-            if (!this.actor.has_main_actor) {
+            if (!this.actor.is_linked) {
                 return
             }
             const [ok, gids] = await getLinkedActorGroupIds(this.actor.actor_id)

@@ -19,6 +19,9 @@
             <el-text class="desc-text">
                 find actors with similar name and link them
             </el-text>
+            <el-text class="warn-text">
+                this operation may take several seconds
+            </el-text>
             <el-button type="primary" size="default" @click="findSimilar">
                 Find Similar
             </el-button>
@@ -93,5 +96,9 @@ async function findSimilar() {
 
 .desc-text {
     font-size: 24px;
+}
+.warn-text {
+    font-size: 24px;
+    color: darkorange;
 }
 </style>

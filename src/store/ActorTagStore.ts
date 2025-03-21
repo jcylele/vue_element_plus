@@ -77,6 +77,13 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             return "#000000"
         },
 
+        getStyle(tag_id: number) {
+            return {
+                "color": this.getBgColor(tag_id),
+                "border-color": this.getBgColor(tag_id),
+            }
+        },
+
         getName(tag_id: number): string {
             const tag = this.get(tag_id)
             if (tag) {

@@ -4,7 +4,13 @@
     --el-bg-color: #def0de;
     --el-card-bg-color: #c8f4c8;
     --el-border-color: #ffa050;
+
+    --el-font-size-extra-large: 22px;
+    --el-font-size-large: 20px;
+    --el-font-size-medium: 19px;
     --el-font-size-base: 18px;
+    --el-font-size-small: 16px;
+    --el-font-size-extra-small: 14px;
 
     --me-header-bg-color: #9bdd9b;
     --me-hover-color-blank: #a7dfa7;
@@ -34,6 +40,16 @@
     font-size: var(--el-font-size-base);
 }
 
+
+.el-radio.el-radio--small .el-radio__label {
+    font-size: var(--el-font-size-small);
+}
+
+.el-radio.el-radio--large .el-radio__label {
+    font-size: var(--el-font-size-large);
+}
+
+
 .el-aside {
     width: 220px;
 }
@@ -48,11 +64,11 @@
 
 .el-table {
     --el-table-header-bg-color: var(--me-header-bg-color);
-    font-size: 16px;
+    font-size: var(--el-font-size-small);
 }
 
 .el-tag {
-    --el-tag-font-size: 18px;
+    --el-tag-font-size: var(--el-font-size-base)
 }
 
 .el-tag__content {
@@ -69,6 +85,7 @@
 }
 
 .el-form-item {
+    padding: 0 10px;
     margin-bottom: 5px;
 }
 

@@ -109,7 +109,6 @@ export default {
         },
     },
     mounted() {
-        console.log(`Video Sizes Chart mounted for ${this.actor_id}`)
         // 2. 判断 dom 是否为空或未定义
         if (this.video_sizes_chart != null && this.video_sizes_chart != "" && this.video_sizes_chart != undefined) {
             // 3. 已存在则调用 dispose() 方法销毁

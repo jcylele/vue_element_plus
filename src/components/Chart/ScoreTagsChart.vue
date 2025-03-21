@@ -88,6 +88,14 @@ export default {
                         barMaxWidth: 50,
                         colorBy: 'data', // bar color is data.itemStyle.color
                         data: [],
+                        label: {
+                            show: true,
+                            position: 'right',
+                            distance: 15,
+                            align: 'left',
+                            verticalAlign: 'middle',
+                            fontSize: 18,
+                        },
                     }
                 ]
             }
@@ -132,7 +140,6 @@ export default {
         },
     },
     mounted() {
-        console.log(`Score Tags Chart mounted`)
         // 2. 判断 dom 是否为空或未定义
         if (this.score_tags_chart != null && this.score_tags_chart != "" && this.score_tags_chart != undefined) {
             // 3. 已存在则调用 dispose() 方法销毁

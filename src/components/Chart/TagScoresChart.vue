@@ -152,7 +152,6 @@ export default {
         },
     },
     mounted() {
-        console.log(`Tag Scores Chart mounted`)
         // 2. 判断 dom 是否为空或未定义
         if (this.tag_scores_chart != null && this.tag_scores_chart != "" && this.tag_scores_chart != undefined) {
             // 3. 已存在则调用 dispose() 方法销毁

@@ -84,6 +84,14 @@ export default {
                         barMaxWidth: 50,
                         colorBy: 'data', // bar color is data.itemStyle.color
                         data: [],
+                        label: {
+                            show: true,
+                            position: 'right',
+                            distance: 15,
+                            align: 'left',
+                            verticalAlign: 'middle',
+                            fontSize: 18,
+                        },
                     }
                 ]
             }
@@ -135,7 +143,6 @@ export default {
         },
     },
     mounted() {
-        console.log(`Tag Relative Chart mounted`)
         // 2. 判断 dom 是否为空或未定义
         if (this.tag_relative_chart != null && this.tag_relative_chart != "" && this.tag_relative_chart != undefined) {
             // 3. 已存在则调用 dispose() 方法销毁

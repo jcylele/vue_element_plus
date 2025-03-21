@@ -5,8 +5,8 @@ import {
     DownloadLimitForm,
     ActorIdDownloadForm,
     UrlDownloadForm, BaseDownloadForm, NewDownloadForm
-} from "../data/SimpleForms";
-import TaskData from "../data/TaskData";
+} from "../data/DownloadForms";
+import {TaskData} from "../data/TaskData";
 import {BASE_URL} from "../data/Consts";
 
 const baseUrl = `${BASE_URL}/api/download`

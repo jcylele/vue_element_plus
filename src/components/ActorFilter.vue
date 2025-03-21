@@ -86,6 +86,12 @@
                               @change="onAnyConditionChange"
                               style="width: 300px; font-size: 24px;"
                               clearable/>
+                    <el-checkbox v-model="filter_condition.linked"
+                                 @change="onAnyConditionChange"
+                                 style="margin-left: 10px;font-size: 24px;"
+                                 border>
+                        Linked
+                    </el-checkbox>
                 </el-form-item>
 
                 <!-- remark -->
