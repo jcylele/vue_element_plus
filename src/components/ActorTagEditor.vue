@@ -2,11 +2,14 @@
     <div class="actor_tag">
         <el-space direction="vertical" border>
             <!-- Tag Name -->
-            <el-text v-if="!tag_edit_info.is_editing" class="mx-1">{{ tag_edit_info.tag.tag_name }}</el-text>
+            <el-text v-if="!tag_edit_info.is_editing" class="tag-title">{{ tag_edit_info.tag.tag_name }}</el-text>
             <el-input v-if="tag_edit_info.is_editing" v-model="tag_edit_info.tag.tag_name"/>
             <!-- used count -->
-            <el-text class="mx-1">({{ tag_edit_info.tag.used_count }} actors)</el-text>
-
+            <el-text>count: {{ tag_edit_info.tag.used_count }}</el-text>
+            <!-- avg score -->
+            <el-text class="tag-score" :style="{'color': tag_edit_info.tag.score_color}">
+                score: {{ tag_edit_info.tag.avg_score.toFixed(2) }}
+            </el-text>
             <!-- not in editing -->
             <el-space v-if="!tag_edit_info.is_editing" direction="horizontal" alignment="center">
                 <svg-icon size="24px" name="edit"
@@ -83,5 +86,14 @@ export default {
     background-color: var(--el-card-bg-color);
     padding: 10px;
     margin: 5px;
+}
+
+.tag-title {
+    font-weight: bold;
+}
+
+.tag-score {
+    background: linear-gradient(to bottom, #1A1A1A, #2C3E50);
+    padding: 0 5px;
 }
 </style>

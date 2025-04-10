@@ -32,7 +32,6 @@
                         size="large"
                         active-text="All"
                         inactive-text="None"
-                        class="empty_bg"
                         style="padding: 0 10px"
                         width="80px"
                         inline-prompt

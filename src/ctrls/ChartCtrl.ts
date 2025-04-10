@@ -17,3 +17,8 @@ export async function getTagsByScore(min_score: number, max_score: number, limit
     const url = `${baseUrl}/tags_of_score?min=${min_score}&max=${max_score}&limit=${limit}`;
     return await fetchGet(url)
 }
+
+export async function getGroupSizes() {
+    const url = `${baseUrl}/down_size_of_groups`;
+    return await fetchGet(url)
+}

@@ -232,3 +232,8 @@ export async function findSimilarActorNames() {
     const url = `${baseUrl}/similar_names`
     return await fetchGet(url)
 }
+
+export async function clearFolderOfGroup(group_id: number) {
+    const url = `${baseUrl}/clear_group_folder/${group_id}`
+    return await fetchGet(url)
+}

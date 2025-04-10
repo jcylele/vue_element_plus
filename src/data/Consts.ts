@@ -6,9 +6,9 @@ import {
     PostFilter,
     ResSizeUnit,
     ResState, ResType,
-    SortType, TaskArchive
+    SortType
 } from "./Enums";
-import {CommonOption} from "./Interfaces";
+import { CommonOption } from "./Interfaces";
 
 export const BASE_URL = "http://127.0.0.1:7878"
 
@@ -31,39 +31,39 @@ export const str_res_state = {
 export const ResSizeList = [ResSizeUnit.GB, ResSizeUnit.MB, ResSizeUnit.KB, ResSizeUnit.B]
 
 export const Post_Filter_Options: CommonOption[] = [
-    {label: "Normal", value: PostFilter.Normal},
-    {label: "Current", value: PostFilter.Old},
+    { label: "Normal", value: PostFilter.Normal },
+    { label: "Current", value: PostFilter.Old },
 ]
 
 export const Res_Type_Options: CommonOption[] = [
-    {label: "Image", value: ResType.Image},
-    {label: "Video", value: ResType.Video},
+    { label: "Image", value: ResType.Image },
+    { label: "Video", value: ResType.Video },
 ]
 
 export const Sort_Options: CommonOption[] = [
-    {label: "None", value: SortType.Default},
-    {label: "Score", value: SortType.Score},
-    {label: "TotalPostCount", value: SortType.TotalPostCount},
-    {label: "CategoryTime", value: SortType.CategoryTime},
+    { label: "None", value: SortType.Default },
+    { label: "Score", value: SortType.Score },
+    { label: "TotalPostCount", value: SortType.TotalPostCount },
+    { label: "CategoryTime", value: SortType.CategoryTime },
 ]
 
 export const Download_Options: CommonOption[] = [
-    {label: "New Actors", value: DownloadType.New},
-    {label: "By Category", value: DownloadType.Category},
-    {label: "Specific Urls", value: DownloadType.Url},
-    {label: "Resume Files", value: DownloadType.Resume},
-    {label: "Manual", value: DownloadType.Manual},
+    { label: "New Actors", value: DownloadType.New },
+    { label: "By Category", value: DownloadType.Category },
+    { label: "Specific Urls", value: DownloadType.Url },
+    { label: "Resume Files", value: DownloadType.Resume },
+    { label: "Manual", value: DownloadType.Manual },
 ]
 
 
 export const Star_Colors = {
-    0: '#2020FF',
-    1: '#7F7EFF',
-    2: '#7EFF00',
-    3: '#FFDE00',
-    4: '#FFC0CB',
-    5: '#FF007F',
-    6: '#7F00FF'
+    0: '#A0B9C6',  // 灰蓝色
+    1: '#2E86AB',  // 深蓝色
+    2: '#00A6FB',  // 亮蓝色
+    3: '#FFDE00',   // 黄色
+    4: '#FF6840',   // 橙色
+    5: '#FF007F',   // 粉色
+    6: '#BF00BF'    // 紫色
 }
 
 export const Tag_Colors = [
@@ -80,26 +80,26 @@ export const Tag_Colors = [
 ]
 
 export const Actor_Show_Options: CommonOption[] = [
-    {label: "Card", value: ActorShowType.Card},
-    {label: "Line", value: ActorShowType.Line},
+    { label: "Card", value: ActorShowType.Card },
+    { label: "Line", value: ActorShowType.Line },
 ]
 
 export const Notice_Type_Options: CommonOption[] = [
-    {label: "Invalid Post", value: NoticeType.InvalidPost},
-    {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
-    {label: "Same Actor Name", value: NoticeType.SameActorName},
-    {label: "Has Linked Account", value: NoticeType.HasLinkedAccount},
-    {label: "Similar Actor Name", value: NoticeType.SimilarActorName},
+    { label: "Invalid Post", value: NoticeType.InvalidPost },
+    { label: "Unlinked Actor", value: NoticeType.UnlinkedActor },
+    { label: "Same Actor Name", value: NoticeType.SameActorName },
+    { label: "Has Linked Account", value: NoticeType.HasLinkedAccount },
+    { label: "Similar Actor Name", value: NoticeType.SimilarActorName },
 ]
 
 export const Notice_Param_Names =
-    {
-        [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2"],
-        [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
-        [NoticeType.SameActorName]: ["actor_name"],
-        [NoticeType.HasLinkedAccount]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
-        [NoticeType.SimilarActorName]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
-    }
+{
+    [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2"],
+    [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
+    [NoticeType.SameActorName]: ["actor_name"],
+    [NoticeType.HasLinkedAccount]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
+    [NoticeType.SimilarActorName]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
+}
 
 export const Actor_Log_Type_Names = {
     [ActorLogType.Add]: "Actor Created",

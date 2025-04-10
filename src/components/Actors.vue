@@ -1,8 +1,16 @@
 <template>
-    <el-space direction="vertical" fill>
-        <ActorFilter :filter_condition="filter_condition"
+    <el-space direction="vertical" size="small" fill>
+        <ActorFilter :filter_condition="editing_filter_condition"
                      @submit="onFilterSubmit"/>
-        <el-divider style="margin: 5px 0;"/>
+        <el-divider style="margin: 1px 0;"/>
+        <!-- filter desc -->
+        <el-space direction="horizontal" size="large" wrap>
+            <div v-for="desc in page_filter_desc"
+                 class="desc-item">
+                <el-text class="desc-label">{{ desc.label }}</el-text>
+                <el-text class="desc-value">{{ desc.value }}</el-text>
+            </div>
+        </el-space>
         <!-- tools bar -->
         <el-space direction="horizontal" size="large">
             <div style="display: flex;flex-direction: row;gap: 5px">
@@ -164,22 +172,26 @@ import {downloadByActorIds} from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
 import {ActorGroupStore} from "../store/ActorGroupStore";
 import {ActorShowType} from "../data/Enums";
-import {Actor_Show_Options} from "../data/Consts";
+import {Actor_Show_Options, MAX_SCORE} from "../data/Consts";
 import ActorLine from "./ActorLine.vue";
 import Posts from "./Posts.vue";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorData from "../data/ActorData";
 import {BadgeStore} from "../store/BadgeStore";
-import {ActorListResult, ActorResult} from "../data/WebData";
 import ActorLinkPreview from "./ActorLinkPreview.vue";
 
+interface FilterItem {
+    label: string,
+    value: string
+}
 
 export default {
     components: {ActorLinkPreview, SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
     data() {
         return {
-            filter_condition: new ActorFilterData(),
+            editing_filter_condition: new ActorFilterData(),
+            page_filter_condition: new ActorFilterData(),
             locked_actor_list: [] as ActorElement[],
             actor_list: [] as ActorElement[],
             actor_ids: [] as number[],
@@ -221,11 +233,76 @@ export default {
         },
         actor_show_line() {
             return this.actor_show_type == ActorShowType.Line
+        },
+        page_filter_desc(): FilterItem[] {
+            const page_filter = this.page_filter_condition
+            const desc_list: FilterItem[] = []
+            if (page_filter.group_id_list.length > 0) {
+                const group_name_list = page_filter.group_id_list.map(group_id => this.getGroupName(group_id))
+                desc_list.push({
+                    label: "group",
+                    value: group_name_list.join(", ")
+                })
+
+                if (page_filter.no_tag) {
+                    desc_list.push({
+                        label: "tag",
+                        value: "No"
+                    })
+                } else if (page_filter.tag_list.length > 0) {
+                    const tag_name_list = page_filter.tag_list.map(tag_id => this.getTagName(tag_id))
+                    desc_list.push({
+                        label: "tag",
+                        value: tag_name_list.join(", ")
+                    })
+                }
+
+                if (page_filter.min_score > 0 && page_filter.max_score < MAX_SCORE) {
+                    desc_list.push({
+                        label: "score",
+                        value: `${page_filter.min_score} - ${page_filter.max_score}`
+                    })
+                }
+            } else if (page_filter.min_score > 0) {
+                desc_list.push({
+                    label: "score",
+                    value: `>= ${page_filter.min_score}`
+                })
+            } else if (page_filter.max_score < MAX_SCORE) {
+                desc_list.push({
+                    label: "score",
+                    value: `<= ${page_filter.max_score}`
+                })
+            }
+
+            if (page_filter.name.length > 0) {
+                desc_list.push({
+                    label: "name",
+                    value: page_filter.name
+                })
+            }
+
+            if (page_filter.linked) {
+                desc_list.push({
+                    label: "linked",
+                    value: "Yes"
+                })
+            }
+
+            if (page_filter.remark_str.length > 0) {
+                desc_list.push({
+                    label: "remark",
+                    value: page_filter.remark_str
+                })
+            }
+
+            return desc_list
         }
     },
     methods: {
         ...mapActions(ActorTagStore, {
             getTagsFromServer: 'getFromServer',
+            getTagName: 'getName',
         }),
         ...mapActions(ActorFilterStore, {
             savePageIndex: "setPageIndex",
@@ -238,6 +315,7 @@ export default {
         }),
         ...mapActions(ActorGroupStore, {
             getGroupsFromServer: 'getFromServer',
+            getGroupName: 'getName',
         }),
 
         showPosts() {
@@ -253,7 +331,7 @@ export default {
 
         async onActorPageChange() {
             this.savePageIndex(this.page_index)
-            const [ok, actor_ids] = await getActorIds(this.filter_condition, this.page_size, (this.page_index - 1) * this.page_size)
+            const [ok, actor_ids] = await getActorIds(this.page_filter_condition, this.page_size, (this.page_index - 1) * this.page_size)
             if (ok) {
                 this.refreshActorIds(actor_ids)
                 await this.getDowningFromServer()
@@ -264,7 +342,8 @@ export default {
         async onFilterSubmit() {
             this.refreshActorIds();
             this.actor_count = 0
-            const [ok, actor_count] = await getActorCount(this.filter_condition)
+            this.page_filter_condition.copy(this.editing_filter_condition)
+            const [ok, actor_count] = await getActorCount(this.page_filter_condition)
             if (ok) {
                 this.actor_count = actor_count
                 this.refreshPageIndex()
@@ -502,7 +581,7 @@ export default {
     },
     watch: {},
     async mounted() {
-        this.filter_condition = this.cached_filter_condition.clone()
+        this.editing_filter_condition = this.cached_filter_condition.clone()
         this.page_size = this.cached_page_size
         this.page_index = this.cached_page_index
 
@@ -531,4 +610,26 @@ export default {
     margin-top: 15px;
     gap: 15px 15px;
 }
+
+.desc-item {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: stretch;
+}
+
+.desc-label {
+    font-size: var(--el-font-size-large);
+    font-weight: bold;
+    color: black;
+    background-color: burlywood;
+    padding: 4px 4px;
+}
+
+.desc-value {
+    font-size: var(--el-font-size-base);
+    background-color: antiquewhite;
+    padding: 4px 8px;
+}
+
 </style>

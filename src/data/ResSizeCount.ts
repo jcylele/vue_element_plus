@@ -1,6 +1,28 @@
 import EditableData from "./EditableData";
-import {ResState} from "./Enums";
-import SizeStruct from "./SizeStruct";
+import {ResSizeUnit, ResState} from "./Enums";
+import {ResSizeList} from "./Consts";
+
+class SizeStruct {
+    public size: number = 0
+    public unit: ResSizeUnit = ResSizeUnit.B
+
+    constructor(real_size: number) {
+        for (const size_unit of ResSizeList) {
+            if (real_size >= size_unit) {
+                this.size = real_size / size_unit
+                this.unit = size_unit
+                break
+            }
+        }
+    }
+
+    toString(): string {
+        if (this.size == 0) {
+            return "0"
+        }
+        return `${this.size}${ResSizeUnit[this.unit]}`
+    }
+}
 
 export default class ResSizeCount extends EditableData {
     min: number

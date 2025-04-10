@@ -1,7 +1,6 @@
 import EditableData from "./EditableData";
 import {str_res_state, video_state_color} from "./Consts";
-
-const GB1 = 1024 * 1024 * 1024
+import {gb_size} from "./DataUtil";
 
 class ResFileInfo extends EditableData {
     res_state: number
@@ -30,7 +29,7 @@ class ResFileInfo extends EditableData {
     }
 
     public get str_size() {
-        let size = this.res_size / GB1
+        let size = this.res_size / gb_size
         size = Math.floor(size * 100) / 100
         return `${size}G`
     }

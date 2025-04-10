@@ -1,4 +1,5 @@
 import {SortType} from "./Enums";
+import {MAX_SCORE} from "./Consts";
 
 
 class SortItem {
@@ -219,7 +220,7 @@ export default class ActorFilterData {
 
     resetScores() {
         this.min_score = 0
-        this.max_score = 12
+        this.max_score = MAX_SCORE
     }
 
     resetNameLink() {

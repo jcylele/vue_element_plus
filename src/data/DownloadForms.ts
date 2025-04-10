@@ -1,4 +1,5 @@
 import {PostFilter, ResType} from "./Enums";
+import {mb_size} from "./DataUtil";
 
 export class ActorUrl {
     actor_name: string
@@ -42,19 +43,19 @@ export class DownloadLimitForm {
     }
 
     get show_single_file_size() {
-        return this.single_file_size / (1024 * 1024)
+        return this.single_file_size / (mb_size)
     }
 
     set show_single_file_size(val: number) {
-        this.single_file_size = val * (1024 * 1024)
+        this.single_file_size = val * (mb_size)
     }
 
     get show_total_file_size() {
-        return this.total_file_size / (1024 * 1024)
+        return this.total_file_size / (mb_size)
     }
 
     set show_total_file_size(val: number) {
-        this.total_file_size = val * (1024 * 1024)
+        this.total_file_size = val * (mb_size)
     }
 
     setPresetValue(preset, default_preset) {
