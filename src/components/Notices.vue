@@ -18,7 +18,21 @@
             </el-menu>
         </el-aside>
         <el-main>
-            <el-space v-if="cur_notice_type != 0" direction="vertical">
+            <el-space v-if="notice_count == 0" direction="vertical" fill>
+                <el-text style="font-size: 24px">
+                    No Notice Found
+                </el-text>
+                <el-space v-if="is_similar" direction="vertical" size="small" alignment="flex-start">
+                    <el-divider style="margin: 5px 0;"/>
+                    <el-text style="font-size: 24px;color: darkorange;">
+                        this operation may take several seconds
+                    </el-text>
+                    <el-button type="primary" size="default" @click="findSimilar">
+                        Find Similar Actor Names
+                    </el-button>
+                </el-space>
+            </el-space>
+            <el-space v-else direction="vertical">
                 <el-pagination
                     v-model:current-page="page_index"
                     :page-size="page_size"
@@ -28,7 +42,9 @@
                     background
                     style="margin: 5px"
                 />
-                <el-table :data="notice_list" border class="wrap_line">
+                <el-table :data="notice_list"
+                          class="wrap_line"
+                          border>
                     <el-table-column
                         v-for="(label, index) in label_names"
                         :key="index"
@@ -66,6 +82,8 @@ import {ActorFilterStore} from "../store/ActorFilterStore";
 import {SubMenuStore} from "../store/SubMenuStore";
 import ActorFilterData from "../data/ActorFilterData";
 import {BadgeStore} from "../store/BadgeStore";
+import {findSimilarActorNames} from "../ctrls/ActorCtrl";
+import {logInfo} from "../ctrls/FetchCtrl";
 
 export default {
     name: "Notices",
@@ -87,6 +105,9 @@ export default {
         },
         is_search_actor_name(): boolean {
             return this.cur_notice_type != NoticeType.InvalidPost
+        },
+        is_similar(): boolean {
+            return this.cur_notice_type == NoticeType.SimilarActorName
         }
     },
 
@@ -101,6 +122,7 @@ export default {
         ...mapActions(BadgeStore, {
             getNoticeCount: "getNoticeCount",
             setNoticeCount: "setNoticeCount",
+            fetchAllNoticeCount: "fetchAllNoticeCount"
         }),
 
         async onNoticeTypeChange(index: string) {
@@ -138,12 +160,14 @@ export default {
         formatActorName(notice: NoticeData): string {
             switch (this.cur_notice_type) {
                 case NoticeType.SameActorName:
-                    return `${notice.notice_param0}||`
+                    return `${notice.notice_param0}`
                 case NoticeType.UnlinkedActor:
-                    return `${notice.notice_param0}||${notice.notice_param1}||`
+                    return `${notice.notice_param0}||${notice.notice_param1}`
                 case NoticeType.HasLinkedAccount:
                 case NoticeType.SimilarActorName:
-                    return `${notice.notice_param0}||${notice.notice_param1}||${notice.notice_param2}||${notice.notice_param3}||`
+                    return [notice.notice_param0, notice.notice_param1, notice.notice_param2, notice.notice_param3]
+                        .filter(param => param != null && param != "")
+                        .join("||")
                 default:
                     return ""
             }
@@ -162,6 +186,14 @@ export default {
             const [ok, new_list] = await getNotices(this.cur_notice_type, this.page_size, (this.page_index - 1) * this.page_size)
             if (ok) {
                 this.notice_list = new_list
+            }
+        },
+
+        async findSimilar() {
+            const [ok, _] = await findSimilarActorNames()
+            if (ok) {
+                await this.fetchAllNoticeCount()
+                await this.onNoticeTypeChange(this.cur_notice_type.toString())
             }
         }
     }

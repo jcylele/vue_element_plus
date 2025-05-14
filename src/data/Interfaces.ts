@@ -1,15 +1,6 @@
-import {SortType} from "./Enums";
-
 export interface ISortItem {
     get key: number
     get priority: number
-}
-
-export interface SortOption {
-    id: number
-    label: string
-    sort_type: SortType
-    sort_asc: boolean
 }
 
 export interface CommonOption {
@@ -17,7 +8,17 @@ export interface CommonOption {
     value: any
 }
 
+export interface SortOption extends CommonOption {
+    default_asc: boolean
+}
+
 export interface TagCount {
     tag_id: number,
     count: number
+}
+
+export interface TagRecord {
+    tag_id: number,
+    count: number,
+    last_used: number
 }

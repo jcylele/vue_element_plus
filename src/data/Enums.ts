@@ -16,6 +16,7 @@ export enum SortType {
     Default,
     Score,
     TotalPostCount,
+    CurPostCount,
     CategoryTime,
 }
 

@@ -111,7 +111,7 @@
                 <el-form-item label="Sort">
                     <div v-for="sort_item in filter_condition.sort_items"
                          class="sort_item">
-                        <el-select v-model="sort_item.sort_type"
+                        <el-select v-model="sort_item.show_sort_type"
                                    style="width: 150px">
                             <el-option
                                 v-for="option in sort_option_list"
@@ -158,6 +158,7 @@ import {ActorGroupStore} from "../store/ActorGroupStore";
 import {Sort_Options, Star_Colors} from "../data/Consts";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import SvgIcon from "./SvgIcon/index.vue";
+import {SortType} from "../data/Enums";
 
 export default {
     name: "ActorFilter",

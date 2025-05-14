@@ -29,11 +29,13 @@
       "name": "Cur_Video",
       "post_filter": 1,
       "res_type": 2,
+      "file_count": 0,
       "show_total_file_size": 1024
     },
     {
       "name": "All_Video",
       "res_type": 2,
+      "file_count": 0,
       "show_total_file_size": 1024
     }
   ]

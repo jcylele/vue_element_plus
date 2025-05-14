@@ -13,22 +13,6 @@
                 </el-button>
             </el-space>
         </el-collapse-item>
-        <el-collapse-item :name="ETab.Similar">
-            <template #title>
-                <el-text class="title-text">Similar Actor Names</el-text>
-            </template>
-            <el-space direction="vertical" size="small" alignment="flex-start">
-                <el-text class="desc-text">
-                    find actors with similar name and link them
-                </el-text>
-                <el-text class="warn-text">
-                    this operation may take several seconds
-                </el-text>
-                <el-button type="primary" size="default" @click="findSimilar">
-                    Find Similar
-                </el-button>
-            </el-space>
-        </el-collapse-item>
         <el-collapse-item :name="ETab.Reset">
             <template #title>
                 <el-text class="title-text">Reset Manual</el-text>
@@ -155,14 +139,6 @@ async function resetAllManual() {
 
 async function openLogFolder() {
     await openLogs()
-}
-
-async function findSimilar() {
-    const [ok, _] = await findSimilarActorNames()
-    if (ok) {
-        logInfo("find similar succeed")
-        await badgeStore.fetchAllNoticeCount()
-    }
 }
 </script>
 

@@ -1,5 +1,5 @@
 import {SortType} from "./Enums";
-import {MAX_SCORE} from "./Consts";
+import {MAX_SCORE, Sort_Options} from "./Consts";
 
 
 class SortItem {
@@ -9,6 +9,19 @@ class SortItem {
     constructor() {
         this.sort_type = SortType.Default
         this.sort_asc = true
+    }
+
+    get show_sort_type() {
+        return this.sort_type
+    }
+
+    set show_sort_type(val: SortType) {
+        this.sort_type = val
+        for (const sortOption of Sort_Options) {
+            if (sortOption.value == val) {
+                this.sort_asc = sortOption.default_asc
+            }
+        }
     }
 
     clone() {

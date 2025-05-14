@@ -6,7 +6,25 @@
 
         <!-- actor avatar -->
         <div class="avatar">
-            <el-image class="avatar-img" :src="actor.icon"/>
+            <el-tooltip v-if="actor.has_remark"
+                        placement="bottom"
+                        offset="3"
+                        effect="light">
+                <template #content>
+                    <el-space direction="vertical" size="small"
+                              style="min-width: 210px; max-width: 420px;"
+                              fill>
+                        <el-text v-if="actor.remark" style="font-size: 20px;color: hotpink; white-space: pre-wrap;">
+                            {{ actor.remark }}
+                        </el-text>
+                        <el-text v-for="post in actor.commented_posts" style="font-size: 18px;color: royalblue;">
+                            · {{ post.comment }}
+                        </el-text>
+                    </el-space>
+                </template>
+                <el-image class="avatar-img" :src="actor.icon"/>
+            </el-tooltip>
+            <el-image v-else class="avatar-img" :src="actor.icon"/>
 
             <el-text class="avatar-platform">
                 {{ actor.actor_platform }}
@@ -152,8 +170,7 @@
             <!-- actor remark -->
             <svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'"
                       @click="startEditRemark"
-                      size="32px"
-                      style="width: 32px;height: 32px"/>
+                      size="32px"/>
             <!-- actor group -->
             <el-select v-model="actor.actor_group_id"
                        @change="setActorGroup"
@@ -177,7 +194,7 @@
                 </template>
                 <el-space direction="vertical" size="small" fill>
                     <el-text style="font-style: italic">
-                        click to apply tags to actor
+                        click to apply single tag to actor
                     </el-text>
                     <el-space v-for="tag_ids in tag_history" size="small" class="tag_history_row">
                         <el-tag v-for="tag_id in tag_ids"
@@ -188,9 +205,14 @@
                             {{ getTagName(tag_id) }}
                         </el-tag>
                     </el-space>
-                    <el-button size="default" type="primary" @click="startEditTag">
-                        Choose Other Tags
-                    </el-button>
+                    <el-space direction="horizontal" size="small">
+                        <el-button size="default" type="warning" @click="clearRecentTags">
+                            Clear
+                        </el-button>
+                        <el-button size="default" type="primary" @click="startEditTag">
+                            Choose Other Tags
+                        </el-button>
+                    </el-space>
                 </el-space>
             </el-popover>
         </div>
@@ -330,6 +352,7 @@ export default {
             getTagStyle: 'getStyle',
             getTagName: 'getName',
             addTagRecord: 'addRecord',
+            clearTagHistory: 'clearHistory',
         }),
 
         ...mapActions(ActorGroupStore, {
@@ -396,6 +419,9 @@ export default {
         },
         startEditTag() {
             this.showDialog(EActorDialog.tags)
+        },
+        clearRecentTags() {
+            this.clearTagHistory()
         },
         async onApplyTag(tag_id: number) {
             await this.onSubmitTag([tag_id])
@@ -606,19 +632,7 @@ export default {
 
 .tag_history_row {
     border: 1px solid;
-    padding: 2px;
-}
-
-@keyframes blink {
-    25% {
-        opacity: 0.5;
-    }
-    50% {
-        opacity: 0;
-    }
-    75% {
-        opacity: 0.5;
-    }
+    padding: 4px;
 }
 
 </style>

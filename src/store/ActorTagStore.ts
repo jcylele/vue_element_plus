@@ -3,13 +3,15 @@ import ActorTagData from "../data/ActorTagData";
 import {getActorTagList} from "../ctrls/ActorTagCtrl";
 import SortedList from "../data/SortedList";
 import {Tag_Colors} from "../data/Consts";
+import {TagRecord} from "../data/Interfaces";
 
 const MAX_TAG_HISTORY = 12
 
 export const ActorTagStore = defineStore('ActorTagStore', {
     state: () => ({
         list: null as SortedList<ActorTagData>,
-        history_list: [] as number[],
+        history_list: [] as TagRecord[],
+        last_used: 0
     }),
     getters: {
         sorted_list: (state) => {
@@ -19,26 +21,31 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             return state.list.sorted_list
         },
         tag_history: (state) => {
-            const tag_id_arr: number[][] = []
-            for (let i = 0; i < 10; i++) {
-                tag_id_arr.push([])
-            }
+            const tag_list_map: Map<number, number[]> = new Map()
 
-            for (const tag_id of state.history_list) {
-                const tag: ActorTagData = state.get(tag_id)
+            for (let i = 0; i < MAX_TAG_HISTORY; i++) {
+                const tc = state.history_list[i]
+                if (!tc) {
+                    break
+                }
+                const tag: ActorTagData = state.get(tc.tag_id)
                 const group = Math.floor(tag.tag_priority / 100)
-                tag_id_arr[group].push(tag.tag_id)
-            }
-
-            const tag_id_arr2: number[][] = []
-            for (let i = 9; i >= 0; i--) {
-                const tag_list = tag_id_arr[i]
-                if (tag_list.length > 0) {
-                    tag_list.sort(state.compareTagId)
-                    tag_id_arr2.push(tag_list)
+                if (!tag_list_map[group]) {
+                    tag_list_map[group] = [tag.tag_id]
+                } else {
+                    tag_list_map[group].push(tag.tag_id)
                 }
             }
-            return tag_id_arr2
+
+            const tag_id_arr: number[][] = []
+            for (let i = 9; i >= 0; i--) {
+                const tag_list = tag_list_map[i]
+                if (tag_list) {
+                    tag_list.sort(state.compareTagId)
+                    tag_id_arr.push(tag_list)
+                }
+            }
+            return tag_id_arr
         }
     },
     actions: {
@@ -93,18 +100,12 @@ export const ActorTagStore = defineStore('ActorTagStore', {
         },
 
         _addSingleTag(tag_id): void {
-            let existing_index = this.history_list.indexOf(tag_id)
-            // 0 is the oldest, -1 is newest
-            if (existing_index != -1) {
-                // already exist, move to end
-                this.history_list.splice(existing_index, 1)
-                this.history_list.push(tag_id)
+            let existing_tc = this.history_list.find(tc => tc.tag_id == tag_id)
+            if (existing_tc != undefined) {
+                existing_tc.count++
+                existing_tc.last_used = ++this.last_used
             } else {
-                // add if not full, otherwise replace
-                if (this.history_list.length == MAX_TAG_HISTORY) {
-                    this.history_list.shift()
-                }
-                this.history_list.push(tag_id)
+                this.history_list.push({tag_id: tag_id, count: 1, last_used: ++this.last_used})
             }
         },
 
@@ -112,6 +113,18 @@ export const ActorTagStore = defineStore('ActorTagStore', {
             for (const tag_id of tags) {
                 this._addSingleTag(tag_id)
             }
+            // sort by count desc, last_used desc
+            this.history_list.sort((a, b) => {
+                if (a.count != b.count) {
+                    return b.count - a.count
+                } else {
+                    return b.last_used - a.last_used
+                }
+            })
+        },
+
+        clearHistory() {
+            this.history_list = []
         }
     },
 })
