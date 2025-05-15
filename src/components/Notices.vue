@@ -193,6 +193,7 @@ export default {
             const [ok, _] = await findSimilarActorNames()
             if (ok) {
                 await this.fetchAllNoticeCount()
+                logInfo("find similar actor names finished")
                 await this.onNoticeTypeChange(this.cur_notice_type.toString())
             }
         }
