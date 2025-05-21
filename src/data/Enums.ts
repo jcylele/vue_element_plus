@@ -20,11 +20,6 @@ export enum SortType {
     CategoryTime,
 }
 
-export enum ActorShowType {
-    Card,
-    Line
-}
-
 export enum NoticeType {
     All = 0,
     UnlinkedActor = 1,

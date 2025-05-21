@@ -1,6 +1,6 @@
 import ActorData from "../data/ActorData";
 import {fetchGet, fetchPatch, fetchPost, logInfo, logWarn} from "./FetchCtrl";
-import ActorFilterData from "../data/ActorFilterData";
+import {ActorFilterData} from "../data/ActorFilterData";
 import {Base64} from "js-base64";
 import {BASE_URL} from "../data/Consts";
 import ResSizeCount from "../data/ResSizeCount";

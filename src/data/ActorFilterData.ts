@@ -1,14 +1,41 @@
 import {SortType} from "./Enums";
 import {MAX_SCORE, Sort_Options} from "./Consts";
 
+abstract class BaseCloneable {
+    abstract clone(): this;
 
-class SortItem {
+    abstract copy(source: this): void;
+
+    abstract reset(): void;
+}
+
+class SortItem extends BaseCloneable {
     sort_type: SortType
     sort_asc: boolean
 
     constructor() {
-        this.sort_type = SortType.Default
-        this.sort_asc = true
+        super()
+        this.init()
+    }
+
+    private init(): void {  // 私有方法
+        this.sort_type = SortType.Default;
+        this.sort_asc = true;
+    }
+
+    clone(): this {
+        const item = new SortItem()
+        item.copy(this)
+        return item as this
+    }
+
+    copy(item: SortItem) {
+        this.sort_type = item.sort_type
+        this.sort_asc = item.sort_asc
+    }
+
+    reset(): void {
+        this.init()
     }
 
     get show_sort_type() {
@@ -24,17 +51,6 @@ class SortItem {
         }
     }
 
-    clone() {
-        const item = new SortItem()
-        item.copy(this)
-        return item
-    }
-
-    copy(item: SortItem) {
-        this.sort_type = item.sort_type
-        this.sort_asc = item.sort_asc
-    }
-
     get icon(): string {
         if (this.sort_asc) {
             return "up"
@@ -48,7 +64,85 @@ class SortItem {
     }
 }
 
-export default class ActorFilterData {
+
+export class TagFilter extends BaseCloneable {
+    private no_tag: boolean
+    tag_arr: number[][]
+    titles: string[] = ["Have All", "Have No", "Have Any"]
+    // must_have: number[]
+    // any_of: number[][]
+    // must_not_have: number[]
+
+    get show_no_tag() {
+        return this.no_tag
+    }
+
+    set show_no_tag(val: boolean) {
+        this.no_tag = val
+        this.init_arr(val)
+    }
+
+    constructor() {
+        super()
+        this.init()
+    }
+
+    private init(): void {
+        this.no_tag = false
+        this.init_arr(this.no_tag)
+    }
+
+    private init_arr(no_tag: boolean) {
+        if (no_tag) {
+            this.tag_arr = []
+        } else {
+            this.tag_arr = [[], [], []]
+        }
+    }
+
+    clone(): this {
+        const filter = new TagFilter()
+        filter.copy(this)
+        return filter as this
+    }
+
+    copy(filter: TagFilter) {
+        this.no_tag = filter.no_tag
+        this.tag_arr = filter.tag_arr.map(list => list.slice())
+    }
+
+    reset(): void {
+        this.init()
+    }
+
+    addLine() {
+        this.tag_arr.push([])
+    }
+
+    removeLine(index: number): boolean {
+        const has = this.tag_arr[index].length > 0
+        this.tag_arr.splice(index, 1)
+        return has
+    }
+
+    toJSON() {
+        const must_have: number[] = this.tag_arr.length == 0 ? [] : this.tag_arr[0]
+        const must_not_have: number[] = this.tag_arr.length < 2 ? [] : this.tag_arr[1]
+        const any_of: number[][] = this.tag_arr.length < 3 ? [] : this.tag_arr.slice(2).filter(list => list.length > 0)
+        return {
+            must_have: must_have,
+            must_not_have: must_not_have,
+            any_of: any_of,
+            no_tag: this.no_tag
+        }
+    }
+
+    removeTag(tag_id, index) {
+        this.tag_arr[index].splice(this.tag_arr[index].indexOf(tag_id), 1)
+    }
+}
+
+export class ActorFilterData extends BaseCloneable {
     /**
      * category, tag, score, name, remark
      */
@@ -57,13 +151,12 @@ export default class ActorFilterData {
     linked: boolean
     group_id_list: number[]
     all_group_list: number[]
-    tag_list: number[]
-    no_tag: boolean
+    tag_filter: TagFilter
     min_score: number
     max_score: number
 
     remark_str: string
-    remark_any: boolean
+    has_remark: boolean
 
     sort_items: SortItem[]
 
@@ -146,7 +239,7 @@ export default class ActorFilterData {
      * remove default, only keep first one for each SortType
      */
     simplifySortItems() {
-        const filtered = []
+        const filtered: SortItem[] = []
         const typeSet = new Set<SortType>()
         for (const item of this.sort_items) {
             if (item.sort_type == SortType.Default) {
@@ -161,12 +254,14 @@ export default class ActorFilterData {
     }
 
     constructor() {
-        this.show_rows = new Array(5).fill(false)
-        this.all_group_list = []
-        this.reset()
+        super()
+
+        this.init()
     }
 
-    reset() {
+    private init(): void {
+        this.show_rows = new Array(5).fill(false)
+        this.all_group_list = []
         this.resetCategory()
         this.resetTags()
         this.resetScores()
@@ -176,10 +271,14 @@ export default class ActorFilterData {
         this.resetSort()
     }
 
-    clone() {
+    reset() {
+        this.init()
+    }
+
+    clone(): this {
         const data = new ActorFilterData()
         data.copy(this)
-        return data
+        return data as this
     }
 
     copy(data: ActorFilterData) {
@@ -187,12 +286,11 @@ export default class ActorFilterData {
         this.name = data.name
         this.linked = data.linked
         this.group_id_list = data.group_id_list.slice()
-        this.tag_list = data.tag_list.slice()
-        this.no_tag = data.no_tag
+        this.tag_filter = data.tag_filter.clone()
         this.min_score = data.min_score
         this.max_score = data.max_score
         this.remark_str = data.remark_str
-        this.remark_any = data.remark_any
+        this.has_remark = data.has_remark
 
         this.sort_items = data.sort_items.map(item => item.clone())
     }
@@ -215,20 +313,7 @@ export default class ActorFilterData {
     }
 
     resetTags() {
-        this.tag_list = []
-        this.no_tag = false
-    }
-
-    onCheckedTagChange() {
-        if (this.tag_list.length > 0) {
-            this.no_tag = false
-        }
-    }
-
-    checkNoTag(val: boolean) {
-        if (val) {
-            this.tag_list = []
-        }
+        this.tag_filter = new TagFilter()
     }
 
     resetScores() {
@@ -247,13 +332,7 @@ export default class ActorFilterData {
 
     resetRemark() {
         this.remark_str = ""
-        this.remark_any = false
-    }
-
-    checkAnyRemark(val: boolean) {
-        if (val) {
-            this.remark_str = ""
-        }
+        this.has_remark = false
     }
 }
 

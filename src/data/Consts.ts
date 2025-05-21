@@ -1,6 +1,5 @@
 import {
     ActorLogType,
-    ActorShowType,
     DownloadType,
     NoticeType,
     PostFilter,
@@ -78,11 +77,6 @@ export const Tag_Colors = [
     "#EE707B",
     "#EE007F",
     "#787878",
-]
-
-export const Actor_Show_Options: CommonOption[] = [
-    {label: "Card", value: ActorShowType.Card},
-    {label: "Line", value: ActorShowType.Line},
 ]
 
 export const Notice_Type_Options: CommonOption[] = [

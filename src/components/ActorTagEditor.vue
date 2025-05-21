@@ -8,7 +8,7 @@
             <el-text>count: {{ tag_edit_info.tag.used_count }}</el-text>
             <!-- avg score -->
             <el-text class="tag-score" :style="{'color': tag_edit_info.tag.score_color}">
-                score: {{ tag_edit_info.tag.avg_score.toFixed(2) }}
+                score: {{ tag_edit_info.tag.show_score }}
             </el-text>
             <!-- not in editing -->
             <el-space v-if="!tag_edit_info.is_editing" direction="horizontal" alignment="center">

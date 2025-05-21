@@ -41,25 +41,8 @@
 
                 <!-- filter tags -->
                 <el-form-item label="Tags" v-if="filter_condition.show_tag">
-                    <el-select v-model="filter_condition.tag_list"
-                               @change="onCheckedTagChange"
-                               style="width: 200px;"
-                               size="default"
-                               multiple filterable clearable>
-                        <el-option
-                            v-for="actor_tag in actor_tag_list"
-                            :key="actor_tag.tag_id"
-                            :label="actor_tag.tag_name"
-                            :value="actor_tag.tag_id"
-                        />
-                    </el-select>
-                    <el-checkbox v-model="filter_condition.no_tag"
-                                 @change="checkNoTag"
-                                 style="margin-left: 10px;font-size: 24px;"
-                                 size="default"
-                                 border>
-                        No Tag
-                    </el-checkbox>
+                    <ActorTagFilter :tag_filter="filter_condition.tag_filter"
+                                    @change="onAnyConditionChange"/>
                 </el-form-item>
 
                 <!-- score -->
@@ -95,16 +78,18 @@
 
                 <!-- remark -->
                 <el-form-item label="Remark" v-if="filter_condition.show_remark">
-                    <el-input v-model="filter_condition.remark_str"
+
+                    <el-checkbox v-model="filter_condition.has_remark"
+                                 @change="onAnyConditionChange"
+                                 style="font-size: 24px;margin-right: 10px;"
+                                 border>
+                        {{ filter_condition.has_remark ? "Search" : "Has Remark" }}
+                    </el-checkbox>
+                    <el-input v-if="filter_condition.has_remark"
+                              v-model="filter_condition.remark_str"
                               @change="onAnyConditionChange"
                               style="width: 200px; font-size: 24px;"
                               clearable/>
-                    <el-checkbox v-model="filter_condition.remark_any"
-                                 @change="checkAnyRemark"
-                                 style="margin-left: 10px;font-size: 24px;"
-                                 border>
-                        Any Remark
-                    </el-checkbox>
                 </el-form-item>
 
                 <!-- Sort_Options -->
@@ -150,7 +135,7 @@
 </template>
 
 <script lang="ts">
-import ActorFilterData from "../data/ActorFilterData";
+import {ActorFilterData} from "../data/ActorFilterData";
 import NewActorTag from "./NewActorTag.vue";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -158,7 +143,7 @@ import {ActorGroupStore} from "../store/ActorGroupStore";
 import {Sort_Options, Star_Colors} from "../data/Consts";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import SvgIcon from "./SvgIcon/index.vue";
-import {SortType} from "../data/Enums";
+import ActorTagFilter from "./ActorTagFilter.vue";
 
 export default {
     name: "ActorFilter",
@@ -168,7 +153,7 @@ export default {
     },
     // declare emitted events to parent
     emits: ['submit'],
-    components: {SvgIcon, NewActorTag},
+    components: {ActorTagFilter, SvgIcon, NewActorTag},
     data() {
         return {
             cond_changed: false,
@@ -205,20 +190,6 @@ export default {
         }),
         onAnyConditionChange() {
             this.cond_changed = true
-        },
-        //
-        checkNoTag(val: boolean) {
-            this.onAnyConditionChange()
-            this.filter_condition.checkNoTag(val)
-        },
-        //
-        onCheckedTagChange() {
-            this.onAnyConditionChange()
-            this.filter_condition.onCheckedTagChange()
-        },
-        checkAnyRemark(val: boolean) {
-            this.onAnyConditionChange()
-            this.filter_condition.checkAnyRemark(val)
         },
         async onFilterSubmit() {
             this.cond_changed = false

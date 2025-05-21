@@ -84,7 +84,7 @@ import {
 import {mapActions, mapState} from "pinia";
 import DownloadLimit from "./DownloadLimit.vue";
 import {getActorCount} from "../ctrls/ActorCtrl";
-import ActorFilterData from "../data/ActorFilterData";
+import {ActorFilterData} from "../data/ActorFilterData";
 import {ActorGroupStore} from "../store/ActorGroupStore";
 import {DownloadType} from "../data/Enums";
 import {logError, logInfo, logWarn} from "../ctrls/FetchCtrl";

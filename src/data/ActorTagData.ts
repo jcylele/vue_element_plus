@@ -24,4 +24,9 @@ export default class ActorTagData extends EditableData implements ISortItem {
     get score_color(): string {
         return Star_Colors[Math.floor(this.avg_score / 2)]
     }
+
+    get show_score(): string {
+        return (this.avg_score / 2).toFixed(2)
+    }
+
 }

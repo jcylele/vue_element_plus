@@ -80,7 +80,7 @@ import {deleteNotice, delNoticesByType, getNotices} from "../ctrls/NoticeCtrl";
 import {mapActions} from "pinia";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import {SubMenuStore} from "../store/SubMenuStore";
-import ActorFilterData from "../data/ActorFilterData";
+import {ActorFilterData} from "../data/ActorFilterData";
 import {BadgeStore} from "../store/BadgeStore";
 import {findSimilarActorNames} from "../ctrls/ActorCtrl";
 import {logInfo} from "../ctrls/FetchCtrl";

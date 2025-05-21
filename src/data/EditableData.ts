@@ -1,7 +1,6 @@
-let _next_uuid = 0
+import BaseData from "./BaseData";
 
-export default class EditableData {
-    public readonly uuid: number
+export default class EditableData extends BaseData {
     private _changed: boolean
 
     public get changed() {
@@ -13,8 +12,7 @@ export default class EditableData {
     }
 
     constructor(json_data?) {
-        this.uuid = ++_next_uuid
-        // console.log("uuid", this.uuid)
-        Object.assign(this, json_data)
+        super(json_data)
+        this._changed = false
     }
 }

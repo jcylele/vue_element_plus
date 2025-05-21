@@ -1,6 +1,7 @@
 import ActorTagData from "./ActorTagData";
 import EditableData from "./EditableData";
 import ActorData from "./ActorData";
+import BaseData from "./BaseData";
 
 interface ITagEditInfo {
     tag: ActorTagData,
@@ -15,13 +16,13 @@ export class TagEditInfo implements ITagEditInfo {
     is_editing: boolean
 }
 
-export class ActorPostInfo extends EditableData {
-    actor_id: number
-    actor_name: string
-    post_count: number
+export class ActorPostInfo extends BaseData {
+    readonly actor_id: number
+    readonly actor_name: string
+    readonly post_count: number
 }
 
-export class BaseResult extends EditableData {
+export class BaseResult extends BaseData {
     succeed: boolean
     msg: string
 

@@ -47,14 +47,14 @@
                 <el-input v-model="remark" placeholder="Remark" type="textarea" autosize/>
             </el-space>
         </el-space>
-        <el-space direction="horizontal" style="justify-content: center; margin-top: 10px;">
+        <div class="center-row" style="margin-top: 10px;">
             <el-button type="primary" @click="onSubmit">
                 Submit
             </el-button>
             <el-button type="warning" @click="onCancel">
                 Cancel
             </el-button>
-        </el-space>
+        </div>
     </el-space>
 </template>
 

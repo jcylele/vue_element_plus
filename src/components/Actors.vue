@@ -5,43 +5,39 @@
         <el-divider style="margin: 1px 0;"/>
         <!-- filter desc -->
         <el-space direction="horizontal" size="large" wrap>
-            <div v-for="desc in page_filter_desc"
-                 class="desc-item">
-                <el-text class="desc-label">{{ desc.label }}</el-text>
-                <el-text class="desc-value">{{ desc.value }}</el-text>
+            <div v-if="is_filter_normal">
+                <div v-for="desc in page_filter_desc"
+                     class="desc-item">
+                    <el-text class="desc-label">{{ desc.label }}</el-text>
+                    <el-text class="desc-value">{{ desc.value }}</el-text>
+                </div>
             </div>
+            <el-text v-else class="desc-label">{{ filter_type_name }}</el-text>
         </el-space>
         <!-- tools bar -->
         <el-space direction="horizontal" size="large">
-            <div style="display: flex;flex-direction: row;gap: 5px">
-                <el-text>Show</el-text>
-                <el-select v-model="actor_show_type" style="min-width: 100px">
-                    <el-option
-                        v-for="option in actor_show_options"
-                        :label="option.label"
-                        :value="option.value"
-                    />
-
-                </el-select>
-            </div>
             <el-pagination
+                v-if="is_filter_normal"
                 v-model:current-page="page_index"
+                :total="actor_count"
                 :page-size="page_size"
                 :page-sizes="[6, 8, 10, 12, 14]"
-                :total="actor_count"
+                :pager-count="5"
                 @current-change="onActorPageChange"
                 @size-change="handleSizeChange"
                 layout="sizes, total, prev, pager, next"
+                class="page-border"
                 background
-                style="margin: 5px"
             />
-            <el-button type="primary" @click="showPosts">
-                Search Posts
+            <el-button v-if="has_downing_actors"
+                       type="success" size="large"
+                       @click="onDowningClick">
+                Downloading Actors
             </el-button>
             <el-checkbox v-model="is_show_batch_op"
                          label="Batch Ops"
                          @change="onBatchOpChange"
-                         size="default" border/>
+                         size="large" border/>
         </el-space>
         <!-- batch tool bar -->
         <el-space direction="horizontal" v-if="is_show_batch_op" size="large" spacer="|">
@@ -89,7 +85,7 @@
                 size="large"/>
         </el-space>
         <!-- a big card per actor -->
-        <div v-if="actor_show_card" class="card_row">
+        <div class="card_row">
             <!-- TODO change is not triggered, why   -->
             <!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
             <ActorCard v-for="actor_data in locked_actor_list"
@@ -111,14 +107,6 @@
                        @download="singleShowDownload"
                        @update="refreshActors"/>
         </div>
-        <!-- a line per actor -->
-        <el-space v-if="actor_show_line"
-                  class="line_row"
-                  direction="vertical" size="small" fill>
-            <ActorLine v-for="actor_data in actor_list"
-                       :actor_data="actor_data"
-                       :key="actor_data.uuid"/>
-        </el-space>
     </el-space>
     <!-- download  dialog -->
     <el-dialog v-model="is_show_download"
@@ -137,11 +125,6 @@
             </el-space>
         </el-space>
     </el-dialog>
-    <el-dialog v-model="is_show_post"
-               title="Posts"
-               width=720px>
-        <Posts :specific_actor_id="0"></Posts>
-    </el-dialog>
     <el-dialog v-model="is_show_link_preview"
                title="Link Preview"
                :before-close="onLinkPreviewClose"
@@ -153,7 +136,7 @@
 </template>
 
 <script lang="ts">
-import ActorFilterData from "../data/ActorFilterData";
+import {ActorFilterData} from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import {ActorElement} from "../data/ArrayElement";
@@ -171,10 +154,8 @@ import {DownloadLimitForm} from "../data/DownloadForms";
 import {downloadByActorIds} from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
 import {ActorGroupStore} from "../store/ActorGroupStore";
-import {ActorShowType} from "../data/Enums";
-import {Actor_Show_Options, MAX_SCORE} from "../data/Consts";
+import {MAX_SCORE} from "../data/Consts";
 import ActorLine from "./ActorLine.vue";
-import Posts from "./Posts.vue";
 import {logInfo, logWarn} from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorData from "../data/ActorData";
@@ -186,12 +167,19 @@ interface FilterItem {
     value: string
 }
 
+enum FilterType {
+    Normal = "normal",
+    Link = "linked actors",
+    Download = "downloading"
+}
+
 export default {
-    components: {ActorLinkPreview, SvgIcon, Posts, ActorLine, ActorCard, ActorFilter, DownloadLimit},
+    components: {ActorLinkPreview, SvgIcon, ActorLine, ActorCard, ActorFilter, DownloadLimit},
     data() {
         return {
             editing_filter_condition: new ActorFilterData(),
             page_filter_condition: new ActorFilterData(),
+            filter_type: FilterType.Normal,
             locked_actor_list: [] as ActorElement[],
             actor_list: [] as ActorElement[],
             actor_ids: [] as number[],
@@ -202,8 +190,6 @@ export default {
             download_actor_ids: [] as number[],
             download_limit: null as DownloadLimitForm,
             link_actor_list: [] as ActorData[],
-            actor_show_type: ActorShowType.Card,
-            is_show_post: false,
             is_show_batch_op: false,
             is_batch_select_all: false,
         }
@@ -213,6 +199,8 @@ export default {
             cached_filter_condition: 'filter_condition',
             cached_page_size: "page_size",
             cached_page_index: "page_index",
+            downing_actor_ids: "downing_actors",
+            has_downing_actors: "has_downing_actors"
         }),
         ...mapState(ActorGroupStore, {group_list: 'sorted_list'}),
         is_show_download() {
@@ -225,14 +213,11 @@ export default {
         is_show_link_preview() {
             return this.link_actor_list.length > 0
         },
-        actor_show_options() {
-            return Actor_Show_Options
+        is_filter_normal() {
+            return this.filter_type == FilterType.Normal
         },
-        actor_show_card() {
-            return this.actor_show_type == ActorShowType.Card
-        },
-        actor_show_line() {
-            return this.actor_show_type == ActorShowType.Line
+        filter_type_name() {
+            return this.filter_type
         },
         page_filter_desc(): FilterItem[] {
             const page_filter = this.page_filter_condition
@@ -249,12 +234,8 @@ export default {
                         label: "tag",
                         value: "No"
                     })
-                } else if (page_filter.tag_list.length > 0) {
-                    const tag_name_list = page_filter.tag_list.map(tag_id => this.getTagName(tag_id))
-                    desc_list.push({
-                        label: "tag",
-                        value: tag_name_list.join(", ")
-                    })
+                } else {
+
                 }
 
                 if (page_filter.min_score > 0 && page_filter.max_score < MAX_SCORE) {
@@ -308,7 +289,7 @@ export default {
             savePageIndex: "setPageIndex",
             savePageSize: "setPageSize",
             getDowningFromServer: "getDowningFromServer",
-            is_actor_downing: "is_downing",
+            is_actor_downing: "is_downing"
         }),
         ...mapActions(BadgeStore, {
             fetchTaskCount: 'fetchTaskCount',
@@ -317,10 +298,6 @@ export default {
             getGroupsFromServer: 'getFromServer',
             getGroupName: 'getName',
         }),
-
-        showPosts() {
-            this.is_show_post = true
-        },
 
         async handleSizeChange(val: number) {
             this.page_size = val
@@ -367,10 +344,15 @@ export default {
             console.log(`actor friend clicked: ${actor_data.data.actor_name}`)
             const [ok, actor_ids] = await getLinkedActorIds(actor_data.data.actor_id)
             if (ok) {
-                this.refreshActorIds(actor_ids)
+                this.refreshActorIds(actor_ids, FilterType.Link)
             } else {
                 this.refreshActorIds()
             }
+        },
+
+        async onDowningClick() {
+            await this.getDowningFromServer()
+            this.refreshActorIds(this.downing_actor_ids, FilterType.Download)
         },
 
         // region batch, select, lock
@@ -545,7 +527,8 @@ export default {
             this.batchSelectAll(false)
         },
 
-        refreshActorIds(actor_ids: number[] = null) {
+        refreshActorIds(actor_ids: number[] = null, filter: FilterType = FilterType.Normal) {
+            this.filter_type = filter
             this.is_batch_select_all = false
 
             if (actor_ids == null) {
@@ -595,6 +578,12 @@ export default {
 
 <style scoped>
 
+.page-border {
+    border: 1px ridge;
+    border-color: var(--el-border-color);
+    padding: 3px 5px;
+}
+
 .card_row {
     min-height: 100px;
     min-width: 300px;
@@ -602,13 +591,8 @@ export default {
     flex-direction: row;
     flex-wrap: wrap;
     margin-top: 15px;
-    gap: 10px 10px;
+    gap: 20px 20px;
     align-items: stretch;
-}
-
-.line_row {
-    margin-top: 15px;
-    gap: 15px 15px;
 }
 
 .desc-item {

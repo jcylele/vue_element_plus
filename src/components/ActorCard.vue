@@ -8,7 +8,7 @@
         <div class="avatar">
             <el-tooltip v-if="actor.has_remark"
                         placement="bottom"
-                        offset="3"
+                        :offset="3"
                         effect="light">
                 <template #content>
                     <el-space direction="vertical" size="small"
@@ -36,7 +36,7 @@
                       @click="findLinkedActor"/>
 
             <div v-if="linked_group_ids.length > 1"
-                 class="avatar-group">
+                 class="avatar-group center-row">
                 <svg-icon v-for="group_id in linked_group_ids"
                           size="10px" name="circle"
                           :style="{'color': getGroupColor(group_id)}"/>
@@ -50,7 +50,7 @@
 
             <svg-icon v-if="show_select"
                       size="40px"
-                      :name=" actor_data.selected ? 'completed' : 'minus'"
+                      :name=" actor_data.selected ? 'completed' : 'remove'"
                       class="avatar-select"
                       @click="onSelectCLick"/>
             <!-- Stars -->
@@ -65,7 +65,7 @@
 
         <!-- actor name, click to open menu items -->
         <!-- downloading related icons -->
-        <div class="actor_name_line">
+        <div class="actor_name_line center-row">
             <el-popover trigger="click" placement="top"
                         v-model:visible="is_show_op"
                         :popper-style="{'border-color': group_color, 'width': 300}"
@@ -138,7 +138,7 @@
                   v-if="actor.file_info"
                   style="gap: 1px 0"
                   fill>
-            <div class="post_line">
+            <div class="post_line center-row">
                 <el-text class="post_count" tag="ins">
                     {{ actor.post_desc }}
                 </el-text>
@@ -247,9 +247,9 @@
     </el-dialog>
     <!-- dialog: actor posts -->
     <el-dialog v-model="card_dialog.is_show_posts"
-               :title="actor.actor_name"
+               title="Posts"
                width=720px>
-        <Posts :specific_actor_id="actor.actor_id"/>
+        <Posts :actor_id="actor.actor_id" :actor_name="actor.actor_name"/>
     </el-dialog>
     <!-- dialog: actor video sizes chart -->
     <el-dialog v-model="card_dialog.is_show_video_sizes"
@@ -522,10 +522,6 @@ export default {
 }
 
 .actor_name_line {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
     gap: 5px;
     background-color: #000000a0;
 }
@@ -536,10 +532,6 @@ export default {
 }
 
 .post_line {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
     gap: 5px;
 }
 
@@ -611,11 +603,6 @@ export default {
     left: 5px;
 
     width: 60px;
-
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
 }
 
 .pop-button {

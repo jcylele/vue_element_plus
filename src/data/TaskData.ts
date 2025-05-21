@@ -24,6 +24,8 @@ export class DownloadLimit extends EditableData {
         // actor count
         if (this.limit.actor_count > 0) {
             desc_list.push(`${this.progress.actor_count}/${this.limit.actor_count} actors`)
+        } else if (this.progress.actor_count > 0) {
+            desc_list.push(`${this.progress.actor_count} actors`)
         }
         // post count
         if (this.limit.post_filter == PostFilter.Old) {
@@ -37,6 +39,8 @@ export class DownloadLimit extends EditableData {
         let str_desc = ResType[this.limit.res_type]
         if (this.limit.file_count > 0) {
             str_desc = `${this.progress.file_count} / ${this.limit.file_count} ${str_desc}`
+        } else if (this.progress.file_count > 0) {
+            str_desc = `${this.progress.file_count} ${str_desc}`
         }
         desc_list.push(str_desc)
 
@@ -50,6 +54,9 @@ export class DownloadLimit extends EditableData {
             const progress = format_file_size(this.progress.total_file_size)
             const limit = format_file_size(this.limit.total_file_size)
             desc_list.push(`total ${progress} / ${limit}`)
+        } else if (this.progress.total_file_size > 0) {
+            const progress = format_file_size(this.progress.total_file_size)
+            desc_list.push(`total ${progress}`)
         }
 
         return desc_list

@@ -74,6 +74,9 @@
 .el-collapse {
     --el-collapse-header-bg-color: var(--me-header-bg-color);
     --el-collapse-content-bg-color: var(--el-bg-color);
+    --el-collapse-header-height: 40px;
+    --el-collapse-header-font-size: var(--el-font-size-large);
+    --el-collapse-content-font-size: var(--el-font-size-base);
 }
 
 .el-select__wrapper {
@@ -137,4 +140,15 @@ tr:nth-child(odd) {
     font-size: 28px;
     font-weight: bold;
     font-style: italic;
+}
+
+.el-collapse-item__content {
+    padding-bottom: 10px;
+}
+
+.center-row {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
 }

@@ -11,8 +11,8 @@
                     <el-table-column prop="download_limit" label="limit" align="center" min-width="280px">
                         <template #default="scope">
                             <el-space direction="vertical">
-                                <el-tag v-for="limit in scope.row.download_limit.limit_desc_list" type="success" size="small"
-                                        effect="plain">
+                                <el-tag v-for="limit in scope.row.download_limit.limit_desc_list"
+                                        type="success" size="small" effect="light">
                                     {{ limit }}
                                 </el-tag>
                             </el-space>
@@ -21,8 +21,9 @@
                     <el-table-column prop="worker_count" label="workers" align="center" min-width="200px">
                         <template #default="scope">
                             <el-space direction="vertical">
-                                <el-tag size="small" effect="plain" v-for="(count, name) in scope.row.worker_count"
-                                        :key="name">
+                                <el-tag v-for="(count, name) in scope.row.worker_count"
+                                        :key="name"
+                                        size="small" effect="light">
                                     {{ name }}:{{ count }}
                                 </el-tag>
                             </el-space>
@@ -31,8 +32,9 @@
                     <el-table-column prop="queue_count" label="queues" align="center" min-width="200px">
                         <template #default="scope">
                             <el-space direction="vertical">
-                                <el-tag size="small" effect="plain" v-for="(count, name) in scope.row.queue_count"
-                                        :key="name">
+                                <el-tag v-for="(count, name) in scope.row.queue_count"
+                                        :key="name"
+                                        size="small" effect="light">
                                     {{ name }}:{{ count }}
                                 </el-tag>
                             </el-space>

@@ -1,50 +1,52 @@
 import EditableData from "./EditableData";
+import {ActorPostInfo} from "./WebData";
 
-
-export class PostConditionForm {
-    fixed_actor_id: number
+export class PostFilterForm {
     actor_id: number
     post_id_prefix: string
     has_comment: boolean
-    private _is_editing: boolean
+    comment: string
+}
 
-    get is_editing() {
-        return this._is_editing
-    }
-
-    /**
-     * start or finish editing, finish may fail(inner val not changed)
-     */
-    set is_editing(val: boolean) {
-        if (this._is_editing == val) {
-            return
-        }
-        if (val) {
-            this.actor_id = this.fixed_actor_id
-        } else {
-            if (this.post_id_prefix.length < this.calcMinPrefixLength()) {
-                return
-            }
-        }
-        this._is_editing = val
-    }
+export class PostConditionForm {
+    init_actor: ActorPostInfo
+    init_selected: boolean
+    post_id_prefix: string
+    has_comment: boolean
+    comment: string
+    is_editing: boolean
 
     calcMinPrefixLength(): number {
-        if (this.has_comment) {
+        if (this.has_comment || this.comment.trim().length > 0) {
             return 0
         }
-        if (this.actor_id != 0) {
+        if (this.init_selected) {
             return 3
         }
         return 5
     }
 
-    constructor(_fixed_actor_id) {
-        this.fixed_actor_id = _fixed_actor_id
-        this.actor_id = _fixed_actor_id
+    constructor(init_actor_info: ActorPostInfo) {
+        this.init_actor = init_actor_info
+        this.init_selected = true
         this.post_id_prefix = ""
         this.has_comment = false
-        this._is_editing = true
+        this.comment = ""
+        this.is_editing = true
+    }
+
+    createFilterForm(actor_id: number): PostFilterForm {
+        let form = new PostFilterForm()
+        form.actor_id = actor_id
+        form.post_id_prefix = this.post_id_prefix
+        form.has_comment = this.has_comment
+        form.comment = this.comment.trim()
+        return form
+    }
+
+    createInitForm(): PostFilterForm {
+        const init_actor_id = this.init_selected ? this.init_actor.actor_id : 0
+        return this.createFilterForm(init_actor_id)
     }
 }
 

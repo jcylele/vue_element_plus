@@ -1,5 +1,5 @@
 import {defineStore} from "pinia";
-import ActorFilterData from "../data/ActorFilterData";
+import {ActorFilterData} from "../data/ActorFilterData";
 import {getActorIds} from "../ctrls/DownloadCtrl";
 
 interface ActorFilterState {
@@ -26,7 +26,8 @@ export const ActorFilterStore = defineStore('ActorFilterStore', {
             'page_size': 12,
             'page_index': 1,
         },
-        downing_actor_ids: new Set<number>(),
+        downing_actor_id_list: [],
+        downing_actor_id_set: new Set<number>(),
     }),
     getters: {
         filter_condition: (state: ActorFilterState) => {
@@ -43,7 +44,9 @@ export const ActorFilterStore = defineStore('ActorFilterStore', {
         },
         has_history: (state: ActorFilterState) => {
             return state.filter_history.length > 0
-        }
+        },
+        downing_actors: (state: ActorFilterState) => state.downing_actor_id_list,
+        has_downing_actors: (state: ActorFilterState) => state.downing_actor_id_list.length > 0
     },
     actions: {
         setFilter(filter: ActorFilterData) {
@@ -70,15 +73,13 @@ export const ActorFilterStore = defineStore('ActorFilterStore', {
             this.page_info.page_size = val
         },
         is_downing(actor_id: number) {
-            return this.downing_actor_ids.has(actor_id)
+            return this.downing_actor_id_set.has(actor_id)
         },
         async getDowningFromServer() {
             const [ok, actor_ids] = await getActorIds()
             if (ok) {
-                this.downing_actor_ids.clear()
-                for (const actor_id of actor_ids) {
-                    this.downing_actor_ids.add(actor_id)
-                }
+                this.downing_actor_id_list = actor_ids
+                this.downing_actor_id_set = new Set<number>(actor_ids)
             }
         }
     },
