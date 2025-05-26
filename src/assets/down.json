@@ -1,42 +1,62 @@
-{
-  "default": {
-    "actor_count": 0,
-    "post_count": 0,
+[
+  {
+    "name": "Normal Images",
     "post_filter": 0,
     "res_type": 1,
+    "actor_count": 50,
+    "post_count": 50,
     "file_count": 50,
-    "show_single_file_size": 0,
-    "show_total_file_size": 0
+    "show_single_file_size": 4,
+    "show_total_file_size": 64
   },
-  "presets": [
-    {
-      "name": "All"
-    },
-    {
-      "name": "Init",
-      "actor_count": 50,
-      "post_count": 50,
-      "show_single_file_size": 4,
-      "show_total_file_size": 64
-    },
-    {
-      "name": "Cur_Init",
-      "post_filter": 1,
-      "show_single_file_size": 4,
-      "show_total_file_size": 64
-    },
-    {
-      "name": "Cur_Video",
-      "post_filter": 1,
-      "res_type": 2,
-      "file_count": 0,
-      "show_total_file_size": 1024
-    },
-    {
-      "name": "All_Video",
-      "res_type": 2,
-      "file_count": 0,
-      "show_total_file_size": 1024
-    }
-  ]
-}
+  {
+    "name": "Current Images",
+    "post_filter": 1,
+    "res_type": 1,
+    "actor_count": 0,
+    "post_count": 0,
+    "file_count": 50,
+    "show_single_file_size": 4,
+    "show_total_file_size": 64
+  },
+  {
+    "name": "Completed Images",
+    "post_filter": 2,
+    "res_type": 1,
+    "actor_count": 0,
+    "post_count": 0,
+    "file_count": 50,
+    "show_single_file_size": 4,
+    "show_total_file_size": 64
+  },
+  {
+    "name": "Normal Videos",
+    "post_filter": 0,
+    "res_type": 2,
+    "actor_count": 0,
+    "post_count": 0,
+    "file_count": 0,
+    "show_single_file_size": 0,
+    "show_total_file_size": 1024
+  },
+  {
+    "name": "Current Videos",
+    "post_filter": 1,
+    "res_type": 2,
+    "actor_count": 0,
+    "post_count": 0,
+    "file_count": 0,
+    "show_single_file_size": 0,
+    "show_total_file_size": 1024
+  },
+  {
+    "name": "Completed Videos",
+    "post_filter": 2,
+    "res_type": 2,
+    "actor_count": 0,
+    "post_count": 0,
+    "file_count": 0,
+    "show_single_file_size": 0,
+    "show_total_file_size": 1024
+  }
+]

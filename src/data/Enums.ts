@@ -1,6 +1,7 @@
 export enum PostFilter {
     Normal = 0,
-    Old = 1,
+    Current = 1,
+    Completed = 2
 }
 
 export enum DownloadType {

@@ -31,7 +31,8 @@ export const ResSizeList = [ResSizeUnit.GB, ResSizeUnit.MB, ResSizeUnit.KB, ResS
 
 export const Post_Filter_Options: CommonOption[] = [
     {label: "Normal", value: PostFilter.Normal},
-    {label: "Current", value: PostFilter.Old},
+    {label: "Current", value: PostFilter.Current},
+    {label: "Completed", value: PostFilter.Completed},
 ]
 
 export const Res_Type_Options: CommonOption[] = [

@@ -4,16 +4,16 @@
                      @submit="onFilterSubmit"/>
         <el-divider style="margin: 1px 0;"/>
         <!-- filter desc -->
-        <el-space direction="horizontal" size="large" wrap>
-            <div v-if="is_filter_normal">
+        <div>
+            <el-space v-if="is_filter_normal" direction="horizontal" size="large" wrap>
                 <div v-for="desc in page_filter_desc"
                      class="desc-item">
                     <el-text class="desc-label">{{ desc.label }}</el-text>
                     <el-text class="desc-value">{{ desc.value }}</el-text>
                 </div>
-            </div>
+            </el-space>
             <el-text v-else class="desc-label">{{ filter_type_name }}</el-text>
-        </el-space>
+        </div>
         <!-- tools bar -->
         <el-space direction="horizontal" size="large">
             <el-pagination
@@ -612,6 +612,7 @@ export default {
 
 .desc-value {
     font-size: var(--el-font-size-base);
+    color: black;
     background-color: antiquewhite;
     padding: 4px 8px;
 }

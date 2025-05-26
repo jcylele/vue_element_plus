@@ -58,10 +58,11 @@ export class DownloadLimitForm {
         this.total_file_size = val * (mb_size)
     }
 
-    setPresetValue(preset, default_preset) {
-        Object.assign(this, default_preset)
-        if (preset) {
-            Object.assign(this, preset)
-        }
+    setPresetValue(preset) {
+        this.actor_count = preset.actor_count
+        this.post_count = preset.post_count
+        this.file_count = preset.file_count
+        this.show_total_file_size = preset.show_total_file_size
+        this.show_single_file_size = preset.show_single_file_size
     }
 }

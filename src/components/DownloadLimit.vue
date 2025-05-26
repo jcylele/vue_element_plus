@@ -1,38 +1,37 @@
 <template>
     <el-space direction="vertical" class="limit-form">
         <!-- Presets -->
-        <el-space direction="horizontal" wrap>
-            <el-radio-group v-model="cur_preset">
-                <el-radio v-for="preset in preset_option_list"
-                          :value="preset">
-                    {{ preset }}
-                </el-radio>
-            </el-radio-group>
-        </el-space>
+        <el-text style="font-style: italic">
+            Select Post Filter And Res Type First
+        </el-text>
 
         <el-form :model="download_limit"
                  label-width="200px" label-position="left">
-            <el-form-item label="Actor Count">
-                <el-input-number v-model="download_limit.actor_count" :min="0" :max="1000" :step="50"/>
-            </el-form-item>
+
             <el-form-item label="Post Filter">
-                <el-radio-group v-model="download_limit.post_filter">
+                <el-radio-group v-model="download_limit.post_filter"
+                                @change="onPostFilterChange">
                     <el-radio v-for="pf in post_filter_list"
                               :value="pf.value">
                         {{ pf.label }}
                     </el-radio>
                 </el-radio-group>
             </el-form-item>
-            <el-form-item label="Post Count">
-                <el-input-number v-model="download_limit.post_count" :min="0" :max="1000" :step="50"/>
-            </el-form-item>
+
             <el-form-item label="Res Type">
-                <el-radio-group v-model="download_limit.res_type">
+                <el-radio-group v-model="download_limit.res_type"
+                                @change="onResTypeChange">
                     <el-radio v-for="pf in res_type_list"
                               :value="pf.value">
                         {{ pf.label }}
                     </el-radio>
                 </el-radio-group>
+            </el-form-item>
+            <el-form-item label="Actor Count">
+                <el-input-number v-model="download_limit.actor_count" :min="0" :max="1000" :step="50"/>
+            </el-form-item>
+            <el-form-item label="Post Count">
+                <el-input-number v-model="download_limit.post_count" :min="0" :max="1000" :step="50"/>
             </el-form-item>
             <el-form-item label="Res Count">
                 <el-input-number v-model="download_limit.file_count" :min="0" :max="200" :step="20"/>
@@ -59,15 +58,10 @@ export default {
     },
     data() {
         return {
-            cur_preset: "",
             down_json_obj: downJson
         }
     },
     computed: {
-        preset_option_list() {
-            // return Preset_Options
-            return this.down_json_obj.presets.map(preset => preset.name)
-        },
 
         post_filter_list() {
             return Post_Filter_Options
@@ -76,13 +70,24 @@ export default {
             return Res_Type_Options
         }
     },
-    watch: {
-        async cur_preset(new_val, old_val) {
-            const default_preset = this.down_json_obj.default
-            const preset = this.down_json_obj.presets.find(preset => preset.name == new_val)
-            this.download_limit.setPresetValue(preset, default_preset)
+    methods: {
+        onPostFilterChange() {
+            this.refreshPreset()
+        },
+        onResTypeChange() {
+            this.refreshPreset()
+        },
+        refreshPreset() {
+            const preset = this.down_json_obj.find(preset =>
+                preset.res_type == this.download_limit.res_type
+                && preset.post_filter == this.download_limit.post_filter
+            )
+            if (preset == undefined) return
+
+            console.log(`change to ${preset.name}`)
+            this.download_limit.setPresetValue(preset)
         }
-    },
+    }
 }
 </script>
 

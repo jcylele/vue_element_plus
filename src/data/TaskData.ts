@@ -28,11 +28,15 @@ export class DownloadLimit extends EditableData {
             desc_list.push(`${this.progress.actor_count} actors`)
         }
         // post count
-        if (this.limit.post_filter == PostFilter.Old) {
+        if (this.limit.post_filter == PostFilter.Completed) {
+            desc_list.push("completed posts")
+        } else if (this.limit.post_filter == PostFilter.Current) {
             desc_list.push("current posts")
         } else {
             if (this.limit.post_count > 0) {
                 desc_list.push(`${this.limit.post_count} posts`)
+            } else {
+                desc_list.push(`all posts`)
             }
         }
         // file count / res type
