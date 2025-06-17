@@ -47,11 +47,11 @@
 
 
 .el-aside {
-    width: 220px;
+    width: auto;
 }
 
 .el-aside-menu {
-    padding: 0 10px 0 0;
+    padding: 0 10px;
 }
 
 .el-aside-menu-item {

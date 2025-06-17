@@ -7,7 +7,7 @@
         <!-- actor avatar -->
         <div class="avatar">
             <el-tooltip v-if="actor.has_remark"
-                        placement="bottom"
+                        placement="top"
                         :offset="3"
                         effect="light">
                 <template #content>

@@ -19,6 +19,7 @@ export enum SortType {
     TotalPostCount,
     CurPostCount,
     CategoryTime,
+    FileSize,
 }
 
 export enum NoticeType {

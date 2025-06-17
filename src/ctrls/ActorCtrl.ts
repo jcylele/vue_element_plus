@@ -62,8 +62,26 @@ export async function getActorCount(filter_condition: ActorFilterData) {
     return [true, response.value]
 }
 
+export async function getActorCountOfGroups() {
+    const url = `${baseUrl}/group_count`
+    const [ok, response] =  await fetchGet(url)
+    if (!ok){
+        return [ok, response]
+    }
+    let group_count_map = new Map<number, number>()
+    for (const json_obj of response) {
+        group_count_map.set(json_obj[0], json_obj[1])
+    }
+    return [true, group_count_map]
+}
+
 export async function getActorIds(filter_condition: ActorFilterData, limit: number = 0, start: number = 0) {
     const url = `${baseUrl}/list?limit=${limit}&start=${start}`
+    return await fetchPost(url, filter_condition)
+}
+
+export async function getFinishedActorIds(filter_condition: ActorFilterData) {
+    const url = `${baseUrl}/finished_list`
     return await fetchPost(url, filter_condition)
 }
 

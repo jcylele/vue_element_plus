@@ -29,11 +29,28 @@
                 class="page-border"
                 background
             />
-            <el-button v-if="has_downing_actors"
-                       type="success" size="large"
-                       @click="onDowningClick">
-                Downloading Actors
-            </el-button>
+            <el-popover placement="bottom" width="170" trigger="hover">
+                <template #reference>
+                    <el-text size="large" class="sp-filter">
+                        Filter Actors
+                    </el-text>
+                </template>
+
+                <template #default>
+                    <el-space direction="vertical" size="small" fill>
+                        <el-button :disabled="!has_downing_actors"
+                                   type="success" size="large"
+                                   @click="onDowningClick">
+                            Downloading
+                        </el-button>
+                        <el-button type="success" size="large"
+                                   @click="onFinishedClick">
+                            Finished
+                        </el-button>
+                    </el-space>
+                </template>
+            </el-popover>
+
             <el-checkbox v-model="is_show_batch_op"
                          label="Batch Ops"
                          @change="onBatchOpChange"
@@ -143,7 +160,7 @@ import {ActorElement} from "../data/ArrayElement";
 import {
     batchChangeActorGroup, getActor,
     getActorCount,
-    getActorIds,
+    getActorIds, getFinishedActorIds,
     getLinkedActorIds,
     linkSameActors, unlinkSameActors
 } from "../ctrls/ActorCtrl";
@@ -170,7 +187,8 @@ interface FilterItem {
 enum FilterType {
     Normal = "normal",
     Link = "linked actors",
-    Download = "downloading"
+    Download = "downloading",
+    Finished = "finished",
 }
 
 export default {
@@ -353,6 +371,15 @@ export default {
         async onDowningClick() {
             await this.getDowningFromServer()
             this.refreshActorIds(this.downing_actor_ids, FilterType.Download)
+        },
+
+        async onFinishedClick() {
+            const [ok, actor_ids] = await getFinishedActorIds(this.page_filter_condition)
+            if (ok) {
+                this.refreshActorIds(actor_ids, FilterType.Finished)
+            } else {
+                this.refreshActorIds()
+            }
         },
 
         // region batch, select, lock
@@ -593,6 +620,14 @@ export default {
     margin-top: 15px;
     gap: 20px 20px;
     align-items: stretch;
+}
+
+.sp-filter {
+    color: var(--el-button-text-color);
+    background-color: var(--el-color-success);
+    border-radius: 5px;
+    height: 30px;
+    padding: 5px 20px;
 }
 
 .desc-item {

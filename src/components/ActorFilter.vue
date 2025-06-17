@@ -23,7 +23,7 @@
                         size="default">
                         <el-checkbox-button v-for="group in actor_group_list"
                                             :value="group.group_id">
-                            {{ group.group_name }}
+                            {{ group.group_name }}<br>{{ getActorCount(group.group_id) }}
                         </el-checkbox-button>
                     </el-checkbox-group>
 
@@ -144,6 +144,7 @@ import {Sort_Options, Star_Colors} from "../data/Consts";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagFilter from "./ActorTagFilter.vue";
+import {getActorCountOfGroups} from "../ctrls/ActorCtrl";
 
 export default {
     name: "ActorFilter",
@@ -158,6 +159,8 @@ export default {
         return {
             cond_changed: false,
             is_category_all: false,
+            group_count_map: new Map<number, number>(),
+            show_actor_tag: false,
         }
     },
 
@@ -172,6 +175,9 @@ export default {
         star_colors() {
             return Star_Colors
         },
+        is_show_category() {
+            return this.filter_condition.show_category
+        }
     },
 
     watch: {
@@ -180,6 +186,16 @@ export default {
                 this.fillAllCategory()
             }
             this.filter_condition.checkAllCategory(new_val)
+        },
+
+        async is_show_category(new_val, _) {
+            if (!new_val) {
+                return
+            }
+            const [ok, gc_map] = await getActorCountOfGroups()
+            if (ok) {
+                this.group_count_map = gc_map
+            }
         }
     },
 
@@ -210,10 +226,12 @@ export default {
         },
         fillAllCategory() {
             this.filter_condition.setAllGroupList(this.actor_group_list.map(group => group.group_id))
+        },
+        getActorCount(group_id: number): number {
+            return this.group_count_map.get(group_id) || 0
         }
     },
     mounted() {
-
     }
 }
 </script>

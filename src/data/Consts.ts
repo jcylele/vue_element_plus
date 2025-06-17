@@ -45,7 +45,8 @@ export const Sort_Options: SortOption[] = [
     {label: "Score", value: SortType.Score, default_asc: true},
     {label: "Total Post Count", value: SortType.TotalPostCount, default_asc: true},
     {label: "Current Post Count", value: SortType.CurPostCount, default_asc: false},
-    {label: "CategoryTime", value: SortType.CategoryTime, default_asc: false},
+    {label: "Category Time", value: SortType.CategoryTime, default_asc: false},
+    {label: "File Size", value: SortType.FileSize, default_asc: false},
 ]
 
 export const Download_Options: CommonOption[] = [

@@ -23,21 +23,20 @@ export default class ActorData extends EditableData {
         if (!this.file_info) {
             return false
         }
-        let un_down_video_count = 0
-        for (const resFileInfo of this.file_info.res_info) {
-            switch (resFileInfo.res_state) {
-                case ResState.Init:
-                case ResState.Skip:
-                    un_down_video_count += resFileInfo.video_count
-                    break
-            }
-        }
-        if (un_down_video_count > 0) {
+        if (this.file_info.total_post_count == 0) {
             return false
         }
         if (this.file_info.finished_post_count < this.file_info.total_post_count) {
             return false
         }
+        for (const resFileInfo of this.file_info.res_info) {
+            if ((resFileInfo.res_state == ResState.Skip
+                    || resFileInfo.res_state == ResState.Init)
+                && resFileInfo.video_count > 0) {
+                return false
+            }
+        }
+
         return true
     }
 

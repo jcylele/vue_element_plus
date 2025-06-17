@@ -18,7 +18,7 @@
                 <svg-icon size="24px" name="remove" @click="removeLine(index)"/>
             </div>
             <el-select v-model="tag_filter.tag_arr[index]" @change="onAnyChange" style="width: 180px;"
-                       multiple filterable clearable>
+                       multiple filterable clearable :reserve-keyword="false">
                 <el-option v-for="actor_tag in actorTagStore.sorted_list" :key="actor_tag.tag_id"
                            :label="actor_tag.tag_name" :value="actor_tag.tag_id"/>
                 <template #tag>
