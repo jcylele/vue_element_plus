@@ -4,7 +4,7 @@ import {ActorFilterData} from "../data/ActorFilterData";
 import {Base64} from "js-base64";
 import {BASE_URL} from "../data/Consts";
 import ResSizeCount from "../data/ResSizeCount";
-import {ActorListResult, ActorResult, BaseResult} from "../data/WebData";
+import {ActorListResult, ActorResult, ActorVideoInfo, BaseResult} from "../data/WebData";
 
 const baseUrl = `${BASE_URL}/api/actor`
 
@@ -64,8 +64,8 @@ export async function getActorCount(filter_condition: ActorFilterData) {
 
 export async function getActorCountOfGroups() {
     const url = `${baseUrl}/group_count`
-    const [ok, response] =  await fetchGet(url)
-    if (!ok){
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
         return [ok, response]
     }
     let group_count_map = new Map<number, number>()
@@ -203,6 +203,16 @@ export async function getActorFileInfo(actor_id: number) {
         return [false, response]
     }
     return [true, response]
+}
+
+export async function getActorVideoInfo(actor_id: number) {
+    const url = `${baseUrl}/${actor_id}/video_duration`;
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [false, response]
+    }
+
+    return [true, response.map((item: number, index: number) => new ActorVideoInfo(index == 0, item))]
 }
 
 

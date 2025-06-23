@@ -3,6 +3,7 @@ import {Base64} from "js-base64";
 import {PostData} from "./PostData";
 import {ResState} from "./Enums";
 import ActorFileInfo from "./FileInfo";
+import {ActorVideoInfo} from "./WebData";
 
 
 export default class ActorData extends EditableData {
@@ -18,6 +19,7 @@ export default class ActorData extends EditableData {
     commented_posts: PostData[]
     tag_ids: number[]
     file_info: ActorFileInfo
+    video_infos: ActorVideoInfo[]
 
     get is_video_all() {
         if (!this.file_info) {
@@ -67,6 +69,7 @@ export default class ActorData extends EditableData {
         this.tag_ids ??= []
         this.remark = ""
         this.commented_posts = []
+        this.video_infos = []
 
         if (!json_data) {
             return

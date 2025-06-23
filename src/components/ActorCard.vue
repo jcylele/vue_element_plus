@@ -139,7 +139,30 @@
                   style="gap: 1px 0"
                   fill>
             <div class="post_line center-row">
-                <el-text class="post_count" tag="ins">
+                <el-popover v-if="hasFolder()"
+                            trigger="click" placement="top"
+                            @show="onShowVideoInfo"
+                            popper-class="op_popper"
+                            :offset="6">
+                    <template #reference>
+                        <el-text class="post_count" tag="ins">
+                            {{ actor.post_desc }}
+                        </el-text>
+                    </template>
+                    <template #default>
+                        <el-space v-for="video_info in actor.video_infos"
+                                  direction="horizontal"
+                                  style="gap: 0 3px">
+                            <el-text style="width: 60px">
+                                {{ video_info.str_resolution }}
+                            </el-text>
+                            <el-text style="width: 120px">
+                                {{ video_info.str_duration }}
+                            </el-text>
+                        </el-space>
+                    </template>
+                </el-popover>
+                <el-text v-else class="post_count" tag="ins">
                     {{ actor.post_desc }}
                 </el-text>
                 <svg-icon v-if="is_downing" name="download"
@@ -275,7 +298,7 @@ import {
     getActorFileInfo,
     changeActorScore,
     clearActorFolder,
-    resetActorPosts, getLinkedActorGroupIds
+    resetActorPosts, getLinkedActorGroupIds, getActorVideoInfo
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -499,6 +522,13 @@ export default {
         },
         setFileInfo(file_info) {
             this.actor.file_info = new ActorFileInfo(file_info)
+        },
+        async onShowVideoInfo() {
+            const [ok, video_info] = await getActorVideoInfo(this.actor.actor_id)
+            if (ok) {
+                console.log(video_info)
+                this.actor.video_infos = video_info
+            }
         },
         async getLinkedGroups() {
             if (!this.actor.is_linked) {
