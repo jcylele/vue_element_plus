@@ -25,11 +25,7 @@ export async function getNotices(notice_type: NoticeType, limit: number = 0, sta
     if (!ok) {
         return [ok, response]
     }
-    const list = []
-    for (const json_data of response) {
-        const data = new NoticeData(json_data)
-        list.push(data)
-    }
+    const list = response.map(json_data => new NoticeData(json_data))
     return [true, list]
 }
 
@@ -41,4 +37,15 @@ export async function deleteNotice(notice_id: number) {
 export async function delNoticesByType(notice_type: NoticeType) {
     const url = `${baseUrl}/list/${notice_type}`
     return await fetchDelete(url)
+}
+
+export async function searchNotices(actor_name: string) {
+    const url = `${baseUrl}/search/${actor_name}`
+    const [ok, response] = await fetchGet(url)
+    if (!ok) {
+        return [ok, response]
+    }
+
+    const list = response.map(json_data => new NoticeData(json_data))
+    return [true, list]
 }

@@ -1,267 +1,298 @@
 import ActorData from "../data/ActorData";
-import {fetchGet, fetchPatch, fetchPost, logInfo, logWarn} from "./FetchCtrl";
-import {ActorFilterData} from "../data/ActorFilterData";
-import {Base64} from "js-base64";
-import {BASE_URL} from "../data/Consts";
+import { fetchDelete, fetchGet, fetchPatch, fetchPost, logInfo, logWarn } from "./FetchCtrl";
+import { ActorFilterData } from "../data/ActorFilterData";
+import { Base64 } from "js-base64";
+import { BASE_URL } from "../data/Consts";
 import ResSizeCount from "../data/ResSizeCount";
-import {ActorListResult, ActorResult, ActorVideoInfo, BaseResult} from "../data/WebData";
+import { ActorListResult, ActorResult, ActorVideoInfo, BaseResult, ResFileInfo } from "../data/WebData";
 
 const baseUrl = `${BASE_URL}/api/actor`
 
 class BatchActorGroup {
-    actor_ids: number[]
-    group_id: number
+	actor_ids: number[]
+	group_id: number
 }
 
 class LinkActorForm {
-    actor_ids: number[]
-    score: number
-    tag_list: number[]
-    remark: string
+	actor_ids: number[]
+	score: number
+	tag_list: number[]
+	remark: string
 }
 
 function logResult(br: BaseResult) {
-    if (br.succeed) {
-        logInfo(br.msg)
-    } else {
-        logWarn(br.msg)
-    }
+	if (br.succeed) {
+		logInfo(br.msg)
+	} else {
+		logWarn(br.msg)
+	}
 }
 
 function _onActorListResult(response): Map<number, ActorData> {
-    const alr = new ActorListResult(response)
-    logResult(alr)
-    return alr.actor_map
+	const alr = new ActorListResult(response)
+	logResult(alr)
+	return alr.actor_map
 }
 
 
 function _onActorResult(response): ActorData {
-    const ar = new ActorResult(response)
-    logResult(ar)
-    return ar.actor
+	const ar = new ActorResult(response)
+	logResult(ar)
+	return ar.actor
 }
 
 
 function _onActorResultList(response): Map<number, ActorData> {
-    const actor_map = new Map<number, ActorData>()
-    for (const json_obj of response) {
-        const ar = new ActorResult(json_obj)
-        logResult(ar)
-        actor_map.set(ar.actor.actor_id, ar.actor)
-    }
-    return actor_map
+	const actor_map = new Map<number, ActorData>()
+	for (const json_obj of response) {
+		const ar = new ActorResult(json_obj)
+		logResult(ar)
+		actor_map.set(ar.actor.actor_id, ar.actor)
+	}
+	return actor_map
 }
 
 export async function getActorCount(filter_condition: ActorFilterData) {
-    const url = `${baseUrl}/count`
-    const [ok, response] = await fetchPost(url, filter_condition)
-    if (!ok) {
-        return [ok, response]
-    }
+	const url = `${baseUrl}/count`
+	const [ok, response] = await fetchPost(url, filter_condition)
+	if (!ok) {
+		return [ok, response]
+	}
 
-    return [true, response.value]
+	return [true, response.value]
 }
 
 export async function getActorCountOfGroups() {
-    const url = `${baseUrl}/group_count`
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [ok, response]
-    }
-    let group_count_map = new Map<number, number>()
-    for (const json_obj of response) {
-        group_count_map.set(json_obj[0], json_obj[1])
-    }
-    return [true, group_count_map]
+	const url = `${baseUrl}/group_count`
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [ok, response]
+	}
+	let group_count_map = new Map<number, number>()
+	for (const json_obj of response) {
+		group_count_map.set(json_obj[0], json_obj[1])
+	}
+	return [true, group_count_map]
 }
 
 export async function getActorIds(filter_condition: ActorFilterData, limit: number = 0, start: number = 0) {
-    const url = `${baseUrl}/list?limit=${limit}&start=${start}`
-    return await fetchPost(url, filter_condition)
+	const url = `${baseUrl}/list?limit=${limit}&start=${start}`
+	return await fetchPost(url, filter_condition)
 }
 
 export async function getFinishedActorIds(filter_condition: ActorFilterData) {
-    const url = `${baseUrl}/finished_list`
-    return await fetchPost(url, filter_condition)
+	const url = `${baseUrl}/finished_list`
+	return await fetchPost(url, filter_condition)
 }
 
 export async function linkSameActors(actor_ids: number[], score: number, remark: string, tag_list: number[]) {
-    const url = `${baseUrl}/link`;
-    const form = new LinkActorForm()
-    form.actor_ids = actor_ids
-    form.score = score
-    form.remark = remark
-    form.tag_list = tag_list
-    const [ok, response] = await fetchPost(url, form)
-    if (!ok) {
-        return [false, response]
-    }
+	const url = `${baseUrl}/link`;
+	const form = new LinkActorForm()
+	form.actor_ids = actor_ids
+	form.score = score
+	form.remark = remark
+	form.tag_list = tag_list
+	const [ok, response] = await fetchPost(url, form)
+	if (!ok) {
+		return [false, response]
+	}
 
-    const actor_map = _onActorListResult(response)
-    return [true, actor_map]
+	const actor_map = _onActorListResult(response)
+	return [true, actor_map]
 }
 
 export async function unlinkSameActors(actor_ids: number[]) {
-    const url = `${baseUrl}/unlink`;
-    const [ok, response] = await fetchPost(url, actor_ids)
-    if (!ok) {
-        return [false, response]
-    }
+	const url = `${baseUrl}/unlink`;
+	const [ok, response] = await fetchPost(url, actor_ids)
+	if (!ok) {
+		return [false, response]
+	}
 
-    const actor_map = _onActorListResult(response)
-    return [true, actor_map]
+	const actor_map = _onActorListResult(response)
+	return [true, actor_map]
 }
 
 
 export async function batchChangeActorGroup(actor_ids: number[], group_id: number) {
-    const url = `${baseUrl}/batch/group`;
-    let form = new BatchActorGroup()
-    form.group_id = group_id
-    form.actor_ids = actor_ids
-    const [ok, response] = await fetchPost(url, form)
-    if (!ok) {
-        return [false, response]
-    }
+	const url = `${baseUrl}/batch/group`;
+	let form = new BatchActorGroup()
+	form.group_id = group_id
+	form.actor_ids = actor_ids
+	const [ok, response] = await fetchPost(url, form)
+	if (!ok) {
+		return [false, response]
+	}
 
-    const actor_map = _onActorResultList(response)
-    return [true, actor_map]
+	const actor_map = _onActorResultList(response)
+	return [true, actor_map]
 }
 
 export async function getActor(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}`
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [ok, response]
-    }
-    const actor = new ActorData(response)
-    return [true, actor]
+	const url = `${baseUrl}/${actor_id}`
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [ok, response]
+	}
+	const actor = new ActorData(response)
+	return [true, actor]
 }
 
 export async function changeActorGroup(actor_id: number, group_id: number) {
-    const url = `${baseUrl}/${actor_id}/group?val=${group_id}`;
-    const [ok, response] = await fetchPatch(url)
-    if (!ok) {
-        return [false, response]
-    }
-    return [true, _onActorResult(response)]
+	const url = `${baseUrl}/${actor_id}/group?val=${group_id}`;
+	const [ok, response] = await fetchPatch(url)
+	if (!ok) {
+		return [false, response]
+	}
+	return [true, _onActorResult(response)]
 }
 
 export async function changeActorScore(actor_id: number, score: number) {
-    const url = `${baseUrl}/${actor_id}/score?val=${score}`;
-    const [ok, response] = await fetchPatch(url)
-    if (!ok) {
-        return [false, response]
-    }
+	const url = `${baseUrl}/${actor_id}/score?val=${score}`;
+	const [ok, response] = await fetchPatch(url)
+	if (!ok) {
+		return [false, response]
+	}
 
-    const actor_map = _onActorListResult(response)
-    return [true, actor_map]
+	const actor_map = _onActorListResult(response)
+	return [true, actor_map]
 }
 
 export async function changeActorRemark(actor_id: number, remark: string) {
-    const encoded_remark = Base64.encodeURI(remark)
-    const url = `${baseUrl}/${actor_id}/remark?val=${encoded_remark}`;
-    const [ok, response] = await fetchPatch(url)
-    if (!ok) {
-        return [false, response]
-    }
+	const encoded_remark = Base64.encodeURI(remark)
+	const url = `${baseUrl}/${actor_id}/remark?val=${encoded_remark}`;
+	const [ok, response] = await fetchPatch(url)
+	if (!ok) {
+		return [false, response]
+	}
 
-    const actor_map = _onActorListResult(response)
-    return [true, actor_map]
+	const actor_map = _onActorListResult(response)
+	return [true, actor_map]
 }
 
 export async function ChangeActorTag(actor_id: number, tag_list: number[]) {
-    let url = `${baseUrl}/${actor_id}/tag`;
-    const [ok, response] = await fetchPost(url, tag_list)
-    if (!ok) {
-        return [false, response]
-    }
+	let url = `${baseUrl}/${actor_id}/tag`;
+	const [ok, response] = await fetchPost(url, tag_list)
+	if (!ok) {
+		return [false, response]
+	}
 
-    const actor_map = _onActorListResult(response)
-    return [true, actor_map]
+	const actor_map = _onActorListResult(response)
+	return [true, actor_map]
 }
 
 export async function openActorFolder(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/open`;
-    return await fetchGet(url)
+	const url = `${baseUrl}/${actor_id}/open`;
+	return await fetchGet(url)
 }
 
 export async function resetActorPosts(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/reset_posts`;
-    return await fetchPatch(url)
+	const url = `${baseUrl}/${actor_id}/reset_posts`;
+	return await fetchPatch(url)
 }
 
 export async function clearActorFolder(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/clear`;
-    return await fetchGet(url)
+	const url = `${baseUrl}/${actor_id}/clear`;
+	return await fetchGet(url)
 }
 
 
 export async function getActorFileInfo(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/file_info`;
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [false, response]
-    }
-    return [true, response]
+	const url = `${baseUrl}/${actor_id}/file_info`;
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [false, response]
+	}
+	return [true, response]
 }
 
 export async function getActorVideoInfo(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/video_duration`;
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [false, response]
-    }
+	const url = `${baseUrl}/${actor_id}/video_stats`;
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [false, response]
+	}
 
-    return [true, response.map((item: number, index: number) => new ActorVideoInfo(index == 0, item))]
+	return [true, response.map((json_obj) => new ActorVideoInfo(json_obj))]
+}
+
+export async function getActorDownloadingFiles(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/downloading_files`;
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [false, response]
+	}
+	console.log(response)
+	let rfi_list = response.map((json_obj) => new ResFileInfo(json_obj))
+	// 计算总大小
+	if (rfi_list.length > 0) {
+		const total_rfi = new ResFileInfo(`Total(${rfi_list.length})`)
+		rfi_list.reduce((acc: ResFileInfo, rfi: ResFileInfo) => {
+			acc.add(rfi)
+			return acc
+		}, total_rfi)
+		rfi_list.push(total_rfi)
+	}
+	return [true, rfi_list]
+}
+
+export async function removeDownloadingFiles(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/remove_downloading_files`;
+	return await fetchDelete(url)
+}
+
+export async function renameActorFiles(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/rename_files`;
+	return await fetchGet(url)
 }
 
 
+
 export async function getActorLogs(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/logs`;
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [false, response]
-    }
-    return [true, response]
+	const url = `${baseUrl}/${actor_id}/logs`;
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [false, response]
+	}
+	return [true, response]
 }
 
 
 export async function getLinkedActorIds(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/linked`;
-    return await fetchGet(url)
+	const url = `${baseUrl}/${actor_id}/linked`;
+	return await fetchGet(url)
 }
 
 export async function getLinkedActorGroupIds(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/linked_groups`;
-    return await fetchGet(url)
+	const url = `${baseUrl}/${actor_id}/linked_groups`;
+	return await fetchGet(url)
 }
 
 
 export async function getVideoSizes(actor_id: number) {
-    const url = `${baseUrl}/${actor_id}/video_sizes`
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [false, response]
-    }
-    const rsc_list: ResSizeCount[] = []
-    for (const json_obj of response) {
-        const rsc = new ResSizeCount(json_obj)
-        rsc_list.push(rsc)
-    }
-    return [true, rsc_list]
+	const url = `${baseUrl}/${actor_id}/video_sizes`
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [false, response]
+	}
+	const rsc_list: ResSizeCount[] = []
+	for (const json_obj of response) {
+		const rsc = new ResSizeCount(json_obj)
+		rsc_list.push(rsc)
+	}
+	return [true, rsc_list]
 }
 
 export async function resetManual() {
-    const url = `${baseUrl}/reset_manual`
-    return await fetchGet(url)
+	const url = `${baseUrl}/reset_manual`
+	return await fetchGet(url)
 }
 
 export async function findSimilarActorNames() {
-    const url = `${baseUrl}/similar_names`
-    return await fetchGet(url)
+	const url = `${baseUrl}/similar_names`
+	return await fetchGet(url)
 }
 
 export async function clearFolderOfGroup(group_id: number) {
-    const url = `${baseUrl}/clear_group_folder/${group_id}`
-    return await fetchGet(url)
+	const url = `${baseUrl}/clear_group_folder/${group_id}`
+	return await fetchGet(url)
 }

@@ -19,7 +19,7 @@ export class GroupDownloadForm extends BaseDownloadForm {
 }
 
 export class NewDownloadForm extends GroupDownloadForm {
-    from_start: boolean
+    start_page: number
 }
 
 export class UrlDownloadForm extends GroupDownloadForm {

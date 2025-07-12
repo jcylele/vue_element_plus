@@ -42,20 +42,26 @@ export default {
             video_sizes_chart: undefined as BarChart,
             video_sizes_option: {
                 grid: {
-                    top: '5%',
+                    top: '10%',
                     left: '10%',
                     right: '10%',
                     bottom: '5%',
                 },
                 legend: {
-                    orient: 'vertical',
-                    right: '5%',
-                    top: '5%',
+                    orient: 'horizontal',
+                    top: '0%',
+                    left: 'center',
+					// backgroundColor: '#a0a0a0', // 背景颜色
+					textStyle: {
+						fontSize: 'var(--el-font-size-base)', // 文字大小
+						color: 'var(--el-text-color-regular)', // 文字颜色
+					},
                     data: [] // dynamic data
                 },
                 xAxis: [
                     {
                         type: 'value',
+						minInterval: 1, // 最小间隔为1
                     }
                 ],
                 yAxis: [

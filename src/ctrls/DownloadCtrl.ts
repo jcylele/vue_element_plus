@@ -1,4 +1,4 @@
-import {fetchDelete, fetchGet, fetchPost} from "./FetchCtrl";
+import {fetchDelete, fetchGet, fetchPatch, fetchPost} from "./FetchCtrl";
 import {
     ActorUrl,
     GroupDownloadForm,
@@ -12,12 +12,12 @@ import {BASE_URL} from "../data/Consts";
 const baseUrl = `${BASE_URL}/api/download`
 
 
-export async function downloadNewActors(download_limit: DownloadLimitForm, category: number, from_start: boolean) {
+export async function downloadNewActors(download_limit: DownloadLimitForm, category: number, start_page: number) {
     const url = `${baseUrl}/new`
     const downForm = new NewDownloadForm()
     downForm.actor_group_id = category
     downForm.download_limit = download_limit
-    downForm.from_start = from_start
+    downForm.start_page = start_page
     const [ok, response] = await fetchPost(url, downForm)
     if (!ok) {
         return [ok, response]
@@ -73,6 +73,17 @@ export async function resumeDownload(download_limit: DownloadLimitForm) {
     downloadForm.download_limit = download_limit
 
     const [ok, response] = await fetchPost(url, downloadForm)
+    if (!ok) {
+        return [ok, response]
+    }
+
+    return [true, response.value]
+}
+
+export async function resumeActorDownload(actor_id: number) {
+    let url = `${baseUrl}/resume/${actor_id}`
+
+    const [ok, response] = await fetchPatch(url)
     if (!ok) {
         return [ok, response]
     }

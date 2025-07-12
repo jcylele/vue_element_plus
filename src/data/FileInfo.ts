@@ -1,10 +1,11 @@
 import EditableData from "./EditableData";
 import {str_res_state, video_state_color} from "./Consts";
-import {format_file_size_gb, gb_size} from "./DataUtil";
+import {format_file_size_gb} from "./DataUtil";
 
-class ResFileInfo extends EditableData {
+class ActorFileInfo extends EditableData {
     res_state: number
-    res_size: number
+    img_size: number
+    video_size: number
     img_count: number
     video_count: number
 
@@ -24,12 +25,12 @@ class ResFileInfo extends EditableData {
         return `${this.video_count}V`
     }
 
-    public get str_state() {
-        return str_res_state[this.res_state]
+    public get str_video_size() {
+        return format_file_size_gb(this.video_size)
     }
 
-    public get str_size() {
-        return format_file_size_gb(this.res_size)
+    public get str_state() {
+        return str_res_state[this.res_state]
     }
 
     public get col_count() {
@@ -41,7 +42,7 @@ class ResFileInfo extends EditableData {
             case 1:
                 return this.str_state
             case 2:
-                return this.str_size
+                return this.str_video_size
             case 3:
                 return this.str_img_count
             case 4:
@@ -52,8 +53,8 @@ class ResFileInfo extends EditableData {
     }
 }
 
-export default class ActorFileInfo extends EditableData {
-    res_info: ResFileInfo[]
+export default class ActorFileStats extends EditableData {
+    res_info: ActorFileInfo[]
     total_post_count: number
     unfinished_post_count: number
     finished_post_count: number
@@ -65,10 +66,6 @@ export default class ActorFileInfo extends EditableData {
             return
         }
 
-        // default values for specific fields
-        this.res_info = []
-        for (const rfi of json_data.res_info) {
-            this.res_info.push(new ResFileInfo(rfi))
-        }
+        this.res_info = json_data.res_info.map(rfi => new ActorFileInfo(rfi))
     }
 }

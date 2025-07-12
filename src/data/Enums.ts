@@ -16,10 +16,12 @@ export enum DownloadType {
 export enum SortType {
     Default,
     Score,
+    CategoryTime,
     TotalPostCount,
     CurPostCount,
-    CategoryTime,
-    FileSize,
+    DownFileSize,
+    CurFileSize,
+    TotalFileSize
 }
 
 export enum NoticeType {
@@ -73,4 +75,16 @@ export enum GroupCondType {
 export enum ResType {
     Image = 1,
     Video = 2,
+}
+
+export enum BoolEnum {
+    ALL = 1,
+    TRUE = 2,
+    FALSE = 3
+}
+
+export enum EStartPage {
+	ActorCount = -1,
+    FromStart = 0,
+    Custom = 1,
 }

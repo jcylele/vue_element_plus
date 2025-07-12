@@ -146,9 +146,13 @@ tr:nth-child(odd) {
     padding-bottom: 10px;
 }
 
+.el-tabs--border-card {
+    background: var(--el-bg-color);
+}
+
 .center-row {
     display: flex;
     flex-direction: row;
-    align-items: center;
-    justify-content: center;
+    align-items: center; /* 水平居中 */
+    justify-content: center; /* 垂直居中 */
 }

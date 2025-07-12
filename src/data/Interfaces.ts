@@ -8,8 +8,19 @@ export interface CommonOption {
     value: any
 }
 
+export interface NoticeColumn {
+    col_name: string
+    prop_name: string
+}
+
 export interface SortOption extends CommonOption {
+    full_label: string
     default_asc: boolean
+}
+
+export interface SortGroup {
+    label: string
+    options: SortOption[]
 }
 
 export interface TagCount {

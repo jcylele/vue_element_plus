@@ -66,7 +66,7 @@
                 <el-form-item label="Name" v-if="filter_condition.show_name">
                     <el-input v-model="filter_condition.name"
                               @change="onAnyConditionChange"
-                              style="width: 300px; font-size: 24px;"
+                              style="width: 200px; font-size: 24px;"
                               clearable/>
                     <el-checkbox v-model="filter_condition.linked"
                                  @change="onAnyConditionChange"
@@ -78,31 +78,51 @@
 
                 <!-- remark -->
                 <el-form-item label="Remark" v-if="filter_condition.show_remark">
-
-                    <el-checkbox v-model="filter_condition.has_remark"
-                                 @change="onAnyConditionChange"
-                                 style="font-size: 24px;margin-right: 10px;"
-                                 border>
-                        {{ filter_condition.has_remark ? "Search" : "Has Remark" }}
-                    </el-checkbox>
-                    <el-input v-if="filter_condition.has_remark"
+                    <el-select v-model="filter_condition.has_remark"
+                               @change="onAnyConditionChange"
+                               style="width: 200px">
+                        <el-option
+                            v-for="option in remark_option_list"
+                            :label="option.label"
+                            :value="option.value"
+                        />
+                    </el-select>
+                    <el-input v-if="has_remark"
                               v-model="filter_condition.remark_str"
                               @change="onAnyConditionChange"
-                              style="width: 200px; font-size: 24px;"
+                              placeholder="search in remark"
+                              style="width: 200px; font-size: 24px; margin-left: 10px"
                               clearable/>
                 </el-form-item>
 
-                <!-- Sort_Options -->
+                <!-- Sort -->
                 <el-form-item label="Sort">
-                    <div v-for="sort_item in filter_condition.sort_items"
+                    <div v-for="(sort_item, index) in filter_condition.sort_items"
                          class="sort_item">
                         <el-select v-model="sort_item.show_sort_type"
-                                   style="width: 150px">
-                            <el-option
-                                v-for="option in sort_option_list"
-                                :label="option.label"
-                                :value="option.value"
-                            />
+                                   style="width: 170px">
+                            <template #header>
+                                <el-button size="small" type="primary"
+                                           @click="filter_condition.removeSortItem(index)"
+                                           plain>
+                                    Remove
+                                </el-button>
+                            </template>
+                            <template #label>
+                                <span>{{ sort_item.sort_option.full_label }}</span>
+                            </template>
+                            <el-option-group
+                                v-for="group in sort_group_list"
+                                :key="group.label"
+                                :label="group.label"
+                            >
+                                <el-option
+                                    v-for="item in group.options"
+                                    :key="item.value"
+                                    :label="item.label"
+                                    :value="item.value"
+                                />
+                            </el-option-group>
                         </el-select>
                         <svg-icon :name="sort_item.icon"
                                   size="30px"
@@ -140,11 +160,12 @@ import NewActorTag from "./NewActorTag.vue";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
 import {ActorGroupStore} from "../store/ActorGroupStore";
-import {Sort_Options, Star_Colors} from "../data/Consts";
+import {Remark_Options, Sort_Groups, Star_Colors} from "../data/Consts";
 import {ActorFilterStore} from "../store/ActorFilterStore";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagFilter from "./ActorTagFilter.vue";
 import {getActorCountOfGroups} from "../ctrls/ActorCtrl";
+import {BoolEnum} from "../data/Enums";
 
 export default {
     name: "ActorFilter",
@@ -169,8 +190,14 @@ export default {
         ...mapState(ActorGroupStore, {actor_group_list: 'sorted_list'}),
         ...mapState(ActorFilterStore, {has_filter_history: 'has_history'}),
 
-        sort_option_list() {
-            return Sort_Options
+        sort_group_list() {
+            return Sort_Groups
+        },
+        remark_option_list() {
+            return Remark_Options
+        },
+        has_remark() {
+            return this.filter_condition.has_remark == BoolEnum.TRUE
         },
         star_colors() {
             return Star_Colors

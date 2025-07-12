@@ -1,19 +1,12 @@
 <template>
-    <el-space direction="vertical"
-              class="actor_card" alignment="stretch" :size="3"
-              :key="actor.uuid"
-              :style="{'color': group_color}">
+    <el-space direction="vertical" class="actor_card" alignment="stretch" :size="3" :key="actor.uuid"
+              :style="{ 'color': group_color }">
 
         <!-- actor avatar -->
         <div class="avatar">
-            <el-tooltip v-if="actor.has_remark"
-                        placement="top"
-                        :offset="3"
-                        effect="light">
+            <el-tooltip v-if="actor.has_remark" placement="top" :offset="3" effect="light">
                 <template #content>
-                    <el-space direction="vertical" size="small"
-                              style="min-width: 210px; max-width: 420px;"
-                              fill>
+                    <el-space direction="vertical" size="small" style="min-width: 210px; max-width: 420px;" fill>
                         <el-text v-if="actor.remark" style="font-size: 20px;color: hotpink; white-space: pre-wrap;">
                             {{ actor.remark }}
                         </el-text>
@@ -30,101 +23,57 @@
                 {{ actor.actor_platform }}
             </el-text>
 
-            <svg-icon v-if="actor.is_linked"
-                      size="40px" name="avatar"
-                      class="avatar-friend"
-                      @click="findLinkedActor"/>
+            <svg-icon v-if="actor.is_linked" size="40px" name="avatar" class="avatar-friend" @click="findLinkedActor"/>
 
-            <div v-if="linked_group_ids.length > 1"
-                 class="avatar-group center-row">
-                <svg-icon v-for="group_id in linked_group_ids"
-                          size="10px" name="circle"
-                          :style="{'color': getGroupColor(group_id)}"/>
+            <div v-if="linked_group_ids.length > 1" class="avatar-group center-row">
+                <svg-icon v-for="group_id in linked_group_ids" size="10px" name="circle"
+                          :style="{ 'color': getGroupColor(group_id) }"/>
             </div>
 
 
-            <svg-icon v-if="locked"
-                      size="40px"
-                      name="locked"
-                      class="avatar-lock"/>
+            <svg-icon v-if="locked" size="40px" name="locked" class="avatar-lock"/>
 
-            <svg-icon v-if="show_select"
-                      size="40px"
-                      :name=" actor_data.selected ? 'completed' : 'remove'"
-                      class="avatar-select"
-                      @click="onSelectCLick"/>
+            <svg-icon v-if="show_select" size="40px" :name="actor_data.selected ? 'completed' : 'remove'"
+                      class="avatar-select" @click="onSelectCLick"/>
             <!-- Stars -->
-            <el-rate class="avatar-rate"
-                     v-model="actor.show_score"
-                     @change="changeScore"
-                     :colors="star_colors"
-                     void-color="#777777"
-                     :max="6"
-                     allow-half/>
+            <el-rate class="avatar-rate" v-model="actor.show_score" @change="changeScore" :colors="star_colors"
+                     void-color="#777777" :max="6" allow-half/>
         </div>
 
         <!-- actor name, click to open menu items -->
         <!-- downloading related icons -->
         <div class="actor_name_line center-row">
-            <el-popover trigger="click" placement="top"
-                        v-model:visible="is_show_op"
-                        :popper-style="{'border-color': group_color, 'width': 300}"
-                        popper-class="op_popper"
+            <el-popover trigger="click" placement="top" v-model:visible="is_show_op"
+                        :popper-style="{ 'border-color': group_color, 'width': 300 }" popper-class="op_popper"
                         :offset="6">
                 <template #reference>
-                    <el-text class="actor_name" :style="{'color': group_color}">
+                    <el-text class="actor_name" tag="a" :style="{ 'color': group_color }">
                         {{ actor.actor_name }}
                     </el-text>
                 </template>
                 <template #default>
                     <el-space direction="vertical" alignment="center">
                         <el-space direction="horizontal">
-                            <el-button class="pop-button"
-                                       type="primary"
-                                       @click="showPosts">
-                                Show Posts
+                            <el-button class="pop-button" type="primary" @click="showLogs">
+                                Show Logs
                             </el-button>
-                            <el-button class="pop-button"
-                                       type="primary"
-                                       @click="gotoActorPage">
+                            <el-button class="pop-button" type="primary" @click="gotoActorPage">
                                 Go To Page
                             </el-button>
                         </el-space>
                         <el-space direction="horizontal" v-if="hasFolder()">
-                            <el-button class="pop-button"
-                                       type="warning"
-                                       @click="resetPosts">
+                            <el-button class="pop-button" type="warning" @click="resetPosts">
                                 Reset Posts
                             </el-button>
-                            <el-button class="pop-button"
-                                       type="warning"
-                                       @click="clearFolder">
+                            <el-button class="pop-button" type="warning" @click="clearFolder">
                                 Clear Folder
                             </el-button>
                         </el-space>
-                        <el-space direction="horizontal">
-                            <el-button class="pop-button"
-                                       type="primary"
-                                       @click="showVideoSizes">
-                                Video Sizes
-                            </el-button>
-                            <el-button class="pop-button"
-                                       type="primary"
-                                       @click="showLogs">
-                                Show Logs
-                            </el-button>
-                        </el-space>
                         <el-space direction="horizontal" v-if="hasFolder()">
-                            <el-button class="pop-button"
-                                       type="success"
-                                       @click="toDownload"
-                                       v-if="hasFolder()">
+                            <el-button class="pop-button" type="success" @click="toDownload" v-if="hasFolder()">
                                 Download
                             </el-button>
-                            <el-button class="pop-button"
-                                       type="success"
-                                       @click="openFolder"
-                                       v-if="hasFolder()">
+                            <el-button class="pop-button" type="success" @click="openFolder" v-if="hasFolder()">
                                 Open Folder
                             </el-button>
                         </el-space>
@@ -134,53 +83,21 @@
         </div>
 
         <!-- actor post info -->
-        <el-space direction="vertical"
-                  v-if="actor.file_info"
-                  style="gap: 1px 0"
-                  fill>
+        <el-space direction="vertical" v-if="actor.file_info" style="gap: 1px 0" fill>
             <div class="post_line center-row">
-                <el-popover v-if="hasFolder()"
-                            trigger="click" placement="top"
-                            @show="onShowVideoInfo"
-                            popper-class="op_popper"
-                            :offset="6">
-                    <template #reference>
-                        <el-text class="post_count" tag="ins">
-                            {{ actor.post_desc }}
-                        </el-text>
-                    </template>
-                    <template #default>
-                        <el-space v-for="video_info in actor.video_infos"
-                                  direction="horizontal"
-                                  style="gap: 0 3px">
-                            <el-text style="width: 60px">
-                                {{ video_info.str_resolution }}
-                            </el-text>
-                            <el-text style="width: 120px">
-                                {{ video_info.str_duration }}
-                            </el-text>
-                        </el-space>
-                    </template>
-                </el-popover>
-                <el-text v-else class="post_count" tag="ins">
+                <el-text class="post_count" tag="ins" @click="showFileInfo">
                     {{ actor.post_desc }}
                 </el-text>
-                <svg-icon v-if="is_downing" name="download"
-                          style="color: deepskyblue"
-                          size="24px" class="blink-class"/>
-                <svg-icon v-if="is_video_all" name="file_checked"
-                          style="color: orange"
-                          size="24px"/>
+                <svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px"
+                          class="blink-class"/>
+                <svg-icon v-if="is_video_all" name="file_checked" style="color: orange" size="24px"/>
             </div>
 
             <!-- actor res info -->
-            <el-space v-for="res_file_info in actor.file_info.res_info"
-                      direction="horizontal"
-                      style="gap: 0 3px">
-                <el-text v-for="index in res_file_info.col_count"
-                         class="res_info"
-                         :style="{'color': res_file_info.res_state_color}">
-                    {{ res_file_info.col_val(index) }}
+            <el-space v-for="res_file_info in actor.file_info.res_info" size="small" direction="horizontal">
+                <el-text v-for="i in res_file_info.col_count" class="res_info"
+                         :style="{ 'color': res_file_info.res_state_color }">
+                    {{ res_file_info.col_val(i) }}
                 </el-text>
             </el-space>
         </el-space>
@@ -191,27 +108,18 @@
         <!--actor remark + group + edit button -->
         <div style="display: flex;flex-direction: row;align-items: stretch;gap: 0 5px">
             <!-- actor remark -->
-            <svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'"
-                      @click="startEditRemark"
-                      size="32px"/>
+            <svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'" @click="startEditRemark" size="32px"/>
             <!-- actor group -->
-            <el-select v-model="actor.actor_group_id"
-                       @change="setActorGroup"
-                       placement="right"
-                       style="flex-grow: 1">
-                <el-option
-                    v-for="group in group_list"
-                    :label="group.group_name"
-                    :value="group.group_id"
-                    :style="{'color': group.group_color, 'text-decoration':'underline' }"
-                >
+            <el-select v-model="actor.actor_group_id" @change="setActorGroup" placement="right" style="flex-grow: 1">
+                <el-option v-for="group in group_list" :label="group.group_name" :value="group.group_id"
+                           :style="{ 'color': group.group_color, 'text-decoration': 'underline' }">
                     {{ group.group_name }}
                 </el-option>
             </el-select>
             <!-- click to edit tags -->
             <svg-icon v-if="has_tag" size="32px" name="edit" @click="startEditTag"/>
             <el-popover v-else placement="right" trigger="click"
-                        :popper-style="{'border-color': group_color, 'width': 300}">
+                        :popper-style="{ 'border-color': group_color, 'width': 300 }">
                 <template #reference>
                     <svg-icon size="32px" name="edit"/>
                 </template>
@@ -220,11 +128,8 @@
                         click to apply single tag to actor
                     </el-text>
                     <el-space v-for="tag_ids in tag_history" size="small" class="tag_history_row">
-                        <el-tag v-for="tag_id in tag_ids"
-                                @click="onApplyTag(tag_id)"
-                                :style="getTagStyle(tag_id)"
-                                effect="plain"
-                                round>
+                        <el-tag v-for="tag_id in tag_ids" @click="onApplyTag(tag_id)" :style="getTagStyle(tag_id)"
+                                effect="plain" round>
                             {{ getTagName(tag_id) }}
                         </el-tag>
                     </el-space>
@@ -242,49 +147,34 @@
 
         <!--actor tags-->
         <el-space wrap style="margin-top: 5px">
-            <el-tag v-for="tag_id in actor.tag_ids"
-                    :style="getTagStyle(tag_id)"
-                    effect="plain"
-                    round>
+            <el-tag v-for="tag_id in actor.tag_ids" :style="getTagStyle(tag_id)" effect="plain" round>
                 {{ getTagName(tag_id) }}
             </el-tag>
         </el-space>
     </el-space>
     <!-- dialog: actor remark editing-->
-    <el-dialog v-model="card_dialog.is_show_remark"
-               :title="actor.actor_name"
-               width="720px">
-        <RemarkEditor :actor="actor"
-                      @submit="onSubmitRemark"
-                      @cancel="onCancelRemark"
-                      @posts="showPosts"/>
+    <el-dialog v-model="card_dialog.is_show_remark" :title="actor.actor_name" width="720px">
+        <RemarkEditor :actor="actor" @submit="onSubmitRemark" @cancel="onCancelRemark" @posts="showPosts"/>
     </el-dialog>
     <!-- dialog: actor tags editing dialog-->
-    <el-dialog v-model="card_dialog.is_show_tags"
-               :title="actor.actor_name"
-               width="67%">
-        <ActorTagChooser :actor="actor"
-                         @submit="onSubmitTag"
-                         @cancel="onCancelAddTag"
-        />
+    <el-dialog v-model="card_dialog.is_show_tags" :title="actor.actor_name" width="67%">
+        <ActorTagChooser :actor="actor" @submit="onSubmitTag" @cancel="onCancelAddTag"/>
     </el-dialog>
     <!-- dialog: actor posts -->
-    <el-dialog v-model="card_dialog.is_show_posts"
-               title="Posts"
-               width=720px>
+    <el-dialog v-model="card_dialog.is_show_posts" title="Posts" width=720px>
         <Posts :actor_id="actor.actor_id" :actor_name="actor.actor_name"/>
     </el-dialog>
     <!-- dialog: actor video sizes chart -->
-    <el-dialog v-model="card_dialog.is_show_video_sizes"
-               :title="actor.actor_name"
-               width=720px>
+    <el-dialog v-model="card_dialog.is_show_video_sizes" :title="actor.actor_name" width=720px>
         <VideoSizesChart :actor_id="actor.actor_id"/>
     </el-dialog>
     <!-- dialog: actor logs -->
-    <el-dialog v-model="card_dialog.is_show_logs"
-               :title="actor.actor_name"
-               width=720px>
+    <el-dialog v-model="card_dialog.is_show_logs" :title="actor.actor_name" width=720px>
         <ActorLogs :specific_actor_id="actor.actor_id"/>
+    </el-dialog>
+    <!-- dialog: actor file info -->
+    <el-dialog v-model="card_dialog.is_show_file_info" :title="actor.actor_name" width=720px>
+        <ActorFileInfoTabs :actor_id="actor.actor_id"/>
     </el-dialog>
 </template>
 
@@ -298,7 +188,8 @@ import {
     getActorFileInfo,
     changeActorScore,
     clearActorFolder,
-    resetActorPosts, getLinkedActorGroupIds, getActorVideoInfo
+    resetActorPosts,
+    getLinkedActorGroupIds
 } from "../ctrls/ActorCtrl";
 import {mapActions, mapState} from "pinia";
 import {ActorTagStore} from "../store/ActorTagStore";
@@ -311,17 +202,17 @@ import {ActorElement} from "../data/ArrayElement";
 import {ActorGroupStore} from "../store/ActorGroupStore";
 import ActorGroupData from "../data/ActorGroupData";
 import {Star_Colors} from "../data/Consts";
-import {logInfo, logWarn} from "../ctrls/FetchCtrl";
+import {logInfo} from "../ctrls/FetchCtrl";
 import {ActorFilterStore} from "../store/ActorFilterStore";
-import ActorFileInfo from "../data/FileInfo";
+import ActorFileStats from "../data/FileInfo";
 import VideoSizesChart from "./Chart/VideoSizesChart.vue";
-import {ActorResult} from "../data/WebData";
 import {ActorCardDialog, EActorDialog} from "../data/ActorCardDialog";
+import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
 
 
 export default {
     name: "ActorCard",
-    components: {VideoSizesChart, SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts},
+    components: {VideoSizesChart, SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts, ActorFileInfoTabs},
     // props from parent
     props: {
         actor_data: ActorElement,
@@ -482,8 +373,10 @@ export default {
             this.showDialog(EActorDialog.log)
         },
 
-        showVideoSizes() {
-            this.showDialog(EActorDialog.video_sizes)
+        showFileInfo() {
+            if (this.hasFolder()) {
+                this.showDialog(EActorDialog.file_info)
+            }
         },
 
         async changeScore() {
@@ -521,14 +414,7 @@ export default {
             }
         },
         setFileInfo(file_info) {
-            this.actor.file_info = new ActorFileInfo(file_info)
-        },
-        async onShowVideoInfo() {
-            const [ok, video_info] = await getActorVideoInfo(this.actor.actor_id)
-            if (ok) {
-                console.log(video_info)
-                this.actor.video_infos = video_info
-            }
+            this.actor.file_info = new ActorFileStats(file_info)
         },
         async getLinkedGroups() {
             if (!this.actor.is_linked) {
@@ -544,11 +430,11 @@ export default {
 </script>
 
 <style scoped>
-
 .actor_name {
     font-size: 22px;
     word-wrap: break-word;
     text-align: center;
+	cursor: pointer; /* 鼠标悬停时显示手型指针 */
 }
 
 .actor_name_line {
@@ -558,7 +444,8 @@ export default {
 
 .post_count {
     color: var(--el-text-color);
-    text-align: center
+    text-align: center;
+	cursor: pointer; /* 鼠标悬停时显示手型指针 */
 }
 
 .post_line {
@@ -641,7 +528,7 @@ export default {
 }
 
 .res_info {
-    width: 50px;
+    width: 45px;
     text-align: right;
     text-wrap: nowrap;
     font-size: 16px;
@@ -651,5 +538,4 @@ export default {
     border: 1px solid;
     padding: 4px;
 }
-
 </style>

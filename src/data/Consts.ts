@@ -1,13 +1,14 @@
 import {
-    ActorLogType,
+    ActorLogType, BoolEnum,
     DownloadType,
+    EStartPage,
     NoticeType,
     PostFilter,
     ResSizeUnit,
     ResState, ResType,
     SortType
 } from "./Enums";
-import {CommonOption, SortOption} from "./Interfaces";
+import {CommonOption, NoticeColumn, SortGroup} from "./Interfaces";
 
 export const BASE_URL = "http://127.0.0.1:7878"
 
@@ -40,13 +41,28 @@ export const Res_Type_Options: CommonOption[] = [
     {label: "Video", value: ResType.Video},
 ]
 
-export const Sort_Options: SortOption[] = [
-    {label: "None", value: SortType.Default, default_asc: true},
-    {label: "Score", value: SortType.Score, default_asc: true},
-    {label: "Total Post Count", value: SortType.TotalPostCount, default_asc: true},
-    {label: "Current Post Count", value: SortType.CurPostCount, default_asc: false},
-    {label: "Category Time", value: SortType.CategoryTime, default_asc: false},
-    {label: "File Size", value: SortType.FileSize, default_asc: false},
+export const Default_Sort_Option = {label: "None", value: SortType.Default, default_asc: true, full_label: "None"}
+
+export const Sort_Groups: SortGroup[] = [
+    {
+        label: "Actor", options: [
+            {label: "Score", value: SortType.Score, default_asc: true, full_label: "Score"},
+            {label: "Group Time", value: SortType.CategoryTime, default_asc: false, full_label: "Group Time"}
+        ]
+    },
+    {
+        label: "Post Count", options: [
+            {label: "Total", value: SortType.TotalPostCount, default_asc: true, full_label: "Total Post Count"},
+            {label: "Current", value: SortType.CurPostCount, default_asc: false, full_label: "Current Post Count"},
+        ]
+    },
+    {
+        label: "File Size", options: [
+            {label: "Down", value: SortType.DownFileSize, default_asc: true, full_label: "Down File Size"},
+            {label: "Current", value: SortType.CurFileSize, default_asc: true, full_label: "Current File Size"},
+            {label: "Total", value: SortType.TotalFileSize, default_asc: true, full_label: "Total File Size"},
+        ]
+    }
 ]
 
 export const Download_Options: CommonOption[] = [
@@ -55,6 +71,18 @@ export const Download_Options: CommonOption[] = [
     {label: "Specific Urls", value: DownloadType.Url},
     {label: "Resume Files", value: DownloadType.Resume},
     {label: "Manual", value: DownloadType.Manual},
+]
+
+export const Remark_Options: CommonOption[] = [
+    {label: "All", value: BoolEnum.ALL},
+    {label: "Has Remark", value: BoolEnum.TRUE},
+    {label: "No Remark", value: BoolEnum.FALSE},
+]
+
+export const Start_Page_Options: CommonOption[] = [
+    {label: "Actor Count", value: EStartPage.ActorCount},
+    {label: "From Start", value: EStartPage.FromStart},
+    {label: "Custom", value: EStartPage.Custom},
 ]
 
 
@@ -81,21 +109,82 @@ export const Tag_Colors = [
     "#787878",
 ]
 
-export const Notice_Type_Options: CommonOption[] = [
-    {label: "Invalid Post", value: NoticeType.InvalidPost},
-    {label: "Unlinked Actor", value: NoticeType.UnlinkedActor},
-    {label: "Same Actor Name", value: NoticeType.SameActorName},
-    {label: "Has Linked Account", value: NoticeType.HasLinkedAccount},
-    {label: "Similar Actor Name", value: NoticeType.SimilarActorName},
+export const Notice_Type_Names: Record<NoticeType, string> = {
+    [NoticeType.All]: "All",
+    [NoticeType.UnlinkedActor]: "Unlinked Actor",
+    [NoticeType.InvalidPost]: "Invalid Post",
+    [NoticeType.SameActorName]: "Same Actor Name",
+    [NoticeType.HasLinkedAccount]: "Has Linked Account",
+    [NoticeType.SimilarActorName]: "Similar Actor Name",
+}
+
+export const Notice_Type_Values: NoticeType[] = [
+    NoticeType.InvalidPost,
+    NoticeType.UnlinkedActor,
+    NoticeType.SameActorName,
+    NoticeType.HasLinkedAccount,
+    NoticeType.SimilarActorName
 ]
 
-export const Notice_Param_Names =
+export const Notice_Param_Names: Record<NoticeType, NoticeColumn[]> =
     {
-        [NoticeType.UnlinkedActor]: ["actor_name1", "actor_name2"],
-        [NoticeType.InvalidPost]: ["actor_name", "page", "post_id"],
-        [NoticeType.SameActorName]: ["actor_name"],
-        [NoticeType.HasLinkedAccount]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
-        [NoticeType.SimilarActorName]: ["actor_name1", "actor_name2", "actor_name3", "actor_name4"],
+        [NoticeType.All]: [{
+            col_name: "Type",
+            prop_name: "str_notice_type"
+        }, {
+            col_name: "param0",
+            prop_name: "notice_param0"
+        }, {
+            col_name: "param1",
+            prop_name: "notice_param1"
+        }, {
+            col_name: "param2",
+            prop_name: "notice_param2"
+        }, {
+            col_name: "param3",
+            prop_name: "notice_param3"
+        }],
+        [NoticeType.UnlinkedActor]: [{
+            col_name: "Actor Name 1",
+            prop_name: "notice_param0"
+        }, {
+            col_name: "Actor Name 2",
+            prop_name: "notice_param1"
+        }],
+        [NoticeType.InvalidPost]: [{
+            col_name: "Actor Name",
+            prop_name: "notice_param0"
+        }, {
+            col_name: "Page",
+            prop_name: "notice_param1"
+        }, {
+            col_name: "Post ID",
+            prop_name: "notice_param2"
+        }],
+        [NoticeType.SameActorName]: [{
+            col_name: "Actor Name",
+            prop_name: "notice_param0"
+        }],
+        [NoticeType.HasLinkedAccount]: [{
+            col_name: "Actor Name 1",
+            prop_name: "notice_param0"
+        }, {
+            col_name: "Actor Name 2",
+            prop_name: "notice_param1"
+        }],
+        [NoticeType.SimilarActorName]: [{
+            col_name: "Actor Name 1",
+            prop_name: "notice_param0"
+        }, {
+            col_name: "Actor Name 2",
+            prop_name: "notice_param1"
+        }, {
+            col_name: "Actor Name 3",
+            prop_name: "notice_param2"
+        }, {
+            col_name: "Actor Name 4",
+            prop_name: "notice_param3"
+        }],
     }
 
 export const Actor_Log_Type_Names = {

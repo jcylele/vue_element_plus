@@ -16,7 +16,7 @@ export const mb_size = 1024 * 1024
 export const gb_size = 1024 * 1024 * 1024
 
 export function  format_file_size_gb(file_size: number): string {
-    return `${(file_size / gb_size).toFixed(2)} G`
+    return `${(file_size / gb_size).toFixed(2)}G`
 }
 
 export function format_file_size(file_size: number): string {

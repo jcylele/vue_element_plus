@@ -1,5 +1,6 @@
-import {SortType} from "./Enums";
-import {MAX_SCORE, Sort_Options} from "./Consts";
+import {BoolEnum, SortType} from "./Enums";
+import {Default_Sort_Option, MAX_SCORE, Sort_Groups} from "./Consts";
+import {SortOption} from "./Interfaces";
 
 abstract class BaseCloneable {
     abstract clone(): this;
@@ -12,6 +13,7 @@ abstract class BaseCloneable {
 class SortItem extends BaseCloneable {
     sort_type: SortType
     sort_asc: boolean
+    sort_option: SortOption
 
     constructor() {
         super()
@@ -19,8 +21,9 @@ class SortItem extends BaseCloneable {
     }
 
     private init(): void {  // 私有方法
-        this.sort_type = SortType.Default;
-        this.sort_asc = true;
+        this.sort_type = SortType.Default
+        this.sort_option = Default_Sort_Option
+        this.sort_asc = Default_Sort_Option.default_asc
     }
 
     clone(): this {
@@ -31,6 +34,7 @@ class SortItem extends BaseCloneable {
 
     copy(item: SortItem) {
         this.sort_type = item.sort_type
+        this.sort_option = this.findSortOption(item.sort_type)
         this.sort_asc = item.sort_asc
     }
 
@@ -44,9 +48,16 @@ class SortItem extends BaseCloneable {
 
     set show_sort_type(val: SortType) {
         this.sort_type = val
-        for (const sortOption of Sort_Options) {
-            if (sortOption.value == val) {
-                this.sort_asc = sortOption.default_asc
+        this.sort_option = this.findSortOption(val)
+        this.sort_asc = this.sort_option.default_asc
+    }
+
+    findSortOption(val): SortOption {
+        for (const sortGroup of Sort_Groups) {
+            for (const option of sortGroup.options) {
+                if (option.value == val) {
+                    return option
+                }
             }
         }
     }
@@ -156,7 +167,7 @@ export class ActorFilterData extends BaseCloneable {
     max_score: number
 
     remark_str: string
-    has_remark: boolean
+    has_remark: BoolEnum
 
     sort_items: SortItem[]
 
@@ -233,6 +244,10 @@ export class ActorFilterData extends BaseCloneable {
 
     addSortItem() {
         this.sort_items.push(new SortItem())
+    }
+
+    removeSortItem(index: number) {
+        this.sort_items.splice(index, 1)
     }
 
     /**
@@ -332,7 +347,7 @@ export class ActorFilterData extends BaseCloneable {
 
     resetRemark() {
         this.remark_str = ""
-        this.has_remark = false
+        this.has_remark = BoolEnum.ALL
     }
 }
 
