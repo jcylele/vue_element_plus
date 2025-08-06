@@ -1,7 +1,14 @@
 <template>
 	<el-tabs type="border-card" v-model="default_tab" @tab-change="onTabChange">
 		<el-tab-pane label="All Videos" :name="ETabNames.All">
-			<VideoSizesChart :actor_id="actor_id" />
+			<el-space direction="vertical" size="small" style="width: 100%" fill>
+				<VideoSizesChart :actor_id="actor_id" />
+				<div class="center-row" style="margin-top: 10px">
+					<el-button type="success" @click="toDownload">
+						To Download
+					</el-button>
+				</div>
+			</el-space>
 		</el-tab-pane>
 		<el-tab-pane label="Downloading Videos" :name="ETabNames.Downloading">
 			<el-space direction="vertical" size="small" style="width: 100%" fill>
@@ -57,7 +64,7 @@ enum ETabNames {
 }
 
 // emits
-const emit = defineEmits(['change'])
+const emit = defineEmits(['download'])
 // stores/routers
 
 // props/models
@@ -88,6 +95,10 @@ async function resumeDownloading() {
 	if (ok) {
 		logInfo("resume downloading succeed")
 	}
+}
+
+async function toDownload() {
+	emit('download')
 }
 
 async function getDownloadingFiles() {

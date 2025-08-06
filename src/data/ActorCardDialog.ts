@@ -5,7 +5,8 @@ export enum EActorDialog {
 	post = 'post',
 	video_sizes = 'video_sizes',
 	log = 'log',
-	file_info = 'file_info'
+	file_info = 'file_info',
+	folders = 'folders'
 }
 
 export class ActorCardDialog {
@@ -76,7 +77,17 @@ export class ActorCardDialog {
 			this.closeDialog(EActorDialog.file_info)
 		}
 	}
-	
+
+	get is_show_folders(): boolean {
+		return this.dialog_type == EActorDialog.folders
+	}
+
+	set is_show_folders(val: boolean) {
+		if (!val) {
+			this.closeDialog(EActorDialog.folders)
+		}
+	}
+
 	showDialog(type: EActorDialog) {
 		this.dialog_type = type
 	}

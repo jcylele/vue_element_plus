@@ -12,7 +12,7 @@
         </el-space>
         <el-space v-for="(tag_list, index) in tag_filter.tag_arr" :key="index" direction="horizontal" size="small">
             <el-text v-if="index < tag_filter.titles.length" class="tag-left">
-                {{ tag_filter.titles[index] }}
+                Has {{ tag_filter.titles[index] }}
             </el-text>
             <div v-else class="center-row tag-left">
                 <svg-icon size="24px" name="remove" @click="removeLine(index)"/>

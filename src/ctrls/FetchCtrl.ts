@@ -68,6 +68,15 @@ export async function fetchPost(url: string, form_data = {}) {
     return _fetch(url, requestOptions)
 }
 
+export async function fetchPostStr(url: string, data = "") {
+    const requestOptions = {
+        method: "POST",
+        headers: {"Content-Type": "text/plain; charset=utf-8"},
+        body: data
+    };
+    return _fetch(url, requestOptions)
+}
+
 export async function fetchPut(url: string, form_data) {
     const requestOptions = {
         method: "PUT",

@@ -1,13 +1,14 @@
 export enum PostFilter {
-    Normal = 0,
-    Current = 1,
-    Completed = 2
+    All = 0,
+    Normal = 1,
+    Current = 2,
+    Completed = 3
 }
 
 export enum DownloadType {
     None,
     New,
-    Category,
+    Group,
     Url,
     Resume,
     Manual
@@ -16,7 +17,7 @@ export enum DownloadType {
 export enum SortType {
     Default,
     Score,
-    CategoryTime,
+    GroupTime,
     TotalPostCount,
     CurPostCount,
     DownFileSize,
@@ -87,4 +88,19 @@ export enum EStartPage {
 	ActorCount = -1,
     FromStart = 0,
     Custom = 1,
+}
+
+export enum EFilterRow {
+    Group = 0,
+    Tag = 1,
+    Score = 2,
+    Name = 3,
+    Remark = 4,
+    Folder = 5,
+}
+
+export enum ECardRefresh {
+    All = 0,
+	Group = 1,
+	Comment = 2,
 }

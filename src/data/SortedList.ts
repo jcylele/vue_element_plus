@@ -15,6 +15,10 @@ export default class SortedList<T extends ISortItem> {
         }
     }
 
+	get count(): number {
+		return this.dict.size
+	}
+
     get sorted_list(): T[] {
         if (this.is_dirty) {
             this.list.sort(this.compareItem)

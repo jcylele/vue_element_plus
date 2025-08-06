@@ -59,7 +59,7 @@ export default defineConfig({
                             return 'echarts'
                         }
                         // 其他工具库
-                        if (id.includes('@vueuse/core') || id.includes('js-base64') || id.includes('fast-glob')) {
+                        if (id.includes('@vueuse/core') || id.includes('fast-glob')) {
                             return 'utils'
                         }
                     }

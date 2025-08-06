@@ -3,8 +3,10 @@ import {ActorFilterData} from "../data/ActorFilterData";
 import {getActorIds} from "../ctrls/DownloadCtrl";
 
 interface ActorFilterState {
-    filter: ActorFilterData,
+    filter_history: ActorFilterData[],
     page_info: PageInfo,
+    downing_actor_id_list: number[],
+    downing_actor_id_set: Set<number>,
 }
 
 interface PageInfo {
@@ -12,16 +14,14 @@ interface PageInfo {
     page_index: number
 }
 
-const MAX_FILTER_HISTORY = 10
+const MAX_FILTER_HISTORY = 3
 
 /**
  * 缓存筛选器，避免其他页面返回时被重置
  */
 export const ActorFilterStore = defineStore('ActorFilterStore', {
     state: (): ActorFilterState => ({
-        filter: null as ActorFilterData,
         filter_history: [] as ActorFilterData[],
-        filter_history_index: 0,
         page_info: {
             'page_size': 12,
             'page_index': 1,
@@ -30,11 +30,17 @@ export const ActorFilterStore = defineStore('ActorFilterStore', {
         downing_actor_id_set: new Set<number>(),
     }),
     getters: {
-        filter_condition: (state: ActorFilterState) => {
-            if (state.filter === null) {
-                state.filter = new ActorFilterData()
+        last_filter: (state: ActorFilterState) => {
+            if (state.filter_history.length === 0) {
+                return undefined
             }
-            return state.filter
+            return state.filter_history[state.filter_history.length - 1]
+        },
+        filter_list: (state: ActorFilterState) => {
+            return state.filter_history
+        },
+        has_history: (state: ActorFilterState) => {
+            return state.filter_history.length > 0
         },
         page_size: (state: ActorFilterState) => {
             return state.page_info.page_size
@@ -42,29 +48,38 @@ export const ActorFilterStore = defineStore('ActorFilterStore', {
         page_index: (state: ActorFilterState) => {
             return state.page_info.page_index
         },
-        has_history: (state: ActorFilterState) => {
-            return state.filter_history.length > 0
-        },
+
         downing_actors: (state: ActorFilterState) => state.downing_actor_id_list,
         has_downing_actors: (state: ActorFilterState) => state.downing_actor_id_list.length > 0
     },
     actions: {
-        setFilter(filter: ActorFilterData) {
-            // break reference
-            this.filter = filter.clone()
+        saveFilter(filter: ActorFilterData) {
+			// remove old same filter(ignore sort_items)
+            for (const [index, f] of this.filter_history.entries()) {
+                if (f.equals(filter)) {
+                    this.filter_history.splice(index, 1)
+					break
+                }
+            }
+			// remove oldest filter
             if (this.filter_history.length >= MAX_FILTER_HISTORY) {
                 this.filter_history.shift()
             }
-            this.filter_history.push(this.filter)
-            this.filter_history_index = 0
+            // break reference
+            this.filter_history.push(filter.clone())
+
+            // log
+            // console.log(this.filter_history.map(f => f.str_desc_list).join(" || "))
         },
-        getPreviousFilter(): ActorFilterData {
-            this.filter_history_index++
-            const len = this.filter_history.length
-            if (len > this.filter_history_index) {
-                return this.filter_history[len - this.filter_history_index]
+        selectFilter(uuid: number): ActorFilterData | undefined {
+            for (const [index, filter] of this.filter_history.entries()) {
+                if (filter.uuid === uuid) {
+                    this.filter_history.splice(index, 1)
+                    this.filter_history.push(filter)
+                    return filter
+                }
             }
-            return null
+            return undefined
         },
         setPageIndex(val: number) {
             this.page_info.page_index = val

@@ -12,10 +12,10 @@ import {BASE_URL} from "../data/Consts";
 const baseUrl = `${BASE_URL}/api/download`
 
 
-export async function downloadNewActors(download_limit: DownloadLimitForm, category: number, start_page: number) {
+export async function downloadNewActors(download_limit: DownloadLimitForm, group_id: number, start_page: number) {
     const url = `${baseUrl}/new`
     const downForm = new NewDownloadForm()
-    downForm.actor_group_id = category
+    downForm.actor_group_id = group_id
     downForm.download_limit = download_limit
     downForm.start_page = start_page
     const [ok, response] = await fetchPost(url, downForm)
@@ -26,10 +26,10 @@ export async function downloadNewActors(download_limit: DownloadLimitForm, categ
     return [true, response.value]
 }
 
-export async function downloadByGroup(download_limit: DownloadLimitForm, category: number) {
+export async function downloadByGroup(download_limit: DownloadLimitForm, group_id: number) {
     const url = `${baseUrl}/group`
     const downForm = new GroupDownloadForm()
-    downForm.actor_group_id = category
+    downForm.actor_group_id = group_id
     downForm.download_limit = download_limit
     const [ok, response] = await fetchPost(url, downForm)
     if (!ok) {
@@ -52,10 +52,10 @@ export async function downloadByActorIds(download_limit: DownloadLimitForm, acto
     return [true, response.value]
 }
 
-export async function downloadByUrls(download_limit: DownloadLimitForm, category: number, urls: ActorUrl[]) {
+export async function downloadByUrls(download_limit: DownloadLimitForm, group_id: number, urls: ActorUrl[]) {
     let url = `${baseUrl}/urls`
     const urlDownForm = new UrlDownloadForm()
-    urlDownForm.actor_group_id = category
+    urlDownForm.actor_group_id = group_id
     urlDownForm.download_limit = download_limit
     urlDownForm.urls = urls
 
@@ -91,11 +91,11 @@ export async function resumeActorDownload(actor_id: number) {
     return [true, response.value]
 }
 
-export async function manualDownload(download_limit: DownloadLimitForm, category: number) {
+export async function manualDownload(download_limit: DownloadLimitForm, group_id: number) {
     let url = `${baseUrl}/manual`
     const downloadForm = new GroupDownloadForm()
     downloadForm.download_limit = download_limit
-    downloadForm.actor_group_id = category
+    downloadForm.actor_group_id = group_id
 
     const [ok, response] = await fetchPost(url, downloadForm)
     if (!ok) {
@@ -160,4 +160,9 @@ export async function openLogs() {
     const url = `${baseUrl}/logs`
     const [ok, response] = await fetchGet(url)
     return [ok, response]
+}
+
+export async function getCustomPage() {
+    const url = `${baseUrl}/custom_page`
+    return await fetchGet(url)
 }

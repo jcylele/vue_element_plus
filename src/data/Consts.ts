@@ -14,6 +14,8 @@ export const BASE_URL = "http://127.0.0.1:7878"
 
 export const MAX_SCORE = 12
 
+export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Folder"]
+
 export const ResStateList: ResState[] = [ResState.Del, ResState.Skip, ResState.Init, ResState.Down]
 export const video_state_color = {
     [ResState.Init]: "green",
@@ -31,6 +33,7 @@ export const str_res_state = {
 export const ResSizeList = [ResSizeUnit.GB, ResSizeUnit.MB, ResSizeUnit.KB, ResSizeUnit.B]
 
 export const Post_Filter_Options: CommonOption[] = [
+    {label: "All", value: PostFilter.All},
     {label: "Normal", value: PostFilter.Normal},
     {label: "Current", value: PostFilter.Current},
     {label: "Completed", value: PostFilter.Completed},
@@ -47,7 +50,7 @@ export const Sort_Groups: SortGroup[] = [
     {
         label: "Actor", options: [
             {label: "Score", value: SortType.Score, default_asc: true, full_label: "Score"},
-            {label: "Group Time", value: SortType.CategoryTime, default_asc: false, full_label: "Group Time"}
+            {label: "Group Time", value: SortType.GroupTime, default_asc: false, full_label: "Group Time"}
         ]
     },
     {
@@ -67,7 +70,7 @@ export const Sort_Groups: SortGroup[] = [
 
 export const Download_Options: CommonOption[] = [
     {label: "New Actors", value: DownloadType.New},
-    {label: "By Category", value: DownloadType.Category},
+    {label: "By Group", value: DownloadType.Group},
     {label: "Specific Urls", value: DownloadType.Url},
     {label: "Resume Files", value: DownloadType.Resume},
     {label: "Manual", value: DownloadType.Manual},

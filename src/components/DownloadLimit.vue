@@ -34,7 +34,7 @@
                 <el-input-number v-model="download_limit.post_count" :min="0" :max="1000" :step="50"/>
             </el-form-item>
             <el-form-item label="Res Count">
-                <el-input-number v-model="download_limit.file_count" :min="0" :max="200" :step="20"/>
+                <el-input-number v-model="download_limit.file_count" :min="0" :max="200" :step="50"/>
             </el-form-item>
             <el-form-item label="Total Res Size(MB)">
                 <el-input-number v-model="download_limit.show_total_file_size" :min="0" :max="10240" :step="512"/>
@@ -84,7 +84,7 @@ export default {
             )
             if (preset == undefined) return
 
-            console.log(`change to ${preset.name}`)
+            // console.log(`change to ${preset.name}`)
             this.download_limit.setPresetValue(preset)
         }
     }

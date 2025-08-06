@@ -16,6 +16,33 @@ export class TagEditInfo implements ITagEditInfo {
 	is_editing: boolean
 }
 
+export class StrForm {
+	data: string
+	constructor(data: string) {
+		this.data = data
+	}
+
+	toJson() {
+		return {
+			data: this.data
+		}
+	}
+}
+
+export class FilterItem {
+	label: string
+	value: string
+
+	constructor(label: string, value: string) {
+		this.label = label
+		this.value = value
+	}
+
+	toString() {
+		return `${this.label}:${this.value}`
+	}
+}
+
 export class ActorPostInfo extends BaseData {
 	readonly actor_id: number
 	readonly actor_name: string
@@ -40,7 +67,7 @@ export class ResFileInfo extends BaseData {
 		this.res_size += info.res_size
 	}
 
-	constructor(pathOrJson: string | Record<string, any>| null) {
+	constructor(pathOrJson: string | Record<string, any> | null) {
 		if (typeof pathOrJson === 'string') {
 			super()
 			this.file_path = pathOrJson

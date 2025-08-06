@@ -1,158 +1,225 @@
 :root {
-    --el-fill-color-blank: #c7ffc7;
-    --el-fill-color-light: #d7ffd7;
-    --el-bg-color: #def0de;
-    --el-card-bg-color: #c8f4c8;
-    --el-border-color: #ffa050;
+	--el-fill-color-blank: #c7ffc7;
+	--el-fill-color-light: #d7ffd7;
+	--el-bg-color: #def0de;
+	--el-card-bg-color: #c8f4c8;
+	--el-border-color: #ffa050;
 
-    --el-font-size-extra-large: 22px;
-    --el-font-size-large: 20px;
-    --el-font-size-medium: 19px;
-    --el-font-size-base: 18px;
-    --el-font-size-small: 16px;
-    --el-font-size-extra-small: 14px;
+	--el-font-size-extra-large: 22px;
+	--el-font-size-large: 20px;
+	--el-font-size-medium: 19px;
+	--el-font-size-base: 18px;
+	--el-font-size-small: 16px;
+	--el-font-size-extra-small: 14px;
 
-    --me-header-bg-color: #9bdd9b;
-    --me-hover-color-blank: #a7dfa7;
-    --me-switch-off-color: #777777;
-    --me-even-bg-color: #f0ffc7;
-    --me-odd-bg-color: #c7fff0;
+	--me-header-bg-color: #9bdd9b;
+	--me-hover-color-blank: #a7dfa7;
+	--me-switch-off-color: #777777;
+	--me-even-bg-color: #f0ffc7;
+	--me-odd-bg-color: #c7fff0;
 }
 
 .el-message__content {
-    font-size: var(--el-font-size-base);
+	font-size: var(--el-font-size-base);
 }
 
 .el-switch {
-    --el-switch-off-color: var(--me-switch-off-color);
+	--el-switch-off-color: var(--me-switch-off-color);
 }
 
 .el-switch--large .el-switch__label * {
-    font-size: var(--el-font-size-base);
+	font-size: var(--el-font-size-base);
 }
 
 .el-switch__core .el-switch__inner .is-text {
-    /*color: var(--el-color-black);*/
-    font-size: var(--el-font-size-base);
+	/*color: var(--el-color-black);*/
+	font-size: var(--el-font-size-base);
 }
 
 
 .el-radio.el-radio--small .el-radio__label {
-    font-size: var(--el-font-size-small);
+	font-size: var(--el-font-size-small);
 }
 
 .el-radio.el-radio--large .el-radio__label {
-    font-size: var(--el-font-size-large);
+	font-size: var(--el-font-size-large);
 }
 
 
 .el-aside {
-    width: auto;
+	width: auto;
 }
 
 .el-aside-menu {
-    padding: 0 10px;
+	padding: 0 10px;
 }
 
 .el-aside-menu-item {
-    justify-content: flex-end;
+	justify-content: flex-end;
 }
 
 .el-table {
-    --el-table-header-bg-color: var(--me-header-bg-color);
-    font-size: var(--el-font-size-small);
+	--el-table-header-bg-color: var(--me-header-bg-color);
+	font-size: var(--el-font-size-small);
 }
 
 .el-tag {
-    --el-tag-font-size: var(--el-font-size-base)
+	--el-tag-font-size: var(--el-font-size-base)
 }
 
 .el-tag__content {
-    text-shadow: 1px 1px #404040;
+	text-shadow: 1px 1px #404040;
 }
 
 .el-collapse {
-    --el-collapse-header-bg-color: var(--me-header-bg-color);
-    --el-collapse-content-bg-color: var(--el-bg-color);
-    --el-collapse-header-height: 40px;
-    --el-collapse-header-font-size: var(--el-font-size-large);
-    --el-collapse-content-font-size: var(--el-font-size-base);
+	--el-collapse-header-bg-color: var(--me-header-bg-color);
+	--el-collapse-content-bg-color: var(--el-bg-color);
+	--el-collapse-header-height: 40px;
+	--el-collapse-header-font-size: var(--el-font-size-large);
+	--el-collapse-content-font-size: var(--el-font-size-base);
 }
 
 .el-select__wrapper {
-    font-size: var(--el-font-size-base);
+	font-size: var(--el-font-size-base);
 }
 
 .el-form-item {
-    padding: 0 10px;
-    margin-bottom: 5px;
+	padding: 0 10px;
+	margin-bottom: 5px;
 }
 
 .el-checkbox {
-    --el-checkbox-font-size: 18px;
+	--el-checkbox-font-size: 18px;
 }
 
 .el-scrollbar {
-    /*--el-scrollbar-bg-color: var(--el-fill-color-blank);*/
-    /*--el-scrollbar-hover-bg-color: var(--me-hover-color-blank);*/
+	/*--el-scrollbar-bg-color: var(--el-fill-color-blank);*/
+	/*--el-scrollbar-hover-bg-color: var(--me-hover-color-blank);*/
 }
 
 .el-rate {
-    --el-rate-icon-margin: 0;
-    --el-rate-disabled-void-color: var(--me-switch-off-color)
+	--el-rate-icon-margin: 0;
+	--el-rate-disabled-void-color: var(--me-switch-off-color)
 }
 
 .el-rate__item {
-    color: var(--el-border-color);
+	color: var(--el-border-color);
 }
 
 .el-pagination {
-    --el-pagination-font-size: 18px;
+	--el-pagination-font-size: 18px;
 }
 
 .el-icon {
-    width: 1.5em;
-    height: 1.5em;
+	width: 1.5em;
+	height: 1.5em;
 }
 
 .el-icon svg {
-    width: 1.5em;
-    height: 1.5em;
+	width: 1.5em;
+	height: 1.5em;
 }
 
 tr:nth-child(even) {
-    background-color: var(--me-even-bg-color);
+	background-color: var(--me-even-bg-color);
 }
 
 tr:nth-child(odd) {
-    background-color: var(--me-odd-bg-color);
+	background-color: var(--me-odd-bg-color);
 }
 
 .el-form-item:nth-child(even) {
-    background-color: var(--me-even-bg-color);
+	background-color: var(--me-even-bg-color);
 }
 
 .el-form-item:nth-child(odd) {
-    background-color: var(--me-odd-bg-color);
+	background-color: var(--me-odd-bg-color);
 }
 
 .el-dialog__title {
-    font-size: 28px;
-    font-weight: bold;
-    font-style: italic;
+	font-size: 28px;
+	font-weight: bold;
+	font-style: italic;
+}
+
+.el-dialog__header {
+	border-bottom: 1px solid var(--el-border-color);
+	padding-bottom: 8px;
+	margin-bottom: 8px;
 }
 
 .el-collapse-item__content {
-    padding-bottom: 10px;
+	padding-bottom: 10px;
 }
 
 .el-tabs--border-card {
-    background: var(--el-bg-color);
+	background: var(--el-bg-color);
+}
+
+.common-border {
+	border: 1px solid var(--el-border-color);
+	border-radius: 5px;
+	padding: 5px;
 }
 
 .center-row {
-    display: flex;
-    flex-direction: row;
-    align-items: center; /* 水平居中 */
-    justify-content: center; /* 垂直居中 */
+	display: flex;
+	flex-direction: row;
+	justify-content: center;
+	/* 主轴(水平)居中 */
+	align-items: center;
+	/* 交叉轴(垂直)居中 */
+}
+
+.card_row {
+	min-height: 100px;
+	min-width: 300px;
+	display: flex;
+	flex-direction: row;
+	flex-wrap: wrap;
+	margin-top: 15px;
+	gap: 20px 20px;
+	align-items: stretch;
+}
+
+.folder-name {
+	text-justify: center;
+	font-weight: bold;
+	font-size: var(--el-font-size-extra-large);
+	/* align-self: flex-start; */
+	/* 确保元素在flex容器中靠左 */
+}
+
+.folder-desc {
+	font-size: var(--el-font-size-large);
+	font-style: italic;
+	/* align-self: flex-start; */
+	/* 确保元素在flex容器中靠左 */
+}
+
+.folder-item {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 5px;
+
+	border: 1px solid var(--el-border-color);
+	border-radius: 5px;
+	padding: 10px 10px;
+}
+
+.folder-item.folder-selectable {
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.folder-item.folder-selectable:hover {
+	color: var(--el-color-primary);
+	border-color: var(--el-color-primary);
+	background-color: var(--el-fill-color-light);
+}
+
+.folder-item.folder-selectable.folder-selected {
+	border-color: var(--el-color-primary);
+	box-shadow: 0 0 5px rgba(255, 160, 80, 0.3);
 }

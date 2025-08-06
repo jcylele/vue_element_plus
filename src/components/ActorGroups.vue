@@ -91,7 +91,6 @@ export default {
     components: {GroupCondEditor, RemarkEditor, SvgIcon, NewActorGroup},
     data() {
         return {
-            new_actor_group: new ActorGroupData(),
             cond_actor_group: null as ActorGroupData,
         }
     },

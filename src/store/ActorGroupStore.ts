@@ -20,6 +20,9 @@ export const ActorGroupStore = defineStore('ActorGroupStore', {
                 }
             }
             return ret
+        },
+        count: (state) => {
+            return state.list.count
         }
     },
     actions: {

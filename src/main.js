@@ -1,9 +1,9 @@
-import {createApp} from 'vue'
-import {createPinia} from 'pinia'
+import { createApp } from 'vue'
+import { createPinia } from 'pinia'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
 import 'element-plus/theme-chalk/dark/css-vars.css'
-import {createRouter, createWebHashHistory} from "vue-router";
+import { createRouter, createWebHashHistory } from "vue-router";
 
 import Home from "./Home.vue";
 
@@ -12,6 +12,7 @@ const Download = () => import("./components/Download.vue")
 const Welcome = () => import("./components/Welcome.vue")
 const ActorTags = () => import("./components/ActorTags.vue")
 const ActorGroups = () => import("./components/ActorGroups.vue")
+const FavFolders = () => import("./components/FavFolders.vue")
 const ECharts = () => import("./components/ECharts.vue")
 const Tasks = () => import("./components/Tasks.vue")
 const Notices = () => import("./components/Notices.vue")
@@ -36,33 +37,34 @@ import "./dark_global.css"
 // 每个路由都需要映射到一个组件。
 // 我们后面再讨论嵌套路由。
 const routes = [
-    {path: '/', component: Welcome},
-    {path: '/actors', component: Actors},
-    {path: '/actor_tags', component: ActorTags},
-    {path: '/actor_groups', component: ActorGroups},
-    {
-        path: '/echarts',
-        component: ECharts,
-        children: [
-            {path: 'tag_relatives', component: TagRelativeChart},
-            {path: 'tag_scores', component: TagScoresChart},
-            {path: 'score_tags', component: ScoreTagsChart},
-        ]
-    },
-    // 动态字段以冒号开始
-    {path: '/download', component: Download},
-    {path: '/tasks', component: Tasks},
-    {path: '/notices', component: Notices},
-    {path: '/others', component: Others},
+	{ path: '/', component: Welcome },
+	{ path: '/actors', component: Actors },
+	{ path: '/actor_tags', component: ActorTags },
+	{ path: '/actor_groups', component: ActorGroups },
+	{ path: '/fav_folders', component: FavFolders },
+	{
+		path: '/echarts',
+		component: ECharts,
+		children: [
+			{ path: 'tag_relatives', component: TagRelativeChart },
+			{ path: 'tag_scores', component: TagScoresChart },
+			{ path: 'score_tags', component: ScoreTagsChart },
+		]
+	},
+	// 动态字段以冒号开始
+	{ path: '/download', component: Download },
+	{ path: '/tasks', component: Tasks },
+	{ path: '/notices', component: Notices },
+	{ path: '/others', component: Others },
 ]
 
 // 3. 创建路由实例并传递 `routes` 配置
 // 你可以在这里输入更多的配置，但我们在这里
 // 暂时保持简单
 const router = createRouter({
-    // 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。
-    history: createWebHashHistory(),
-    routes, // `routes: routes` 的缩写
+	// 4. 内部提供了 history 模式的实现。为了简单起见，我们在这里使用 hash 模式。
+	history: createWebHashHistory(),
+	routes, // `routes: routes` 的缩写
 })
 
 //data store

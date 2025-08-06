@@ -16,7 +16,6 @@
     "echarts": "^5.5.1",
     "element-plus": "^2.7.8",
     "fast-glob": "^3.2.12",
-    "js-base64": "^3.7.5",
     "pinia": "^2.0.33",
     "vue": "^3.2.45",
     "vue-draggable-next": "^2.2.1",

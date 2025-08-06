@@ -30,6 +30,7 @@
                         </el-menu-item>
                         <el-sub-menu index="/">
                             <template #title>Others</template>
+                            <el-menu-item index="/fav_folders">Fav Folders</el-menu-item>
                             <el-menu-item index="/actor_tags">Actor Tags</el-menu-item>
                             <el-menu-item index="/actor_groups">Actor Groups</el-menu-item>
                             <el-menu-item index="/echarts">Charts</el-menu-item>
@@ -60,6 +61,7 @@ import {BadgeStore} from "./store/BadgeStore";
 import {onMounted} from "vue";
 import {useRoute, useRouter} from "vue-router";
 import {useDark} from '@vueuse/core'
+import { FavFolderStore } from "./store/FavFolderStore";
 
 const isDark = useDark()
 const router = useRouter()
@@ -67,6 +69,7 @@ const route = useRoute()
 const badgeStore = BadgeStore()
 const actorTagStore = ActorTagStore()
 const actorGroupStore = ActorGroupStore()
+const favFolderStore = FavFolderStore()
 
 function onMenuItemSelect(key: string) {
     router.push(key)
@@ -77,6 +80,7 @@ function onMenuItemSelect(key: string) {
 onMounted(async () => {
     await actorTagStore.getFromServer()
     await actorGroupStore.getFromServer()
+    await favFolderStore.getFromServer()
     await badgeStore.fetchTaskCount()
     await badgeStore.fetchAllNoticeCount()
 })

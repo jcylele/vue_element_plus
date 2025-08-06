@@ -71,7 +71,7 @@
 
 <script lang="ts">
 import {Notice_Param_Names, Notice_Type_Names, Notice_Type_Values} from "../data/Consts";
-import {MainMenu, NoticeType} from "../data/Enums"
+import {EFilterRow, MainMenu, NoticeType} from "../data/Enums"
 import NoticeData from "../data/NoticeData";
 import {deleteNotice, delNoticesByType, getNotices, searchNotices} from "../ctrls/NoticeCtrl";
 import {mapActions} from "pinia";
@@ -117,7 +117,7 @@ export default {
 
     methods: {
         ...mapActions(ActorFilterStore, {
-            saveFilterCondition: "setFilter",
+            saveFilterCondition: "saveFilter",
         }),
         ...mapActions(SubMenuStore, {
             setSubMenu: "set",
@@ -186,7 +186,7 @@ export default {
             const actor_name = this.formatActorName(notice)
             const filter_condition = new ActorFilterData()
             filter_condition.name = actor_name
-            filter_condition.show_name = true
+            filter_condition.setRowVisible(EFilterRow.Name, true)
             this.saveFilterCondition(filter_condition)
             this.$router.push("/actors")
         },

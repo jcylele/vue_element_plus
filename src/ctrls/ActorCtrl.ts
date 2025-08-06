@@ -1,7 +1,6 @@
 import ActorData from "../data/ActorData";
-import { fetchDelete, fetchGet, fetchPatch, fetchPost, logInfo, logWarn } from "./FetchCtrl";
+import { fetchDelete, fetchGet, fetchPatch, fetchPost, fetchPostStr, logInfo, logWarn } from "./FetchCtrl";
 import { ActorFilterData } from "../data/ActorFilterData";
-import { Base64 } from "js-base64";
 import { BASE_URL } from "../data/Consts";
 import ResSizeCount from "../data/ResSizeCount";
 import { ActorListResult, ActorResult, ActorVideoInfo, BaseResult, ResFileInfo } from "../data/WebData";
@@ -157,10 +156,18 @@ export async function changeActorScore(actor_id: number, score: number) {
 	return [true, actor_map]
 }
 
+export async function changeActorComment(actor_id: number, comment: string) {
+	const url = `${baseUrl}/${actor_id}/comment`;
+	const [ok, response] = await fetchPostStr(url, comment)
+	if (!ok) {
+		return [false, response]
+	}
+	return [true, _onActorResult(response)]
+}
+
 export async function changeActorRemark(actor_id: number, remark: string) {
-	const encoded_remark = Base64.encodeURI(remark)
-	const url = `${baseUrl}/${actor_id}/remark?val=${encoded_remark}`;
-	const [ok, response] = await fetchPatch(url)
+	const url = `${baseUrl}/${actor_id}/remark`;
+	const [ok, response] = await fetchPostStr(url, remark)
 	if (!ok) {
 		return [false, response]
 	}
@@ -221,7 +228,7 @@ export async function getActorDownloadingFiles(actor_id: number) {
 	if (!ok) {
 		return [false, response]
 	}
-	console.log(response)
+	// console.log(response)
 	let rfi_list = response.map((json_obj) => new ResFileInfo(json_obj))
 	// 计算总大小
 	if (rfi_list.length > 0) {
