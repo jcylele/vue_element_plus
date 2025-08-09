@@ -17,6 +17,54 @@
 	--me-switch-off-color: #777777;
 	--me-even-bg-color: #f0ffc7;
 	--me-odd-bg-color: #c7fff0;
+
+	/* 默认/正文 */
+	--app-font-base:
+		'Microsoft YaHei', '微软雅黑',
+		Inter, Arial,
+		'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+
+	/* 标题（更黑更稳，优先使用 HarmonyOS Sans SC，没有则回退 Noto/雅黑） */
+	--app-font-title:
+		'HarmonyOS Sans SC', 'Noto Sans SC',
+		'Microsoft YaHei', '微软雅黑',
+		Inter, Arial,
+		'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+
+	/* Tag（英文数字突出：Inter；中文则回退到中粗的中文无衬线） */
+	--app-font-tag:
+		'Microsoft YaHei', '微软雅黑', Inter, 'Noto Sans SC',
+		Arial,
+		'Segoe UI Emoji', 'Noto Color Emoji', sans-serif;
+
+	/* 同时覆盖 Element Plus 全局字体 */
+	--el-font-family: var(--app-font-base);
+}
+
+/* 应用到页面 */
+html,
+body,
+#app {
+	font-family: var(--app-font-base);
+	font-weight: 400;
+}
+
+/* 标题：HTML 标题 + 常见标题类 */
+th,
+.el-dialog__title,
+.el-form-item__label,
+.el-collapse-item__header,
+.el-page-header__title,
+.el-card__header {
+	font-family: var(--app-font-title);
+	font-weight: 700;
+}
+
+/* Tag：Element Plus 标签组件 */
+.el-tag,
+.el-tag__content {
+	font-family: var(--app-font-tag);
+	font-weight: 500;
 }
 
 .el-message__content {
@@ -68,7 +116,7 @@
 }
 
 .el-tag__content {
-	text-shadow: 1px 1px #404040;
+	/* text-shadow: 1px 1px #404040; */
 }
 
 .el-collapse {
@@ -136,6 +184,10 @@ tr:nth-child(odd) {
 	background-color: var(--me-odd-bg-color);
 }
 
+.el-form--inline .el-form-item {
+	background-color: transparent !important;
+}
+
 .el-dialog__title {
 	font-size: 28px;
 	font-weight: bold;
@@ -169,6 +221,20 @@ tr:nth-child(odd) {
 	/* 主轴(水平)居中 */
 	align-items: center;
 	/* 交叉轴(垂直)居中 */
+
+	gap: 8px; /* 默认间距 */
+}
+
+.split-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+
+	width: 100%; /* 占满父元素， 不然子元素还是会挤在一起 */
+}
+
+.underlined {
+	border-bottom: solid 1px var(--el-border-color);
 }
 
 .card_row {
@@ -182,22 +248,24 @@ tr:nth-child(odd) {
 	align-items: stretch;
 }
 
-.folder-name {
+.common-group-name {
 	text-justify: center;
-	font-weight: bold;
+	font-weight: 700;
 	font-size: var(--el-font-size-extra-large);
+	font-family: var(--app-font-title);
 	/* align-self: flex-start; */
 	/* 确保元素在flex容器中靠左 */
 }
 
-.folder-desc {
+.common-group-desc {
 	font-size: var(--el-font-size-large);
 	font-style: italic;
+	margin: 5px 0;
 	/* align-self: flex-start; */
 	/* 确保元素在flex容器中靠左 */
 }
 
-.folder-item {
+.common-group-item {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
@@ -208,18 +276,34 @@ tr:nth-child(odd) {
 	padding: 10px 10px;
 }
 
-.folder-item.folder-selectable {
+.common-group-item.group-selectable {
 	cursor: pointer;
 	transition: all 0.2s ease;
 }
 
-.folder-item.folder-selectable:hover {
+.common-group-item.group-selectable:hover {
 	color: var(--el-color-primary);
 	border-color: var(--el-color-primary);
 	background-color: var(--el-fill-color-light);
 }
 
-.folder-item.folder-selectable.folder-selected {
+.common-group-item.group-selectable.group-selected {
 	border-color: var(--el-color-primary);
 	box-shadow: 0 0 5px rgba(255, 160, 80, 0.3);
 }
+
+.hint-selectable {
+	cursor: pointer;
+}
+
+.svg-icon:hover {
+	color: var(--el-color-primary);
+	cursor: pointer;
+}
+
+.svg-icon.is-disabled:hover {
+	color: inherit;
+	cursor: default;
+}
+
+

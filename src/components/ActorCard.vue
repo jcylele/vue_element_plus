@@ -49,7 +49,7 @@
 			<el-popover trigger="click" placement="top" v-model:visible="is_show_op"
 				:popper-style="{ 'border-color': group_color, 'width': 'auto' }" :offset="6">
 				<template #reference>
-					<el-text class="actor_name actor_name_text" tag="a" :style="{ 'color': group_color }" truncated>
+					<el-text class="actor_name actor_name_text hint-selectable" tag="a" :style="{ 'color': group_color }" truncated>
 						{{ actor.actor_name }}
 					</el-text>
 				</template>
@@ -96,7 +96,7 @@
 		<!-- actor post info -->
 		<el-space direction="vertical" v-if="actor.file_info" style="gap: 1px 0" fill>
 			<div class="post_line center-row">
-				<el-text class="post_count" tag="ins" @click="showFileInfo">
+				<el-text class="post_count hint-selectable" tag="ins" @click="showFileInfo">
 					{{ actor.post_desc }}
 				</el-text>
 				<svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px"
@@ -294,12 +294,16 @@ export default {
 
 		...mapActions(ActorGroupStore, {
 			getActorGroup: 'get',
-			getGroupColor: 'getColor'
 		}),
 
 		...mapActions(ActorFilterStore, {
 			is_actor_downing: "is_downing",
 		}),
+
+		getGroupColor(group_id: number): string {
+			let group = this.getActorGroup(group_id)
+			return group.group_color
+		},
 
 		getActorGroupData(): ActorGroupData {
 			let group_id = this.actor_data.data.actor_group_id
@@ -500,8 +504,6 @@ export default {
 
 .actor_name {
 	max-width: 160px;
-	cursor: pointer;
-	/* 鼠标悬停时显示手型指针 */
 }
 
 .actor_name_line {
@@ -537,8 +539,6 @@ export default {
 .post_count {
 	color: var(--el-text-color);
 	text-align: center;
-	cursor: pointer;
-	/* 鼠标悬停时显示手型指针 */
 }
 
 .post_line {

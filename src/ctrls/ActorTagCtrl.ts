@@ -1,6 +1,6 @@
 import ActorTagData from "../data/ActorTagData";
 import {fetchDelete, fetchGet, fetchPost, fetchPut} from "./FetchCtrl";
-import AllActorTagPriorities from "../data/ActorTagPriority";
+import { CommonPriority } from "../data/WebData";
 import {BASE_URL} from "../data/Consts";
 
 const baseUrl = `${BASE_URL}/api/actor_tag`
@@ -25,7 +25,7 @@ export async function updateTagName(actor_tag: ActorTagData): Promise<[boolean, 
     return [true, tag]
 }
 
-export async function updatePriorities(tag_priorities: AllActorTagPriorities) {
+export async function updatePriorities(tag_priorities: CommonPriority[]) {
     const url = `${baseUrl}/priority`
     return await fetchPost(url, tag_priorities)
 }

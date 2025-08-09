@@ -1,15 +1,15 @@
 <template>
 	<el-space direction="vertical" alignment="start" fill>
 		<el-text tag="p" style="font-style: italic;">click to add/remove actor to/from folder</el-text>
-		<div v-for="folder in fav_folder_store.sorted_list" class="folder-item folder-selectable"
-			:class="{ 'folder-selected': isSelected(folder.folder_id) }" @click="selectFolder(folder.folder_id)">
-			<span class="folder-name" tag="b">
+		<div v-for="folder in fav_folder_store.sorted_list" class="common-group-item group-selectable"
+			:class="{ 'group-selected': isSelected(folder.folder_id) }" @click="selectFolder(folder.folder_id)">
+			<span class="common-group-name">
 				{{ folder.folder_name }}
 			</span>
 
-			<span class="folder-desc" tag="p">
+			<p class="common-group-desc">
 				{{ folder.folder_desc }}
-			</span>
+			</p>
 		</div>
 	</el-space>
 </template>

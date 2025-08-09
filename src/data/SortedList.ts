@@ -28,7 +28,7 @@ export default class SortedList<T extends ISortItem> {
     }
 
     compareItem(a: T, b: T): number {
-        return b.priority - a.priority;
+        return a.priority - b.priority;
     }
 
     add(item: T) {
@@ -53,6 +53,10 @@ export default class SortedList<T extends ISortItem> {
         }
     }
 
+	dirty() {
+		this.is_dirty = true
+	}
+
     remove(key: number) {
         this.dict.delete(key)
 
@@ -64,7 +68,7 @@ export default class SortedList<T extends ISortItem> {
         }
     }
 
-    get(key:number): T {
+    get(key:number): T|undefined {
         return this.dict.get(key)
     }
 }

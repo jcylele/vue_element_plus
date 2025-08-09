@@ -1,60 +1,48 @@
 import { BASE_URL } from "../data/Consts";
-import { fetchDelete, fetchGet, fetchPost } from "./FetchCtrl";
+import { fetchPost } from "./FetchCtrl";
 import { FolderData } from "../data/FolderData";
-import ActorData from "../data/ActorData";
-import { ActorElement } from "../data/ArrayElement";
+import { CommonPriority } from "../data/WebData";
+import { BaseGroupCtrl } from "./BaseGroupCtrl";
 
 
 const baseUrl = `${BASE_URL}/api/favorite_folder`
 
-export async function getFolders() {
-	const url = `${baseUrl}/list`
-	const [ok, response] = await fetchGet(url)
-	if (!ok) {
-		return [ok, response]
+// 继承基础控制器
+
+class FolderCtrl extends BaseGroupCtrl<FolderData> {
+	protected getDataClass() {
+		return FolderData;
 	}
-	const folders = response.map((item: any) => new FolderData(item))
-	return [true, folders]
+}
+
+// 创建实例
+const folderCtrl = new FolderCtrl(baseUrl);
+
+export async function getFolders() {
+	return await folderCtrl.getList()
 }
 
 export async function getFolder(folder_id: number) {
-	const url = `${baseUrl}/${folder_id}`
-	const [ok, response] = await fetchGet(url)
-	if (!ok) {
-		return [ok, response]
-	}
-	const folder = new FolderData(response)
-	return [true, folder]
+	return await folderCtrl.getById(folder_id)
 }
 
 export async function addFolder(data: FolderData) {
-	const url = `${baseUrl}/add`
-	const [ok, response] = await fetchPost(url, data)
-	if (!ok) {
-		return [ok, response]
-	}
-	const folder = new FolderData(response)
-	return [true, folder]
+	return await folderCtrl.add(data)
 }
 
 export async function updateFolder(data: FolderData) {
-	const url = `${baseUrl}/${data.folder_id}/update`
-	const [ok, response] = await fetchPost(url, data)
-	if (!ok) {
-		return [ok, response]
-	}
-	const folder = new FolderData(response)
-	return [true, folder]
+	return await folderCtrl.update(data)
 }
 
 export async function deleteFolder(folder_id: number) {
-	const url = `${baseUrl}/${folder_id}`
-	const [ok, response] = await fetchDelete(url)
-	if (!ok) {
-		return [ok, response]
-	}
-	return [true, response.value]
+	return await folderCtrl.delete(folder_id)
 }
+
+export async function updatePriorities(priorities: CommonPriority[]) {
+	return await folderCtrl.updatePriorities(priorities)
+}
+
+// endregion 继承基础控制器
 
 export async function addActorToFolder(actor_id: number, folder_id: number) {
 	const url = `${baseUrl}/${folder_id}/add_actor/${actor_id}`
@@ -76,22 +64,3 @@ export async function batchDelActorFromFolder(folder_id: number, actor_ids: numb
 	return await fetchPost(url, actor_ids)
 }
 
-export async function getFolderActors(folder_id: number) {
-	const url = `${baseUrl}/${folder_id}/actors`
-	const [ok, response] = await fetchGet(url)
-	if (!ok) {
-		return [ok, response]
-	}
-	const actors = response.map((item: any) => new ActorElement(new ActorData(item)))
-	return [true, actors]
-}
-
-export async function reorderActorsInFolder(folder_id: number, actor_ids: number[]) {
-	const url = `${baseUrl}/${folder_id}/reorder`
-	const [ok, response] = await fetchPost(url, actor_ids)
-	if (!ok) {
-		return [ok, response]
-	}
-	const actors = response.map((item: any) => new ActorData(item))
-	return [true, actors]
-}

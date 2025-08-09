@@ -86,6 +86,7 @@ import {logError, logInfo, logWarn} from "../ctrls/FetchCtrl";
 import {Download_Options, Start_Page_Options} from "../data/Consts";
 import {CommonOption} from "../data/Interfaces";
 import {BadgeStore} from "../store/BadgeStore";
+import ActorGroupData from "../data/ActorGroupData";
 
 export default {
 
@@ -116,8 +117,10 @@ export default {
     computed: {
         ...mapState(ActorGroupStore, {
             group_list: 'sorted_list',
-            down_group_list: 'down_list',
         }),
+		down_group_list(): ActorGroupData[] {
+			return this.group_list.filter(group => group.has_folder)
+		},
         by_group(): boolean {
             return this.down_type === DownloadType.Group
         },

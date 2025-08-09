@@ -109,10 +109,13 @@ export default {
             getTagName: 'getName',
         }),
 
-        getGroupColor(group_id): string {
-            let group = this.getActorGroup(group_id)
-            return group.group_color
-        },
+		getGroupColor(group_id: number): string {
+			let group = this.getActorGroup(group_id)
+			if (group) {
+				return group.group_color
+			}
+			return "#000000"
+		},
 
         startEditRemark() {
             this.is_show_remark = true

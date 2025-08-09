@@ -1,7 +1,19 @@
+import BaseData from "./BaseData";
+import { CommonGroupForm } from "./WebData"
+
 export interface ISortItem {
-	get key: number
-	get priority: number
+	get key(): number
+	get priority(): number
+	set priority(priority: number)
 }
+
+export interface IGroupData {
+	get name(): string
+	copy(source?: this): void
+	toForm(): CommonGroupForm
+}
+
+export type GroupEntity = BaseData & IGroupData & ISortItem;
 
 export interface NoticeColumn {
 	col_name: string
@@ -33,3 +45,5 @@ export interface TagRecord {
 	count: number,
 	last_used: number
 }
+
+

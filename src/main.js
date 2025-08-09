@@ -12,6 +12,7 @@ const Download = () => import("./components/Download.vue")
 const Welcome = () => import("./components/Welcome.vue")
 const ActorTags = () => import("./components/ActorTags.vue")
 const ActorGroups = () => import("./components/ActorGroups.vue")
+const ActorTagGroups = () => import("./components/ActorTagGroups.vue")
 const FavFolders = () => import("./components/FavFolders.vue")
 const ECharts = () => import("./components/ECharts.vue")
 const Tasks = () => import("./components/Tasks.vue")
@@ -41,6 +42,7 @@ const routes = [
 	{ path: '/actors', component: Actors },
 	{ path: '/actor_tags', component: ActorTags },
 	{ path: '/actor_groups', component: ActorGroups },
+	{ path: '/actor_tag_groups', component: ActorTagGroups },
 	{ path: '/fav_folders', component: FavFolders },
 	{
 		path: '/echarts',

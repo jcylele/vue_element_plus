@@ -87,8 +87,16 @@ export default {
 
         ...mapActions(ActorGroupStore, {
             getGroupName: 'getName',
-            getGroupColor: 'getColor',
         }),
+
+		getGroupColor(group_id: number): string {
+			let group = this.getActorGroup(group_id)
+			if (group) {
+				return group.group_color
+			}
+			return "#000000"
+		},
+		
         async getLogs() {
             const [ok, new_list] = await getActorLogs(this.specific_actor_id)
             if (ok) {

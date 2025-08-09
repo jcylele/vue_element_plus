@@ -8,5 +8,5 @@ html.dark {
 }
 
 html.dark .el-tag__content {
-    text-shadow: 1px 1px #b0b0b0;
+	/* font-family: Microsoft YaHei; */
 }

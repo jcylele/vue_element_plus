@@ -117,7 +117,7 @@
 
                     <template #default>
                         <el-space direction="vertical" size="small" fill>
-                            <div v-for="filter in filter_list" :key="filter.uuid" class="folder-item folder-selectable"
+                            <div v-for="filter in filter_list" :key="filter.uuid" class="common-group-item group-selectable"
                                  @click.stop="selectFilterInHistory(filter.uuid)">
                                 <ActorFilterItem :item="desc" v-for="desc in filter.desc_list"/>
                             </div>

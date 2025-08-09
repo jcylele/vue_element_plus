@@ -3,6 +3,16 @@ import ActorData from "./ActorData";
 import BaseData from "./BaseData";
 import { format_duration, format_file_size, format_file_size_gb } from "./DataUtil";
 
+export class CommonPriority {
+    id: number
+    priority: number
+
+    constructor(id: number, priority: number) {
+        this.id = id
+        this.priority = priority
+    }
+}
+
 interface ITagEditInfo {
 	tag: ActorTagData,
 	is_editing: boolean,
@@ -27,6 +37,17 @@ export class StrForm {
 			data: this.data
 		}
 	}
+}
+
+export class CommonGroupForm {
+	name: string
+	desc: string
+	priority: number
+}
+
+export class ActorGroupForm extends CommonGroupForm {
+	group_color: string
+	has_folder: boolean
 }
 
 export class FilterItem {
