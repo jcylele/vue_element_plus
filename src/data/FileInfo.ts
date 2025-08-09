@@ -1,8 +1,9 @@
-import EditableData from "./EditableData";
+
 import {str_res_state, video_state_color} from "./Consts";
 import {format_file_size_gb} from "./DataUtil";
+import BaseData from "./BaseData";
 
-class ActorFileInfo extends EditableData {
+class ActorFileInfo extends BaseData {
     res_state: number
     img_size: number
     video_size: number
@@ -52,8 +53,7 @@ class ActorFileInfo extends EditableData {
         }
     }
 }
-
-export default class ActorFileStats extends EditableData {
+export default class ActorFileStats extends BaseData {
     res_info: ActorFileInfo[]
     total_post_count: number
     unfinished_post_count: number

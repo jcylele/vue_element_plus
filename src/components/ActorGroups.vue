@@ -21,7 +21,7 @@
 				{{ group.group_desc }}
 			</p>
 			<el-space direction="horizontal" size="large" alignment="center" wrap>
-				<svg-icon size="30px" name="edit" @click="startEditCondition(group)" />
+				<svg-icon size="24px" name="edit" @click="startEditCondition(group)" />
 				<el-tag v-for="cond in group.cond_list" type="info" effect="plain">
 					{{ cond.desc }}
 				</el-tag>

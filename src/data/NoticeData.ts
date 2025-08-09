@@ -1,8 +1,8 @@
-import {Notice_Type_Names} from "./Consts";
-import EditableData from "./EditableData";
+import { Notice_Type_Names } from "./Consts";
+import BaseData from "./BaseData";
 import { NoticeType } from "./Enums";
 
-export default class NoticeData extends EditableData {
+export default class NoticeData extends BaseData {
 	notice_id: number
 	notice_type: NoticeType
 	notice_param0: string

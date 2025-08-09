@@ -24,7 +24,7 @@ export class ActorElement {
 
 
 export function ToActorElements(actor_list: ActorData[]): ActorElement[] {
-    const ret = []
+    const ret: ActorElement[] = []
     for (const actor of actor_list) {
         ret.push(new ActorElement(actor))
     }

@@ -1,8 +1,8 @@
-import EditableData from "./EditableData";
-import {ActorLogType} from "./Enums";
-import {Actor_Log_Type_Names} from "./Consts";
+import { ActorLogType } from "./Enums";
+import { Actor_Log_Type_Names } from "./Consts";
+import BaseData from "./BaseData";
 
-export default class ActorLog extends EditableData {
+export default class ActorLog extends BaseData {
     log_type: ActorLogType
     log_param: string
 

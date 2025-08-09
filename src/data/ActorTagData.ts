@@ -1,8 +1,8 @@
-import EditableData from "./EditableData";
 import {ISortItem} from "./Interfaces";
 import {Star_Colors} from "./Consts";
+import BaseData from "./BaseData";
 
-export default class ActorTagData extends EditableData implements ISortItem {
+export default class ActorTagData extends BaseData implements ISortItem {
     readonly tag_id: number
     tag_name: string
     tag_priority: number

@@ -1,11 +1,11 @@
-import EditableData from "./EditableData";
 import { PostData } from "./PostData";
 import { ResState } from "./Enums";
 import ActorFileStats from "./FileInfo";
 import { ActorVideoInfo } from "./WebData";
+import BaseData from "./BaseData";
 
 
-export default class ActorData extends EditableData {
+export default class ActorData extends BaseData {
 	actor_id: number
 	actor_name: string
 	actor_platform: string

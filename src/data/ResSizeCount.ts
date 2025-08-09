@@ -1,6 +1,6 @@
-import EditableData from "./EditableData";
-import {ResSizeUnit, ResState} from "./Enums";
-import {ResSizeList} from "./Consts";
+import { ResSizeUnit, ResState } from "./Enums";
+import { ResSizeList } from "./Consts";
+import BaseData from "./BaseData";
 
 class SizeStruct {
     public size: number = 0
@@ -24,7 +24,7 @@ class SizeStruct {
     }
 }
 
-export default class ResSizeCount extends EditableData {
+export default class ResSizeCount extends BaseData {
     min: number
     max: number
     count_map: Map<ResState, number>

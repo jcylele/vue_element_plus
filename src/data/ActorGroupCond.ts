@@ -1,7 +1,7 @@
-import EditableData from "./EditableData";
-import {GroupCondType} from "./Enums";
+import BaseData from "./BaseData";
+import { GroupCondType } from "./Enums";
 
-export default class ActorGroupCond extends EditableData {
+export default class ActorGroupCond extends BaseData {
     in_use: boolean
     cond_type: GroupCondType
     cond_param: number

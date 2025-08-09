@@ -1,5 +1,5 @@
-import EditableData from "./EditableData";
-import {ActorPostInfo} from "./WebData";
+import { ActorPostInfo } from "./WebData";
+import BaseData from "./BaseData";
 
 export class PostFilterForm {
     actor_id: number
@@ -50,13 +50,7 @@ export class PostConditionForm {
     }
 }
 
-
-export class PostCommentForm {
-    post_id: string
-    comment: string
-}
-
-export class PostData extends EditableData {
+export class PostData extends BaseData {
     post_id: string
     comment: string
     is_editing: boolean
