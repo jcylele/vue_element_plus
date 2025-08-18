@@ -58,6 +58,7 @@ export default class ActorFileStats extends BaseData {
     total_post_count: number
     unfinished_post_count: number
     finished_post_count: number
+	is_completed: boolean
 
     constructor(json_data?) {
         super(json_data);

@@ -67,12 +67,10 @@ export async function downloadByUrls(download_limit: DownloadLimitForm, group_id
     return [true, response.value]
 }
 
-export async function resumeDownload(download_limit: DownloadLimitForm) {
-    let url = `${baseUrl}/resume`
-    const downloadForm = new BaseDownloadForm()
-    downloadForm.download_limit = download_limit
+export async function resumeActorDownload(actor_id: number) {
+    let url = `${baseUrl}/resume/${actor_id}`
 
-    const [ok, response] = await fetchPost(url, downloadForm)
+    const [ok, response] = await fetchPatch(url)
     if (!ok) {
         return [ok, response]
     }
@@ -80,8 +78,8 @@ export async function resumeDownload(download_limit: DownloadLimitForm) {
     return [true, response.value]
 }
 
-export async function resumeActorDownload(actor_id: number) {
-    let url = `${baseUrl}/resume/${actor_id}`
+export async function fixPosts(actor_id: number) {
+    let url = `${baseUrl}/fix_posts/${actor_id}`
 
     const [ok, response] = await fetchPatch(url)
     if (!ok) {

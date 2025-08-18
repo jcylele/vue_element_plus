@@ -6,7 +6,7 @@
                     <el-button type="danger" size="default" @click="stopAll">Stop All</el-button>
                     <el-button type="primary" size="default" @click="getAll">Refresh</el-button>
                 </el-space>
-                <el-table :data="task_list" fit border class="wrap_line">
+                <el-table :data="task_list" border>
                     <el-table-column prop="desc" label="task" align="center" min-width="300px"/>
                     <el-table-column prop="download_limit" label="limit" align="center" min-width="280px">
                         <template #default="scope">

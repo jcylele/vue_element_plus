@@ -7,8 +7,7 @@
         <div ref="dom_tag_scores" style="width: 1280px;height: 480px"></div>
     </el-space>
     <el-dialog v-model="is_choosing_tags"
-               :title="actor.actor_name"
-               width="67%">
+               :title="actor.actor_name">
         <ActorTagChooser :actor="actor"
                          @submit="onSubmitTag"
                          @cancel="onCancelTag"

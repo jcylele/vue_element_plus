@@ -1,55 +1,79 @@
 <template>
-	<el-space direction="vertical" class="actor_card" alignment="stretch" :size="3" :key="actor.uuid"
+	<el-space direction="vertical" class="actor_card" alignment="stretch" style="gap:3px;" :key="actor.uuid"
 		:style="{ 'color': group_color }">
-
 		<!-- actor avatar -->
 		<div class="avatar">
-			<el-tooltip v-if="actor.has_remark" placement="top" :offset="3" effect="light">
+			<el-tooltip v-if="actor.has_remark" placement="top" :offset="3" effect="light"
+				:popper-style="{ 'max-width': 'var(--me-remark-width)' }">
 				<template #content>
-					<el-space direction="vertical" size="small" style="min-width: 210px; max-width: 420px;" fill>
-						<el-text v-if="actor.remark" style="font-size: 20px;color: hotpink; white-space: pre-wrap;">
+					<el-space direction="vertical" size="small" fill>
+						<el-text v-if="actor.remark" class="pop-remark remark-color multi-line-text">
 							{{ actor.remark }}
 						</el-text>
-						<el-text v-if="actor.comment" style="font-size: 20px;color: pink; white-space: pre-wrap;">
+						<el-text v-if="actor.comment" class="pop-remark comment-color multi-line-text">
 							{{ actor.comment }}
 						</el-text>
-						<el-text v-for="post in actor.commented_posts" style="font-size: 18px;color: royalblue;">
-							· {{ post.comment }}
+						<el-text v-for="post in actor.commented_posts" class="pop-remark post-color multi-line-text">
+							* {{ post.comment }}
 						</el-text>
 					</el-space>
 				</template>
-				<el-image class="avatar-img" :src="actor.icon" />
+				<el-image class="avatar-img" :src="actor.icon_url" />
 			</el-tooltip>
-			<el-image v-else class="avatar-img" :src="actor.icon" />
+			<el-image v-else class="avatar-img" :src="actor.icon_url" />
 
 			<el-text class="avatar-platform">
 				{{ actor.actor_platform }}
 			</el-text>
 
-			<svg-icon v-if="actor.is_linked" size="40px" name="avatar" class="avatar-friend" @click="findLinkedActor" />
-
-			<div v-if="linked_group_ids.length > 1" class="avatar-group center-row">
-				<svg-icon v-for="group_id in linked_group_ids" size="10px" name="circle"
-					:style="{ 'color': getGroupColor(group_id) }" />
+			<div v-if="actor.is_linked" class="avatar-friend-container center-column" style="gap: 0"
+				@click="findLinkedActor">
+				<svg-icon size="40px" name="avatar" :style="{ 'color': group_color }" />
+				<div v-if="linked_group_ids.length > 1" class="center-row wrap"
+					style="gap: 2px;max-width: 40px;">
+					<svg-icon v-for="group_id in linked_group_ids" size="10px" name="circle"
+						:style="{ 'color': getGroupColor(group_id) }" />
+				</div>
 			</div>
-
 
 			<svg-icon v-if="locked" size="40px" name="locked" class="avatar-lock" />
 
 			<svg-icon v-if="show_select" size="40px" :name="actor_data.selected ? 'completed' : 'remove'"
 				class="avatar-select" @click="onSelectCLick" />
-			<!-- Stars -->
-			<el-rate class="avatar-rate" v-model="actor.show_score" @change="changeScore" :colors="star_colors"
-				void-color="#777777" :max="6" allow-half />
+
+			<div class="avatar-bottom-container center-row" style="gap: 0;">
+				<!-- fav folder -->
+				<div class="fav-container" @click="showFolders">
+					<svg-icon name="heart" class="fav-icon"
+						:class="actor.in_fav_folder ? 'remark-color' : 'comment-color'" />
+					<span class="fav-number fav-number-text logic-transparent" v-if="actor.in_fav_folder">{{
+						actor.fav_count
+					}}</span>
+				</div>
+				<!-- Stars -->
+				<el-popover placement="top" trigger="click" :offset="-2" :show-arrow="false"
+					:popper-style="popper_style.withColor(group_color)" @show="onShowScore">
+					<template #reference>
+						<div class="hint-selectable">
+							<MyRate :model-value="actor.show_score" size="default" style="align-items: end;" disabled
+								class="logic-transparent" />
+						</div>
+					</template>
+					<template #default>
+						<MyRate v-model="edit_score" size="large" @change="changeScore" />
+					</template>
+				</el-popover>
+			</div>
+
 		</div>
 
 		<!-- actor name, click to open menu items -->
 		<!-- downloading related icons -->
 		<div class="actor_name_line center-row">
 			<el-popover trigger="click" placement="top" v-model:visible="is_show_op"
-				:popper-style="{ 'border-color': group_color, 'width': 'auto' }" :offset="6">
+				:popper-style="popper_style.withColor(group_color)" :offset="6">
 				<template #reference>
-					<el-text class="actor_name actor_name_text hint-selectable" tag="a" :style="{ 'color': group_color }" truncated>
+					<el-text class="actor_name_text hint-selectable" tag="a" :style="{ 'color': group_color }">
 						{{ actor.actor_name }}
 					</el-text>
 				</template>
@@ -66,7 +90,7 @@
 								Go To Page
 							</el-button>
 						</el-space>
-						<el-space direction="horizontal" v-if="hasFolder()">
+						<el-space direction="horizontal" v-if="has_folder">
 							<el-button class="pop-button" type="warning" @click="resetPosts">
 								Reset Posts
 							</el-button>
@@ -74,33 +98,26 @@
 								Clear Folder
 							</el-button>
 						</el-space>
-						<el-space direction="horizontal" v-if="hasFolder()">
-							<el-button class="pop-button" type="success" @click="toDownloadFromOp" v-if="hasFolder()">
+						<el-space direction="horizontal" v-if="has_folder">
+							<el-button class="pop-button" type="success" @click="toDownloadFromOp" v-if="has_folder">
 								Download
 							</el-button>
-							<el-button class="pop-button" type="success" @click="openFolder" v-if="hasFolder()">
+							<el-button class="pop-button" type="success" @click="openFolder" v-if="has_folder">
 								Open Folder
 							</el-button>
 						</el-space>
 					</el-space>
 				</template>
 			</el-popover>
-			<!-- fav folder -->
-			<div class="fav-container" @click="showFolders">
-				<svg-icon name="star_empty" class="fav-item"
-					:style="{ 'color': actor.in_fav_folder ? 'gold' : 'gray' }" />
-				<span class="fav-number fav-item" v-if="actor.in_fav_folder">{{ actor.fav_count }}</span>
-			</div>
 		</div>
 
 		<!-- actor post info -->
 		<el-space direction="vertical" v-if="actor.file_info" style="gap: 1px 0" fill>
-			<div class="post_line center-row">
+			<div class="center-row">
 				<el-text class="post_count hint-selectable" tag="ins" @click="showFileInfo">
 					{{ actor.post_desc }}
 				</el-text>
-				<svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px"
-					class="blink-class" />
+				<svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px" />
 				<svg-icon v-if="is_video_all" name="file_checked" style="color: orange" size="24px" />
 			</div>
 
@@ -129,8 +146,7 @@
 			</el-select>
 			<!-- click to edit tags -->
 			<svg-icon v-if="has_tag" size="32px" name="edit" @click="startEditTag" />
-			<el-popover v-else placement="right" trigger="click"
-				:popper-style="{ 'border-color': group_color, 'width': 'auto' }">
+			<el-popover v-else placement="right" trigger="click" :popper-style="popper_style.withColor(group_color)">
 				<template #reference>
 					<svg-icon size="32px" name="edit" />
 				</template>
@@ -164,31 +180,28 @@
 		</el-space>
 	</el-space>
 	<!-- dialog: actor remark editing-->
-	<el-dialog v-model="card_dialog.is_show_remark" :title="actor.actor_name" width="720px">
+	<el-dialog v-model="card_dialog.is_show_remark" :title="actor.actor_name">
 		<RemarkEditor :actor="actor" @remark="onSubmitRemark" @comment="onSubmitComment" @posts="showPosts" />
 	</el-dialog>
 	<!-- dialog: actor tags editing dialog-->
-	<el-dialog v-model="card_dialog.is_show_tags" :title="actor.actor_name" width="67%">
+	<el-dialog v-model="card_dialog.is_show_tags" :title="actor.actor_name">
 		<ActorTagChooser :actor="actor" @submit="onSubmitTag" @cancel="onCancelAddTag" />
 	</el-dialog>
 	<!-- dialog: actor posts -->
-	<el-dialog v-model="card_dialog.is_show_posts" title="Posts" width=720px>
-		<Posts :actor_id="actor.actor_id" :actor_name="actor.actor_name" />
-	</el-dialog>
-	<!-- dialog: actor video sizes chart -->
-	<el-dialog v-model="card_dialog.is_show_video_sizes" :title="actor.actor_name" width=720px>
-		<VideoSizesChart :actor_id="actor.actor_id" />
+	<el-dialog v-model="card_dialog.is_show_posts" title="Posts">
+		<Posts :actor="actor" @comment="onPostComment" />
 	</el-dialog>
 	<!-- dialog: actor logs -->
-	<el-dialog v-model="card_dialog.is_show_logs" :title="actor.actor_name" width=720px>
+	<el-dialog v-model="card_dialog.is_show_logs" :title="actor.actor_name">
 		<ActorLogs :specific_actor_id="actor.actor_id" />
 	</el-dialog>
 	<!-- dialog: actor file info -->
-	<el-dialog v-model="card_dialog.is_show_file_info" :title="actor.actor_name" width=720px>
-		<ActorFileInfoTabs :actor_id="actor.actor_id" @download="toDownloadFromFileInfo" />
+	<el-dialog v-model="card_dialog.is_show_file_info" :title="actor.actor_name">
+		<ActorFileInfoTabs :actor_id="actor.actor_id" :has_folder="has_folder" @download="toDownloadFromFileInfo"
+			@close="closeFileInfo" />
 	</el-dialog>
 	<!-- dialog: actor folders -->
-	<el-dialog v-model="card_dialog.is_show_folders" :title="actor.actor_name" width=720px>
+	<el-dialog v-model="card_dialog.is_show_folders" :title="actor.actor_name">
 		<FavFolderSelector :selected_folder_ids="actor.folder_ids" @select="onActorFolderChange" />
 	</el-dialog>
 </template>
@@ -217,22 +230,22 @@ import ActorLogs from "./ActorLogs.vue";
 import { ActorElement } from "../data/ArrayElement";
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import ActorGroupData from "../data/ActorGroupData";
-import { Star_Colors } from "../data/Consts";
+import { Popper_Styles } from "../data/Consts";
 import { logInfo } from "../ctrls/FetchCtrl";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import ActorFileStats from "../data/FileInfo";
-import VideoSizesChart from "./Chart/VideoSizesChart.vue";
 import { ActorCardDialog, EActorDialog } from "../data/ActorCardDialog";
 import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
 import { FavFolderStore } from "../store/FavFolderStore";
 import { addActorToFolder, delActorFromFolder } from "../ctrls/FolderCtrl";
 import FavFolderSelector from "./FavFolderSelector.vue";
 import { ECardRefresh } from "../data/Enums";
+import MyRate from "./MyRate.vue";
 
 
 export default {
 	name: "ActorCard",
-	components: { VideoSizesChart, SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts, ActorFileInfoTabs, FavFolderSelector },
+	components: { SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts, ActorFileInfoTabs, FavFolderSelector, MyRate },
 	// props from parent
 	props: {
 		actor_data: ActorElement,
@@ -253,8 +266,8 @@ export default {
 		has_tag(): boolean {
 			return this.actor_data.data.tag_ids.length > 0
 		},
-		star_colors() {
-			return Star_Colors
+		popper_style(): any {
+			return Popper_Styles
 		},
 		group_color(): string {
 			let group = this.getActorGroup(this.actor_data.data.actor_group_id)
@@ -264,7 +277,11 @@ export default {
 			return this.is_actor_downing(this.actor_data.data.actor_id)
 		},
 		is_video_all(): boolean {
-			return this.hasFolder() && this.actor_data.data.is_video_all
+			return this.has_folder && this.actor_data.data.is_video_all
+		},
+		has_folder(): boolean {
+			let group = this.getActorGroupData()
+			return group.has_folder
 		},
 	},
 	// declare emitted events to parent
@@ -274,6 +291,7 @@ export default {
 			is_show_op: false,
 			card_dialog: new ActorCardDialog(),
 			linked_group_ids: [],
+			edit_score: 0,
 		}
 	},
 	mounted() {
@@ -285,7 +303,6 @@ export default {
 	methods: {
 		...mapActions(ActorTagStore, {
 			compareActorTagId: 'compareTagId',
-			getTagBgColor: 'getBgColor',
 			getTagStyle: 'getStyle',
 			getTagName: 'getName',
 			addTagRecord: 'addRecord',
@@ -310,17 +327,16 @@ export default {
 			return this.getActorGroup(group_id)
 		},
 
-		hasFolder(): boolean {
-			let group = this.getActorGroupData()
-			return group.has_folder
-		},
-
 		onRecvActorMsg(actor: ActorData) {
 			actor.sortTags(this.compareActorTagId)
 			this.actor_data.data = actor
 			//
 			this.getFileInfo()
 			this.getLinkedGroups()
+		},
+
+		onShowScore() {
+			this.edit_score = this.actor.show_score
 		},
 
 		hideOp() {
@@ -410,13 +426,15 @@ export default {
 		},
 
 		showFileInfo() {
-			if (this.hasFolder()) {
-				this.showDialog(EActorDialog.file_info)
-			}
+			this.showDialog(EActorDialog.file_info)
+		},
+
+		closeFileInfo() {
+			this.closeDialog(EActorDialog.file_info)
 		},
 
 		async changeScore() {
-			const [ok, actor_map] = await changeActorScore(this.actor.actor_id, this.actor.score)
+			const [ok, actor_map] = await changeActorScore(this.actor.actor_id, this.edit_score * 2)
 			if (ok) {
 				this.$emit('update', actor_map)
 			}
@@ -445,10 +463,18 @@ export default {
 			if (new_comment == this.actor.comment) {
 				return
 			}
+			console.log(`onSubmitComment: ${new_comment.length}`)
 			const [ok, ar] = await changeActorComment(this.actor.actor_id, new_comment)
 			if (ok) {
 				this.onRecvActorMsg(ar)
 				this.$emit('refresh', this.actor_data.data.actor_id, ECardRefresh.Comment)
+			}
+		},
+		onPostComment(actor_id: number, post_id: string, comment: string) {
+			if (actor_id == this.actor.actor_id) {
+				this.actor.refreshPostComment(post_id, comment)
+			} else {
+				// I'm too lazy to notify other actors
 			}
 		},
 		async getFileInfo() {
@@ -496,43 +522,48 @@ export default {
 </script>
 
 <style scoped>
-.actor_name_text {
-	font-size: var(--el-font-size-extra-large);
-	word-wrap: nowrap;
-	text-align: center;
+.pop-remark {
+	font-size: var(--el-font-size-large);
 }
 
-.actor_name {
-	max-width: 160px;
+.actor_name_text {
+	font-size: var(--el-font-size-extra-large);
+	overflow-wrap: break-word;
+	text-align: center;
 }
 
 .actor_name_line {
 	height: 32px;
-	gap: 10px;
 	background-color: #000000a0;
 }
 
 .fav-container {
 	position: relative;
-	display: inline-block;
-	/* Adjust as needed */
-	width: 32px;
-	height: 32px;
+	width: var(--avatar-bottom-height);
+	height: var(--avatar-bottom-height);
 }
 
-.fav-item {
+.fav-icon {
 	position: absolute;
 	top: 0;
 	left: 0;
-	width: 100%;
-	height: 100%;
+	right: 0;
+	bottom: 0;
 }
 
 .fav-number {
+	position: absolute;
+	top: 2px;
+	left: 0;
+	right: 0;
+	bottom: 0;
+}
+
+.fav-number-text {
 	text-align: center;
 	font-size: var(--el-font-size-large);
 	/* Size of the number */
-	color: #FF007F;
+	color: whitesmoke;
 	/* Color of the number */
 }
 
@@ -541,39 +572,41 @@ export default {
 	text-align: center;
 }
 
-.post_line {
-	gap: 5px;
-}
-
 .actor_card {
+	--avatar-size: 194px;
+	--avatar-margin: 10px;
+	--avatar-bottom-height: 32px;
+
 	position: relative;
 	border: 1px solid;
 	padding: 2px;
 	box-shadow: 2px 2px;
-	width: 210px;
 	background-color: var(--el-card-bg-color);
+	width: calc(var(--avatar-size) + 2 * var(--avatar-margin) + 6px);
+	/* 6px = 2*(2padding+1border) */
 }
 
 .avatar {
 	position: relative;
-	/*width: 180px;*/
-	height: 180px;
-	margin-top: 15px;
+	height: var(--avatar-size);
+	margin-top: var(--avatar-margin);
 }
 
 .avatar-img {
-	width: 180px;
-	height: 180px;
+	width: var(--avatar-size);
+	height: var(--avatar-size);
 	position: absolute;
 	top: 0;
-	left: 15px;
+	left: var(--avatar-margin);
 }
 
-.avatar-rate {
+.avatar-bottom-container {
 	position: absolute;
 	bottom: 0;
-	left: 50%;
-	transform: translateX(-50%);
+	left: var(--avatar-margin);
+	right: var(--avatar-margin);
+	height: var(--avatar-bottom-height);
+	background: linear-gradient(to top, rgba(0, 0, 0, 0.7), transparent);
 }
 
 .avatar-lock {
@@ -586,7 +619,7 @@ export default {
 .avatar-select {
 	position: absolute;
 	top: 0;
-	right: 15px;
+	right: var(--avatar-margin);
 }
 
 .avatar-platform {
@@ -601,18 +634,10 @@ export default {
 	text-shadow: 1px 1px lightcoral;
 }
 
-.avatar-friend {
+.avatar-friend-container {
 	position: absolute;
 	top: 0;
-	left: 15px;
-}
-
-.avatar-group {
-	position: absolute;
-	top: 37px;
-	left: 5px;
-
-	width: 60px;
+	left: var(--avatar-margin);
 }
 
 .pop-button {

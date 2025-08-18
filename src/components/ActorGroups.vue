@@ -28,7 +28,7 @@
 			</el-space>
 		</div>
 	</el-space>
-	<el-dialog v-model="is_editing" title="Add/Edit Folder" width="720px">
+	<el-dialog v-model="is_editing" title="Add/Edit Folder" style="min-width: 600px;">
 		<el-form label-width="auto">
 			<el-form-item label="Name">
 				<el-input v-model="edit_group.group_name" />
@@ -53,7 +53,7 @@
 			</el-form-item>
 		</el-form>
 	</el-dialog>
-	<el-dialog v-model="is_show_condition" :title="cond_title" @close="onCancelCondition" width="360px">
+	<el-dialog v-model="is_show_condition" :title="cond_title" @close="onCancelCondition">
 		<GroupCondEditor :group="cond_actor_group" @submit="onSubmitCondition" @cancel="onCancelCondition" />
 	</el-dialog>
 </template>

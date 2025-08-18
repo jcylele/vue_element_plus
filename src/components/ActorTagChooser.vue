@@ -6,21 +6,20 @@
 				<el-text style="font-weight: bold;width: 120px;margin-left: 10px;">{{ tag_group.group_name }}</el-text>
 				<el-space direction="horizontal" :wrap="true" alignment="stretch">
 					<el-tag v-for="tag_info in tag_group.tag_infos" class="hint-selectable" :key="tag_info.tag_id"
-						:style="getTagStyle(tag_info)"
-						size="large" @click="switchSelect(tag_info)">
+						:style="getTagStyle(tag_info)" size="large" @click="switchSelect(tag_info)">
 						{{ getTagName(tag_info.tag_id) }}
 					</el-tag>
 				</el-space>
 			</el-space>
 			<!-- buttons -->
-			<el-space direction="horizontal" alignment="center">
-				<el-button type="primary" size="large" @click="onSubmit">
+			<div class="center-row" style="gap: 30px;">
+				<el-button type="primary" size="large" style="width: 120px;" @click="onSubmit">
 					Save
 				</el-button>
-				<el-button type="warning" size="large" @click="onCancel">
+				<el-button type="warning" size="large" style="width: 120px;" @click="onCancel">
 					Cancel
 				</el-button>
-			</el-space>
+			</div>
 
 		</el-space>
 
@@ -29,11 +28,11 @@
 
 <script lang="ts" setup>
 // imports
-import ActorTagData from "../data/ActorTagData.js";
+import { ActorTagData } from "../data/ActorTagData";
 import { ActorTagStore } from "../store/ActorTagStore";
-import { ActorTagGroupStore } from "../store/ActorTagGroupStore.js";
+import { ActorTagGroupStore } from "../store/ActorTagGroupStore";
 import { ref, onMounted } from "vue";
-import ActorData from "../data/ActorData.js";
+import ActorData from "../data/ActorData";
 
 interface TagInfo {
 	tag_id: number,
@@ -72,20 +71,7 @@ function init() {
 }
 
 function getTagStyle(tag_info: TagInfo) {
-	const bg_color = actor_tag_store.getBgColor(tag_info.tag_id)
-	if (tag_info.selected) {
-		return {
-			"color": "#ffffff",
-			"border-color": bg_color,
-			"background-color": bg_color,
-		}
-	} else {
-		return {
-			"color": bg_color,
-			"border-color": bg_color,
-			"background-color": "transparent",
-		}
-	}
+	return actor_tag_store.getStyle(tag_info.tag_id, tag_info.selected)
 }
 
 function getTagName(tag_id: number) {
@@ -121,6 +107,4 @@ onMounted(() => {
 })
 
 </script>
-<style scoped>
-
-</style>
+<style scoped></style>

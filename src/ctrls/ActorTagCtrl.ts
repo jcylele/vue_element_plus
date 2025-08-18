@@ -1,4 +1,4 @@
-import ActorTagData from "../data/ActorTagData";
+import { ActorTagData } from "../data/ActorTagData";
 import { fetchDelete, fetchGet, fetchPost, fetchPostStr, fetchPut } from "./FetchCtrl";
 import { CommonPriority } from "../data/WebData";
 import { BASE_URL } from "../data/Consts";

@@ -221,6 +221,12 @@ export class ActorFilterData extends BaseCloneable {
 	remark_str: string
 	has_remark: BoolEnum
 
+	post_completed: BoolEnum
+	get is_post_completed() {
+		return this.post_completed == BoolEnum.TRUE
+	}
+	res_completed: BoolEnum
+
 	sort_items: SortItem[]
 
 	desc_list: FilterItem[]
@@ -248,6 +254,9 @@ export class ActorFilterData extends BaseCloneable {
 				break
 			case EFilterRow.Folder:
 				this.resetFolder()
+				break
+			case EFilterRow.Progress:
+				this.resetProgress()
 				break
 		}
 	}
@@ -317,6 +326,10 @@ export class ActorFilterData extends BaseCloneable {
 		return this.show_rows[EFilterRow.Folder]
 	}
 
+	get show_progress() {
+		return this.show_rows[EFilterRow.Progress]
+	}
+
 	get show_min_score() {
 		return this.min_score / 2
 	}
@@ -375,6 +388,7 @@ export class ActorFilterData extends BaseCloneable {
 		this.resetNameLink()
 		this.resetRemark()
 		this.resetFolder()
+		this.resetProgress()
 		this.resetSort()
 	}
 
@@ -399,6 +413,8 @@ export class ActorFilterData extends BaseCloneable {
 		this.max_score = data.max_score
 		this.remark_str = data.remark_str
 		this.has_remark = data.has_remark
+		this.post_completed = data.post_completed
+		this.res_completed = data.res_completed
 
 		this.sort_items = data.sort_items.map(item => item.clone())
 		// desc_list is immutable in some sense, so we don't need to clone it
@@ -449,6 +465,11 @@ export class ActorFilterData extends BaseCloneable {
 		this.folder_id = 0
 	}
 
+	resetProgress() {
+		this.post_completed = BoolEnum.ALL
+		this.res_completed = BoolEnum.ALL
+	}
+
 	/**
 	 * compare with another ActorFilterData, ignore sort_items
 	 * @param data ActorFilterData
@@ -464,7 +485,9 @@ export class ActorFilterData extends BaseCloneable {
 			this.min_score === data.min_score &&
 			this.max_score === data.max_score &&
 			this.remark_str === data.remark_str &&
-			this.has_remark === data.has_remark
+			this.has_remark === data.has_remark &&
+			this.post_completed === data.post_completed &&
+			this.res_completed === data.res_completed
 	}
 }
 

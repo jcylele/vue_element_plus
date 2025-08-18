@@ -11,7 +11,7 @@
         <DownloadLimit :download_limit="download_limit" border/>
 
         <!-- actor group line -->
-        <el-space v-if="show_group" direction="horizontal" class="with-border">
+        <el-space direction="horizontal" class="with-border">
             <el-text class="extra-title">
                 Actor Group
             </el-text>
@@ -74,7 +74,6 @@ import {
     downloadByUrls,
     downloadNewActors, getCustomPage,
     manualDownload,
-    resumeDownload,
 } from "../ctrls/DownloadCtrl";
 import {mapActions, mapState} from "pinia";
 import DownloadLimit from "./DownloadLimit.vue";
@@ -132,9 +131,6 @@ export default {
         },
         down_type_list(): CommonOption[] {
             return Download_Options
-        },
-        show_group(): boolean {
-            return this.down_type !== DownloadType.Resume
         },
         start_page_list(): CommonOption[] {
             return Start_Page_Options
@@ -194,9 +190,6 @@ export default {
                         return
                     }
                     [ok, ret] = await downloadByUrls(this.download_limit, this.actor_group, this.actor_urls)
-                    break
-                case DownloadType.Resume:
-                    [ok, ret] = await resumeDownload(this.download_limit)
                     break
                 case DownloadType.Manual:
                     [ok, ret] = await manualDownload(this.download_limit, this.actor_group)

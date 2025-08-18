@@ -5,13 +5,14 @@ import BaseData from "./BaseData";
 export default class ActorLog extends BaseData {
     log_type: ActorLogType
     log_param: string
+	log_time: string
 
     public get log_type_name(): string {
         return Actor_Log_Type_Names[this.log_type]
     }
 
     public get tag_id_list(): number[] {
-        console.log(`this.log_param = ${this.log_param}`)
+        // console.log(`this.log_param = ${this.log_param}`)
         return this.log_param.split('\n').filter((str_tag_id) => {
             return str_tag_id
         }).map(a => parseInt(a))
@@ -33,6 +34,10 @@ export default class ActorLog extends BaseData {
     public get remark(): string {
         return this.log_param
     }
+
+	public get comment(): string {
+		return this.log_param
+	}
 
     public get actor_names(): string[] {
         return this.log_param.split('\n')

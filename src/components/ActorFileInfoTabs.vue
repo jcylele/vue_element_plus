@@ -1,41 +1,49 @@
 <template>
-	<el-tabs type="border-card" v-model="default_tab" @tab-change="onTabChange">
+	<el-tabs type="border-card" v-model="default_tab" @tab-change="onTabChange" style="width: 750px;">
 		<el-tab-pane label="All Videos" :name="ETabNames.All">
-			<el-space direction="vertical" size="small" style="width: 100%" fill>
+			<div class="center-column">
 				<VideoSizesChart :actor_id="actor_id" />
-				<div class="center-row" style="margin-top: 10px">
-					<el-button type="success" @click="toDownload">
+				<div class="center-row">
+					<el-button type="warning" @click="toFixPosts">
+						Fix Posts
+					</el-button>
+					<el-button type="success" v-if="has_folder" @click="toDownload">
 						To Download
 					</el-button>
 				</div>
-			</el-space>
+			</div>
 		</el-tab-pane>
 		<el-tab-pane label="Downloading Videos" :name="ETabNames.Downloading">
-			<el-space direction="vertical" size="small" style="width: 100%" fill>
-				<el-table :data="downloading_files">
+			<div class="center-column">
+				<el-table :data="downloading_files" :default-sort="{ prop: 'percent', order: 'descending' }"
+					show-summary :summary-method="getSummaries" max-height="360" scrollbar-always-on border>
 					<el-table-column prop="file_path" label="File Name" min-width="300" />
-					<el-table-column prop="str_file_size" label="Cur Size" min-width="100" />
-					<el-table-column prop="str_res_size" label="Full Size" min-width="100" />
+					<el-table-column prop="file_size" label="Cur Size" sortable :formatter="formatFileSize"
+						min-width="100" />
+					<el-table-column prop="res_size" label="Full Size" sortable :formatter="formatFileSize"
+						min-width="100" />
+					<el-table-column prop="percent" label="Percent" sortable :formatter="formatPercent"
+						min-width="100" />
 				</el-table>
-				<div v-if="downloading_files.length > 0" class="center-row" style="margin-top: 10px">
+				<div v-if="downloading_files.length > 0" class="center-row" >
 					<el-button type="warning" @click="removeDownloading">
 						Remove All Files
 					</el-button>
-					<el-button type="success" @click="resumeDownloading">
+					<el-button type="success" v-if="has_folder" @click="resumeDownloading">
 						Resume Downloading
 					</el-button>
 				</div>
-			</el-space>
+			</div>
 		</el-tab-pane>
-		<el-tab-pane label="Downed Videos" :name="ETabNames.Downed">
-			<el-space direction="vertical" size="small" style="width: 100%" fill>
-				<el-table :data="downed_files">
+		<el-tab-pane v-if="has_folder" label="Downed Videos" :name="ETabNames.Downed">
+			<div class="center-column">
+				<el-table :data="downed_files" style="width: 100%;">
 					<el-table-column prop="str_resolution" label="Orientation" min-width="100" />
 					<el-table-column prop="str_file_size" label="Size" min-width="100" />
 					<el-table-column prop="str_file_count" label="File Count" min-width="100" />
 					<el-table-column prop="str_duration" label="Duration" min-width="100" />
 				</el-table>
-				<div v-if="downed_video_count > 0" class="center-row" style="margin-top: 10px">
+				<div v-if="downed_video_count > 0" class="center-row">
 					<el-button type="success" @click="renameFiles">
 						Rename Files
 					</el-button>
@@ -43,7 +51,7 @@
 						Open Folder
 					</el-button>
 				</div>
-			</el-space>
+			</div>
 		</el-tab-pane>
 	</el-tabs>
 </template>
@@ -52,10 +60,12 @@
 // imports
 import { computed, onMounted, ref } from "vue";
 import VideoSizesChart from "./Chart/VideoSizesChart.vue";
-import { ActorVideoInfo, ResFileInfo } from "../data/WebData";
+import { ActorVideoInfo } from "../data/ActorVideoInfo";
+import { ResFileInfo } from "../data/ResFileInfo";
 import { getActorDownloadingFiles, getActorVideoInfo, openActorFolder, removeDownloadingFiles, renameActorFiles } from "../ctrls/ActorCtrl";
 import { logInfo } from "../ctrls/FetchCtrl";
-import { resumeActorDownload } from "../ctrls/DownloadCtrl";
+import { fixPosts, resumeActorDownload } from "../ctrls/DownloadCtrl";
+import { format_file_size, format_percent } from "../data/DataUtil";
 
 enum ETabNames {
 	All,
@@ -64,7 +74,7 @@ enum ETabNames {
 }
 
 // emits
-const emit = defineEmits(['download'])
+const emit = defineEmits(['download', 'close'])
 // stores/routers
 
 // props/models
@@ -72,11 +82,16 @@ const props = defineProps({
 	actor_id: {
 		type: Number,
 		required: true
+	},
+	has_folder: {
+		type: Boolean,
+		required: true
 	}
 })
 // variables
 const default_tab = ref(ETabNames.Downed)
 const downloading_files = ref<Array<ResFileInfo>>([])
+const total_downloading_file = ref<ResFileInfo>(ResFileInfo.getTotal([]))
 const downed_files = ref<Array<ActorVideoInfo>>([])
 // computed
 const downed_video_count = computed(() => downed_files.value.reduce((sum, avi: ActorVideoInfo) => sum + avi.file_count, 0))
@@ -86,6 +101,7 @@ async function removeDownloading() {
 	const [ok, _] = await removeDownloadingFiles(props.actor_id)
 	if (ok) {
 		downloading_files.value = []
+		total_downloading_file.value = ResFileInfo.getTotal([])
 		logInfo("remove downloading files succeed")
 	}
 }
@@ -97,15 +113,41 @@ async function resumeDownloading() {
 	}
 }
 
-async function toDownload() {
+async function toFixPosts() {
+	const [ok, _] = await fixPosts(props.actor_id)
+	if (ok) {
+		logInfo("fixing posts started")
+		emit('close')
+	}
+}
+
+function toDownload() {
 	emit('download')
 }
 
 async function getDownloadingFiles() {
-	const [ok, ret] = await getActorDownloadingFiles(props.actor_id)
+	const [ok, list] = await getActorDownloadingFiles(props.actor_id)
 	if (ok) {
-		downloading_files.value = ret
+		downloading_files.value = list
+		total_downloading_file.value = ResFileInfo.getTotal(list)
 	}
+}
+
+function formatFileSize(row: ResFileInfo, column: any, cellValue: any, index: number) {
+	return format_file_size(cellValue)
+}
+
+function formatPercent(row: ResFileInfo, column: any, cellValue: any, index: number) {
+	return format_percent(cellValue)
+}
+
+function getSummaries(param: any) {
+	return [
+		total_downloading_file.value.file_path,
+		format_file_size(total_downloading_file.value.file_size),
+		format_file_size(total_downloading_file.value.res_size),
+		format_percent(total_downloading_file.value.percent)
+	]
 }
 
 async function getDownedFiles() {
@@ -145,4 +187,8 @@ onMounted(() => {
 })
 </script>
 
-<style scoped></style>
+<style scoped>
+.center-row> :deep(.el-button) {
+	flex: 1;
+}
+</style>

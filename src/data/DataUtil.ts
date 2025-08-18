@@ -40,3 +40,7 @@ export function format_duration(duration: number): string {
     
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`
 }
+
+export function format_percent(percent: number): string {
+	return `${(percent * 100).toFixed(1)}%`
+}

@@ -20,6 +20,11 @@ export interface NoticeColumn {
 	prop_name: string
 }
 
+export interface NoticeTypeConfig {
+	tip: string
+	notice_columns: NoticeColumn[]
+}
+
 export interface CommonOption {
 	label: string
 	value: any

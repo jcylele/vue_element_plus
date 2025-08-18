@@ -8,13 +8,13 @@ import {
 	ResState, ResType,
 	SortType
 } from "./Enums";
-import { CommonOption, NoticeColumn, SortGroup } from "./Interfaces";
+import { CommonOption, NoticeColumn, NoticeTypeConfig, SortGroup } from "./Interfaces";
 
 export const BASE_URL = "http://127.0.0.1:7878"
 
 export const MAX_SCORE = 12
 
-export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Folder"]
+export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Folder", "Progress"]
 
 export const ResStateList: ResState[] = [ResState.Del, ResState.Skip, ResState.Init, ResState.Down]
 export const video_state_color = {
@@ -56,14 +56,20 @@ export const Sort_Groups: SortGroup[] = [
 	{
 		label: "Post Count", options: [
 			{ label: "Total", value: SortType.TotalPostCount, default_asc: true, full_label: "Total Post Count" },
-			{ label: "Current", value: SortType.CurPostCount, default_asc: false, full_label: "Current Post Count" },
+			{ label: "Current", value: SortType.CurPostCount, default_asc: false, full_label: "Current Post Count" }
 		]
 	},
 	{
 		label: "File Size", options: [
-			{ label: "Down", value: SortType.DownFileSize, default_asc: true, full_label: "Down File Size" },
-			{ label: "Current", value: SortType.CurFileSize, default_asc: true, full_label: "Current File Size" },
-			{ label: "Total", value: SortType.TotalFileSize, default_asc: true, full_label: "Total File Size" },
+			{ label: "Init", value: SortType.InitFileSize, default_asc: true, full_label: "Init File Size" },
+			{ label: "Downed", value: SortType.DownFileSize, default_asc: true, full_label: "Downed File Size" },
+			{ label: "Total", value: SortType.TotalFileSize, default_asc: true, full_label: "Total File Size" }
+		]
+	},
+	{
+		label: "Progress", options: [
+			{ label: "Post Time", value: SortType.LastPostFetchTime, default_asc: false, full_label: "Post Fetch Time" },
+			{ label: "Res Time", value: SortType.LastResDownloadTime, default_asc: false, full_label: "Res Download Time" }
 		]
 	}
 ]
@@ -72,7 +78,6 @@ export const Download_Options: CommonOption[] = [
 	{ label: "New Actors", value: DownloadType.New },
 	{ label: "By Group", value: DownloadType.Group },
 	{ label: "Specific Urls", value: DownloadType.Url },
-	{ label: "Resume Files", value: DownloadType.Resume },
 	{ label: "Manual", value: DownloadType.Manual },
 ]
 
@@ -80,6 +85,18 @@ export const Remark_Options: CommonOption[] = [
 	{ label: "All", value: BoolEnum.ALL },
 	{ label: "Has Remark", value: BoolEnum.TRUE },
 	{ label: "No Remark", value: BoolEnum.FALSE },
+]
+
+export const Post_Completed_Options: CommonOption[] = [
+	{ label: "Posts All", value: BoolEnum.ALL },
+	{ label: "Posts Completed", value: BoolEnum.TRUE },
+	{ label: "Posts Uncompleted", value: BoolEnum.FALSE },
+]
+
+export const Res_Completed_Options: CommonOption[] = [
+	{ label: "Res All", value: BoolEnum.ALL },
+	{ label: "Res Completed", value: BoolEnum.TRUE },
+	{ label: "Res Uncompleted", value: BoolEnum.FALSE },
 ]
 
 export const Start_Page_Options: CommonOption[] = [
@@ -129,32 +146,41 @@ export const Notice_Type_Values: NoticeType[] = [
 	NoticeType.SimilarActorName
 ]
 
-export const Notice_Param_Names: Record<NoticeType, NoticeColumn[]> =
+export const Notice_Type_Config_Default: NoticeTypeConfig = { tip: "", notice_columns: [] }
+export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 {
-	[NoticeType.All]: [{
-		col_name: "Type",
-		prop_name: "str_notice_type"
-	}, {
-		col_name: "param0",
-		prop_name: "notice_param0"
-	}, {
-		col_name: "param1",
-		prop_name: "notice_param1"
-	}, {
-		col_name: "param2",
-		prop_name: "notice_param2"
-	}, {
-		col_name: "param3",
-		prop_name: "notice_param3"
-	}],
-	[NoticeType.UnlinkedActor]: [{
-		col_name: "Actor Name 1",
-		prop_name: "notice_param0"
-	}, {
-		col_name: "Actor Name 2",
-		prop_name: "notice_param1"
-	}],
-	[NoticeType.InvalidPost]: [{
+	[NoticeType.All]: {
+		tip: "search all notices(including deleted), must precisely match",
+		notice_columns: [{
+			col_name: "Type",
+			prop_name: "str_notice_type"
+		}, {
+			col_name: "param0",
+			prop_name: "notice_param0"
+		}, {
+			col_name: "param1",
+			prop_name: "notice_param1"
+		}, {
+			col_name: "param2",
+			prop_name: "notice_param2"
+		}, {
+			col_name: "param3",
+			prop_name: "notice_param3"
+		}]
+	},
+	[NoticeType.UnlinkedActor]: {
+		tip: "unlinked actors share same post, should be linked",
+		notice_columns: [{
+			col_name: "Actor Name 1",
+			prop_name: "notice_param0"
+		}, {
+			col_name: "Actor Name 2",
+			prop_name: "notice_param1"
+		}]
+	},
+	[NoticeType.InvalidPost]: {
+		tip: "invalid post id, skip",
+		notice_columns: [{
 		col_name: "Actor Name",
 		prop_name: "notice_param0"
 	}, {
@@ -163,19 +189,28 @@ export const Notice_Param_Names: Record<NoticeType, NoticeColumn[]> =
 	}, {
 		col_name: "Post ID",
 		prop_name: "notice_param2"
-	}],
-	[NoticeType.SameActorName]: [{
+		}]
+	},
+	[NoticeType.SameActorName]: {
+		tip: "same actor name on different platforms",
+		notice_columns: [{
 		col_name: "Actor Name",
 		prop_name: "notice_param0"
-	}],
-	[NoticeType.HasLinkedAccount]: [{
+		}]
+	},
+	[NoticeType.HasLinkedAccount]: {
+		tip: "officially linked accounts",
+		notice_columns: [{
 		col_name: "Actor Name 1",
 		prop_name: "notice_param0"
 	}, {
 		col_name: "Actor Name 2",
 		prop_name: "notice_param1"
-	}],
-	[NoticeType.SimilarActorName]: [{
+		}]
+	},
+	[NoticeType.SimilarActorName]: {
+		tip: "similar actor names, indicating the same actor",
+		notice_columns: [{
 		col_name: "Actor Name 1",
 		prop_name: "notice_param0"
 	}, {
@@ -187,11 +222,12 @@ export const Notice_Param_Names: Record<NoticeType, NoticeColumn[]> =
 	}, {
 		col_name: "Actor Name 4",
 		prop_name: "notice_param3"
-	}],
+		}]
+	},
 }
 
 export const Actor_Log_Type_Names = {
-	[ActorLogType.Add]: "Actor Created",
+	[ActorLogType.Add]: "Actor ID",
 	[ActorLogType.Group]: "Set Group",
 	[ActorLogType.Score]: "Set Score",
 	[ActorLogType.Tag]: "Set Tags",
@@ -201,4 +237,28 @@ export const Actor_Log_Type_Names = {
 	[ActorLogType.Unlink]: "Unlink",
 	[ActorLogType.PostCount]: "Post Count",
 	[ActorLogType.ClearFolder]: "Clear Folder",
+	[ActorLogType.Comment]: "Set Comment",
 }
+
+export const Popper_Styles = {
+	Default: {
+		'border-color': 'var(--el-border-color)',
+		'width': 'auto'
+	},
+
+	// 带自定义颜色的样式生成函数
+	withColor: (color: string) => ({
+		'border-color': color,
+		'width': 'auto'
+	}),
+
+	// 带自定义宽度的样式生成函数
+	withWidth: (width: string) => ({
+		'border-color': 'var(--el-border-color)',
+		'width': width
+	}),
+
+	withWidthNoBorder: (width: string) => ({
+		'width': width
+	})
+} as const

@@ -1,5 +1,11 @@
-import { ActorPostInfo } from "./WebData";
 import BaseData from "./BaseData";
+import { EditingData }from "./EditingData";
+
+export class ActorPostInfo extends BaseData {
+	readonly actor_id: number
+	readonly actor_name: string
+	readonly post_count: number
+}
 
 export class PostFilterForm {
     actor_id: number
@@ -9,7 +15,7 @@ export class PostFilterForm {
 }
 
 export class PostConditionForm {
-    init_actor: ActorPostInfo
+    init_actor_id: number
     init_selected: boolean
     post_id_prefix: string
     has_comment: boolean
@@ -26,8 +32,15 @@ export class PostConditionForm {
         return 5
     }
 
-    constructor(init_actor_info: ActorPostInfo) {
-        this.init_actor = init_actor_info
+	checkPostIdPrefix(): boolean {
+		if (this.post_id_prefix.length < this.calcMinPrefixLength()) {
+			return false
+		}
+		return true
+	}
+
+    constructor(init_actor_id = 0) {
+        this.init_actor_id = init_actor_id
         this.init_selected = true
         this.post_id_prefix = ""
         this.has_comment = false
@@ -45,7 +58,7 @@ export class PostConditionForm {
     }
 
     createInitForm(): PostFilterForm {
-        const init_actor_id = this.init_selected ? this.init_actor.actor_id : 0
+        const init_actor_id = this.init_selected ? this.init_actor_id : 0
         return this.createFilterForm(init_actor_id)
     }
 }
@@ -53,5 +66,16 @@ export class PostConditionForm {
 export class PostData extends BaseData {
     post_id: string
     comment: string
-    is_editing: boolean
+	editing_comment: string
+
+	constructor(json_data?: Record<string, any>) {
+		super(json_data)
+		this.editing_comment = this.comment
+	}
+}
+
+export class EditingPostData extends EditingData<PostData> {
+	constructor(json_data?: Record<string, any>) {
+		super(new PostData(json_data))
+	}
 }

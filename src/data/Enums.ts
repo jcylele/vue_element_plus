@@ -10,7 +10,6 @@ export enum DownloadType {
     New,
     Group,
     Url,
-    Resume,
     Manual
 }
 
@@ -20,9 +19,11 @@ export enum SortType {
     GroupTime,
     TotalPostCount,
     CurPostCount,
+    InitFileSize,
     DownFileSize,
-    CurFileSize,
-    TotalFileSize
+    TotalFileSize,
+	LastPostFetchTime,
+    LastResDownloadTime
 }
 
 export enum NoticeType {
@@ -57,6 +58,7 @@ export enum ActorLogType {
     Unlink = 8,
     PostCount = 9,
     ClearFolder = 10,
+	Comment = 11,
 }
 
 export enum ResSizeUnit {
@@ -97,6 +99,7 @@ export enum EFilterRow {
     Name = 3,
     Remark = 4,
     Folder = 5,
+	Progress = 6,
 }
 
 export enum ECardRefresh {

@@ -1,5 +1,5 @@
 import { defineStore } from "pinia";
-import ActorTagData from "../data/ActorTagData";
+import { ActorTagData } from "../data/ActorTagData";
 import { getActorTagList } from "../ctrls/ActorTagCtrl";
 import SortedList from "../data/SortedList";
 import { Tag_Colors } from "../data/Consts";
@@ -38,7 +38,7 @@ export const ActorTagStore = defineStore('ActorTagStore', {
 			}
 
 			const tag_id_arr: number[][] = []
-			for (let i = 9; i >= 0; i--) {
+			for (let i = 0; i < 10; i++) {
 				const tag_list = tag_list_map[i]
 				if (tag_list) {
 					tag_list.sort(state.compareTagId)

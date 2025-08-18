@@ -3,7 +3,6 @@ export enum EActorDialog {
 	remark = 'remark',
 	tags = 'tags',
 	post = 'post',
-	video_sizes = 'video_sizes',
 	log = 'log',
 	file_info = 'file_info',
 	folders = 'folders'
@@ -45,16 +44,6 @@ export class ActorCardDialog {
 	set is_show_posts(val: boolean) {
 		if (!val) {
 			this.closeDialog(EActorDialog.post)
-		}
-	}
-
-	get is_show_video_sizes(): boolean {
-		return this.dialog_type == EActorDialog.video_sizes
-	}
-
-	set is_show_video_sizes(val: boolean) {
-		if (!val) {
-			this.closeDialog(EActorDialog.video_sizes)
 		}
 	}
 

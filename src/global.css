@@ -1,3 +1,9 @@
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+}
+
 :root {
 	--el-fill-color-blank: #c7ffc7;
 	--el-fill-color-light: #d7ffd7;
@@ -17,6 +23,13 @@
 	--me-switch-off-color: #777777;
 	--me-even-bg-color: #f0ffc7;
 	--me-odd-bg-color: #c7fff0;
+
+
+	--me-remark-color: hotpink;
+	--me-comment-color: pink;
+	--me-post-color: #409eff;
+	--me-remark-width: 500px;
+	--me-common-gap: 8px;
 
 	/* 默认/正文 */
 	--app-font-base:
@@ -115,6 +128,10 @@ th,
 	--el-tag-font-size: var(--el-font-size-base)
 }
 
+.bold-text {
+	font-weight: 700;
+}
+
 .el-tag__content {
 	/* text-shadow: 1px 1px #404040; */
 }
@@ -147,7 +164,8 @@ th,
 
 .el-rate {
 	--el-rate-icon-margin: 0;
-	--el-rate-disabled-void-color: var(--me-switch-off-color)
+	--el-rate-void-color: #777777;
+	--el-rate-disabled-void-color: #a9a9a9;
 }
 
 .el-rate__item {
@@ -158,14 +176,26 @@ th,
 	--el-pagination-font-size: 18px;
 }
 
-.el-icon {
-	width: 1.5em;
-	height: 1.5em;
+.el-rate.el-rate--small {
+	--el-rate-size: 1em;
 }
 
-.el-icon svg {
-	width: 1.5em;
-	height: 1.5em;
+.el-rate {
+	--el-rate-size: 1.5em;
+}
+
+.el-rate.el-rate--large {
+	--el-rate-size: 2em;
+}
+
+.el-rate .el-icon {
+	width: var(--el-rate-size);
+	height: var(--el-rate-size);
+}
+
+.el-rate .el-icon svg {
+	width: var(--el-rate-size);
+	height: var(--el-rate-size);
 }
 
 tr:nth-child(even) {
@@ -188,9 +218,19 @@ tr:nth-child(odd) {
 	background-color: transparent !important;
 }
 
+.el-form-item__content {
+	padding: 3px;
+	gap: 10px;
+}
+
+.el-dialog {
+	--el-dialog-width: fit-content;
+	max-width: 90%;
+}
+
 .el-dialog__title {
 	font-size: 28px;
-	font-weight: bold;
+	font-weight: 700;
 	font-style: italic;
 }
 
@@ -201,11 +241,16 @@ tr:nth-child(odd) {
 }
 
 .el-collapse-item__content {
-	padding-bottom: 10px;
+	padding: 10px;
 }
 
 .el-tabs--border-card {
 	background: var(--el-bg-color);
+}
+
+.multi-line-text {
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
 }
 
 .common-border {
@@ -214,15 +259,38 @@ tr:nth-child(odd) {
 	padding: 5px;
 }
 
-.center-row {
+.center-row,
+.left-row {
 	display: flex;
 	flex-direction: row;
-	justify-content: center;
-	/* 主轴(水平)居中 */
+	flex-wrap: nowrap; /* 默认不换行 */
 	align-items: center;
 	/* 交叉轴(垂直)居中 */
+	gap: var(--me-common-gap);
+	/* 默认间距 */
+}
 
-	gap: 8px; /* 默认间距 */
+.center-row {
+	justify-content: center;
+	/* 主轴(水平)居中 */
+}
+
+.left-row {
+	justify-content: flex-start;
+	/* 主轴(水平)左对齐 */
+}
+
+.left-row.wrap {
+	flex-wrap: wrap;
+}
+
+.left-row.stretch {
+	align-items: stretch;
+}
+
+.center-row .el-button+.el-button,
+.left-row .el-button+.el-button {
+	margin-left: 0;
 }
 
 .split-row {
@@ -230,22 +298,38 @@ tr:nth-child(odd) {
 	justify-content: space-between;
 	align-items: center;
 
-	width: 100%; /* 占满父元素， 不然子元素还是会挤在一起 */
+	width: 100%;
+	/* 占满父元素， 不然子元素还是会挤在一起 */
+}
+
+.center-column,
+.left-column,
+.fill-column {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	/* 主轴(垂直)居中 */
+	flex-wrap: nowrap;
+	/* 垂直无限长，不换行 */
+
+	gap: var(--me-common-gap);
+	/* 默认间距 */
+}
+
+.center-column {
+	align-items: center;
+}
+
+.left-column {
+	align-items: start;
+}
+
+.fill-column {
+	align-items: stretch;
 }
 
 .underlined {
 	border-bottom: solid 1px var(--el-border-color);
-}
-
-.card_row {
-	min-height: 100px;
-	min-width: 300px;
-	display: flex;
-	flex-direction: row;
-	flex-wrap: wrap;
-	margin-top: 15px;
-	gap: 20px 20px;
-	align-items: stretch;
 }
 
 .common-group-name {
@@ -306,4 +390,23 @@ tr:nth-child(odd) {
 	cursor: default;
 }
 
+.logic-transparent {
+	pointer-events: none;
+	/* 元素仍然可见，但鼠标事件会穿透到下层元素 */
+}
 
+.remark-width {
+	width: var(--me-remark-width);
+}
+
+.remark-color {
+	color: var(--me-remark-color);
+}
+
+.comment-color {
+	color: var(--me-comment-color);
+}
+
+.post-color {
+	color: var(--me-post-color);
+}

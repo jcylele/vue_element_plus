@@ -3,7 +3,8 @@
 		<el-space direction="horizontal" alignment="start">
 			<el-button type="primary" @click="toAddFolder">Add New Folder</el-button>
 		</el-space>
-		<div v-for="folder in fav_folder_store.sorted_list" class="common-group-item" @click="toActors(folder.folder_id)">
+		<div v-for="folder in fav_folder_store.sorted_list" class="common-group-item"
+			@click="toActors(folder.folder_id)">
 			<div class="split-row" style="border-bottom: solid 1px #e0e0e080;">
 				<div class="center-row">
 					<span class="common-group-name">
@@ -22,7 +23,7 @@
 			</p>
 		</div>
 	</el-space>
-	<el-dialog v-model="is_editing" title="Add/Edit Folder" width="720px">
+	<el-dialog v-model="is_editing" title="Add/Edit Folder" style="min-width: 600px;">
 		<el-form label-width="100px">
 			<el-form-item label="Name">
 				<el-input v-model="edit_folder.folder_name" maxlength="30" show-word-limit />

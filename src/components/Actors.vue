@@ -6,10 +6,13 @@
 		<div>
 			<el-space v-if="is_filter_normal" direction="horizontal" size="large" wrap>
 				<ActorFilterItem :item="desc" v-for="desc in page_filter_condition.desc_list" />
+				<el-button type="primary" @click="refreshPage" plain>
+					Refresh
+				</el-button>
 			</el-space>
 			<el-space v-else direction="horizontal" size="large" wrap>
 				<ActorFilterItem :item="filter_item" />
-				<el-button type="primary"  @click="onFilterBack" plain>
+				<el-button type="primary" @click="onFilterBack" plain>
 					Back to list
 				</el-button>
 			</el-space>
@@ -31,9 +34,6 @@
 					<el-space direction="vertical" size="default" fill>
 						<el-button :disabled="!has_downing_actors" type="primary" size="large" @click="onDowningClick">
 							Downloading
-						</el-button>
-						<el-button type="success" size="large" @click="onFinishedClick">
-							Finished
 						</el-button>
 					</el-space>
 				</template>
@@ -87,7 +87,7 @@
 
 		</el-space>
 		<!-- a big card per actor -->
-		<div class="card_row">
+		<div class="card_row left-row wrap stretch">
 			<!-- TODO change is not triggered, why   -->
 			<!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
 			<ActorCard v-for="actor_data in locked_actor_list" :actor_data="actor_data" :show_select="is_show_batch_op"
@@ -99,7 +99,7 @@
 		</div>
 	</el-space>
 	<!-- download  dialog -->
-	<el-dialog v-model="actors_dialog.is_show_download" :title="actors_dialog.title" width="720px">
+	<el-dialog v-model="actors_dialog.is_show_download" :title="actors_dialog.title">
 		<el-space direction="vertical">
 			<DownloadLimit :download_limit="download_limit" />
 			<el-space direction="horizontal" alignment="center">
@@ -113,16 +113,16 @@
 		</el-space>
 	</el-dialog>
 	<!-- link preview dialog -->
-	<el-dialog v-model="actors_dialog.is_show_link" :title="actors_dialog.title" width="720px">
+	<el-dialog v-model="actors_dialog.is_show_link" :title="actors_dialog.title">
 		<ActorLinkPreview :actors="actors_dialog.selected_actors" @submit="onLinkPreviewSubmit"
 			@cancel="onLinkPreviewClose" />
 	</el-dialog>
 	<!-- folder add dialog -->
-	<el-dialog v-model="actors_dialog.is_show_folder_add" :title="actors_dialog.title" width="640px">
+	<el-dialog v-model="actors_dialog.is_show_folder_add" :title="actors_dialog.title">
 		<FavFolderSelector @select="onFolderAddSubmit" />
 	</el-dialog>
 	<!-- folder remove dialog -->
-	<el-dialog v-model="actors_dialog.is_show_folder_remove" :title="actors_dialog.title" width="640px">
+	<el-dialog v-model="actors_dialog.is_show_folder_remove" :title="actors_dialog.title">
 		<FavFolderSelector @select="onFolderRemoveSubmit" />
 	</el-dialog>
 </template>
@@ -135,7 +135,7 @@ import { ActorElement } from "../data/ArrayElement";
 import {
 	batchChangeActorGroup, getActor,
 	getActorCount,
-	getActorIds, getFinishedActorIds,
+	getActorIds,
 	getLinkedActorIds,
 	linkSameActors, unlinkSameActors
 } from "../ctrls/ActorCtrl";
@@ -146,7 +146,6 @@ import { DownloadLimitForm } from "../data/DownloadForms";
 import { downloadByActorIds } from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
 import { ActorGroupStore } from "../store/ActorGroupStore";
-import ActorLine from "./ActorLine.vue";
 import { logInfo, logWarn } from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorData from "../data/ActorData";
@@ -164,12 +163,11 @@ import { batchAddActorToFolder, batchDelActorFromFolder } from "../ctrls/FolderC
 enum FilterType {
 	Normal = "Normal",
 	Link = "Linked",
-	Download = "Downloading",
-	Finished = "Finished",
+	Download = "Downloading"
 }
 
 export default {
-	components: { ActorLinkPreview, SvgIcon, ActorLine, ActorCard, ActorFilter, DownloadLimit, ActorFilterItem, FavFolderSelector },
+	components: { ActorLinkPreview, SvgIcon, ActorCard, ActorFilter, DownloadLimit, ActorFilterItem, FavFolderSelector },
 	data() {
 		return {
 			actorFilterRef: undefined,
@@ -270,6 +268,7 @@ export default {
 					break
 				case BoolEnum.FALSE:
 					desc_list.push(new FilterItem("Remark", "X"))
+					break
 			}
 
 			// folder
@@ -279,6 +278,23 @@ export default {
 
 			if (desc_list.length == 0) {
 				desc_list.push(new FilterItem("All", "actors"))
+			}
+
+			// progress
+			switch (page_filter.post_completed) {
+				case BoolEnum.TRUE:
+					desc_list.push(new FilterItem("Post", "Completed"))
+					switch (page_filter.res_completed) {
+						case BoolEnum.TRUE:
+							desc_list.push(new FilterItem("Res", "Completed"))
+							break
+						case BoolEnum.FALSE:
+							desc_list.push(new FilterItem("Res", "Not Completed"))
+					}
+					break
+				case BoolEnum.FALSE:
+					desc_list.push(new FilterItem("Post", "Not Completed"))
+					break
 			}
 
 			return desc_list
@@ -310,11 +326,13 @@ export default {
 			this.page_filter_condition.copy(this.editing_filter_condition)
 
 			// on filter changed
-			await this.onPageFilterChange()
+			await this.onPageFilterChange(true)
 		},
-		async onPageFilterChange() {
-			this.refreshActorIds();
-			this.actor_count = 0
+		async onPageFilterChange(clear: boolean = false) {
+			if (clear) {
+				this.refreshActorIds();
+				this.actor_count = 0
+			}
 			const [ok, actor_count] = await getActorCount(this.page_filter_condition)
 			if (ok) {
 				this.actor_count = actor_count
@@ -332,6 +350,9 @@ export default {
 				this.page_index = 1
 			}
 		},
+		async refreshPage() {
+			await this.onPageFilterChange()
+		},
 		async onFilterBack() {
 			await this.onPageFilterChange()
 		},
@@ -341,7 +362,6 @@ export default {
 			}
 		},
 		async onActorFriendClick(actor_data: ActorElement) {
-			// console.log(`actor friend clicked: ${actor_data.data.actor_name}`)
 			const [ok, actor_ids] = await getLinkedActorIds(actor_data.data.actor_id)
 			if (ok) {
 				this.refreshActorIds(actor_ids, FilterType.Link)
@@ -353,15 +373,6 @@ export default {
 		async onDowningClick() {
 			await this.getDowningFromServer()
 			this.refreshActorIds(this.downing_actor_ids, FilterType.Download)
-		},
-
-		async onFinishedClick() {
-			const [ok, actor_ids] = await getFinishedActorIds(this.page_filter_condition)
-			if (ok) {
-				this.refreshActorIds(actor_ids, FilterType.Finished)
-			} else {
-				this.refreshActorIds()
-			}
 		},
 
 		// region batch, select, lock
@@ -459,7 +470,6 @@ export default {
 		},
 
 		async onLinkPreviewSubmit(score: number, remark: string, tag_list: number[]) {
-			// console.log("link preview submit")
 			const actor_ids = this.actors_dialog.selected_actors.map(actor => actor.actor_id)
 			const [ok, actor_map] = await linkSameActors(actor_ids, score, remark, tag_list)
 			if (ok) {
@@ -632,7 +642,6 @@ export default {
 					last_filter.desc_list = this.formatFilterItems(last_filter)
 				}
 				this.editing_filter_condition.copy(last_filter)
-				// console.log("restoreFilter", last_filter)
 			}
 		}
 	},
@@ -651,6 +660,13 @@ export default {
 </script>
 
 <style scoped>
+.card_row {
+	min-height: 100px;
+	min-width: 300px;
+	margin-top: 15px;
+	gap: 20px 20px;
+}
+
 .page-border {
 	border: 1px ridge;
 	border-color: var(--el-border-color);

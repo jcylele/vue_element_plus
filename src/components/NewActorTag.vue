@@ -27,7 +27,7 @@
 </template>
 
 <script lang="ts">
-import ActorTagData from "../data/ActorTagData";
+import { ActorTagData } from "../data/ActorTagData";
 import { addActorTag } from "../ctrls/ActorTagCtrl";
 import { mapActions } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";

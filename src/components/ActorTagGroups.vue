@@ -31,7 +31,7 @@
 			</el-space>
 		</div>
 	</el-space>
-	<el-dialog v-model="is_editing" title="Add/Edit Folder" width="720px">
+	<el-dialog v-model="is_editing" title="Add/Edit Folder" style="min-width: 600px;">
 		<el-form label-width="100px">
 			<el-form-item label="Name">
 				<el-input v-model="edit_group.group_name" maxlength="30" show-word-limit />

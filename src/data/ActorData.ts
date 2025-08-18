@@ -1,8 +1,8 @@
 import { PostData } from "./PostData";
-import { ResState } from "./Enums";
 import ActorFileStats from "./FileInfo";
-import { ActorVideoInfo } from "./WebData";
+import { ActorVideoInfo } from "./ActorVideoInfo";
 import BaseData from "./BaseData";
+import { BASE_URL } from "./Consts";
 
 
 export default class ActorData extends BaseData {
@@ -21,6 +21,13 @@ export default class ActorData extends BaseData {
 	file_info: ActorFileStats
 	video_infos: ActorVideoInfo[]
 	folder_ids: number[]
+
+	get icon_url() {
+		if (this.icon?.startsWith('http')) {
+			return this.icon;
+		}
+		return `${BASE_URL}/${this.icon}`
+	}
 
 	get fav_count() {
 		return this.folder_ids.length
@@ -45,24 +52,7 @@ export default class ActorData extends BaseData {
 	}
 
 	get is_video_all() {
-		if (!this.file_info) {
-			return false
-		}
-		if (this.file_info.total_post_count == 0) {
-			return false
-		}
-		if (this.file_info.finished_post_count < this.file_info.total_post_count) {
-			return false
-		}
-		for (const resFileInfo of this.file_info.res_info) {
-			if ((resFileInfo.res_state == ResState.Skip
-				|| resFileInfo.res_state == ResState.Init)
-				&& resFileInfo.video_count > 0) {
-				return false
-			}
-		}
-
-		return true
+		return this.file_info && this.file_info.is_completed
 	}
 
 	get post_desc() {
@@ -108,5 +98,23 @@ export default class ActorData extends BaseData {
 
 	hasTag(tag_id: number) {
 		return this.tag_ids.indexOf(tag_id) >= 0
+	}
+
+	refreshPostComment(post_id: string, comment: string) {
+		const post_index = this.commented_posts.findIndex(post => post.post_id == post_id)
+		if (post_index != -1) {
+			if (comment.length > 0) {
+				this.commented_posts[post_index].comment = comment
+			} else {
+				this.commented_posts.splice(post_index, 1)
+			}
+		} else {
+			if (comment.length > 0) {
+				const postData = new PostData()
+				postData.post_id = post_id
+				postData.comment = comment
+				this.commented_posts.push(postData)
+			}
+		}
 	}
 }

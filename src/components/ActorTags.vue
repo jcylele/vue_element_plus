@@ -18,9 +18,9 @@
 					<el-space direction="horizontal" v-for="(tag_group, index) in editing_tags" class="tag_row"
 						:style="{ 'border-color': getTagBgColor(index) }" alignment="stretch" wrap>
 						<draggable :list="tag_group" :group="{ name: 'tags', pull: true, put: true }"
-							@change="onTagItemMoved" class="card_row">
+							@change="onTagItemMoved" class="tag_row left-row wrap">
 							<ActorTagEditor v-for="tag_info in tag_group" :tag_edit_info="tag_info"
-								:key="tag_info.tag.tag_id" @delete="onDeleteActorTag" class="card_item"
+								:key="tag_info.data.tag_id" @delete="onDeleteActorTag" class="card_item"
 								:style="{ 'border-color': getTagBgColor(index) }" />
 						</draggable>
 					</el-space>
@@ -36,7 +36,7 @@ import NewActorTag from "./NewActorTag.vue";
 import ActorTagEditor from "./ActorTagEditor.vue"
 import { mapActions, mapState } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
-import { TagEditInfo } from "../data/WebData";
+import { EditingTagData } from "../data/ActorTagData";
 import { VueDraggableNext } from "vue-draggable-next";
 import { updatePriorities } from "../ctrls/ActorTagCtrl";
 import { logInfo } from "../ctrls/FetchCtrl";
@@ -50,7 +50,7 @@ export default {
 
 	data() {
 		return {
-			editing_tags: [] as TagEditInfo[][],
+			editing_tags: [] as EditingTagData[][],
 			changed: false
 		}
 	},
@@ -70,7 +70,7 @@ export default {
 		onDeleteActorTag(tag_id: number) {
 			for (const group of this.editing_tags) {
 				for (let i = 0; i < group.length; i++) {
-					if (group[i].tag.tag_id == tag_id) {
+					if (group[i].data.tag_id == tag_id) {
 						group.splice(i, 1)
 						return
 					}
@@ -82,14 +82,18 @@ export default {
 			for (let i = 0; i < 10; i++) {
 				const group = this.editing_tags[i]
 				for (let j = 0; j < group.length; j++) {
-					const tag = group[j].tag
+					const tag = group[j].data
 					const new_tag_priority = i * 100 + j + 1
 					if (tag.tag_priority != new_tag_priority) {
 						changed_priorities.push(new CommonPriority(tag.tag_id, new_tag_priority))
 					}
 				}
 			}
-			if (changed_priorities.length == 0) return
+			
+			if (changed_priorities.length == 0) {
+				this.changed = false
+				return
+			}
 
 			let [ok, _] = await updatePriorities(changed_priorities)
 			if (ok) {
@@ -108,9 +112,7 @@ export default {
 			}
 			for (const tag of this.actor_tag_list) {
 				const group_id = Math.floor(tag.tag_priority / 100)
-				let tagEditInfo = new TagEditInfo()
-				tagEditInfo.tag = tag
-				tagEditInfo.is_editing = false
+				let tagEditInfo = new EditingTagData(tag)
 				this.editing_tags[group_id].push(tagEditInfo)
 			}
 			// this.editing_tags.reverse()
@@ -140,10 +142,8 @@ export default {
 	padding: 2px
 }
 
-.card_row {
+.tag_row {
 	min-height: 25px;
 	min-width: 100px;
-	display: flex;
-	flex-wrap: wrap;
 }
 </style>

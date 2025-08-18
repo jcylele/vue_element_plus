@@ -3,7 +3,9 @@ import { fetchDelete, fetchGet, fetchPatch, fetchPost, fetchPostStr, logInfo, lo
 import { ActorFilterData } from "../data/ActorFilterData";
 import { BASE_URL } from "../data/Consts";
 import ResSizeCount from "../data/ResSizeCount";
-import { ActorListResult, ActorResult, ActorVideoInfo, BaseResult, ResFileInfo } from "../data/WebData";
+import { ActorVideoInfo } from "../data/ActorVideoInfo";
+import { ResFileInfo } from "../data/ResFileInfo";
+import { ActorListResult, ActorResult, BaseResult } from "../data/ActorResults";
 
 const baseUrl = `${BASE_URL}/api/actor`
 
@@ -76,11 +78,6 @@ export async function getActorCountOfGroups() {
 
 export async function getActorIds(filter_condition: ActorFilterData, limit: number = 0, start: number = 0) {
 	const url = `${baseUrl}/list?limit=${limit}&start=${start}`
-	return await fetchPost(url, filter_condition)
-}
-
-export async function getFinishedActorIds(filter_condition: ActorFilterData) {
-	const url = `${baseUrl}/finished_list`
 	return await fetchPost(url, filter_condition)
 }
 
@@ -230,15 +227,6 @@ export async function getActorDownloadingFiles(actor_id: number) {
 	}
 	// console.log(response)
 	let rfi_list = response.map((json_obj) => new ResFileInfo(json_obj))
-	// 计算总大小
-	if (rfi_list.length > 0) {
-		const total_rfi = new ResFileInfo(`Total(${rfi_list.length})`)
-		rfi_list.reduce((acc: ResFileInfo, rfi: ResFileInfo) => {
-			acc.add(rfi)
-			return acc
-		}, total_rfi)
-		rfi_list.push(total_rfi)
-	}
 	return [true, rfi_list]
 }
 
@@ -292,6 +280,15 @@ export async function getVideoSizes(actor_id: number) {
 export async function resetManual() {
 	const url = `${baseUrl}/reset_manual`
 	return await fetchGet(url)
+}
+
+export async function validateFileInfos() {
+	const url = `${baseUrl}/validate_all_file_info`
+	const [ok, response] = await fetchGet(url)
+	if (!ok) {
+		return [false, response]
+	}
+	return [true, response.value]
 }
 
 export async function findSimilarActorNames() {
