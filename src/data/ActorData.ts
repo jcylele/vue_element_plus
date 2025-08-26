@@ -1,8 +1,9 @@
 import { PostData } from "./PostData";
-import ActorFileStats from "./FileInfo";
+import ActorFileDetail from "./FileInfo";
 import { ActorVideoInfo } from "./ActorVideoInfo";
 import BaseData from "./BaseData";
-import { BASE_URL } from "./Consts";
+import { BASE_URL, ROOT_URL } from "./Consts";
+import { IActor } from "./Schemas";
 
 
 export default class ActorData extends BaseData {
@@ -18,7 +19,7 @@ export default class ActorData extends BaseData {
 	remark: string
 	commented_posts: PostData[]
 	tag_ids: number[]
-	file_info: ActorFileStats
+	file_info: ActorFileDetail
 	video_infos: ActorVideoInfo[]
 	folder_ids: number[]
 
@@ -26,7 +27,7 @@ export default class ActorData extends BaseData {
 		if (this.icon?.startsWith('http')) {
 			return this.icon;
 		}
-		return `${BASE_URL}/${this.icon}`
+		return `${ROOT_URL}/${this.icon}`
 	}
 
 	get fav_count() {
@@ -75,7 +76,7 @@ export default class ActorData extends BaseData {
 		return (this.remark !== "") || (this.comment !== "") || this.commented_posts.length > 0
 	}
 
-	constructor(json_data?) {
+	constructor(json_data?: IActor) {
 		super(json_data);
 
 		// default values for specific fields

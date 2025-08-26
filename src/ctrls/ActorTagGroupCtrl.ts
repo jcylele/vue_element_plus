@@ -1,10 +1,9 @@
-import { fetchDelete, fetchGet, fetchPatch, fetchPost } from "./FetchCtrl";
-import { BASE_URL } from "../data/Consts";
+import { fetchPatch } from "./FetchCtrl";
 import { ActorTagGroupData } from "../data/ActorTagGroupData";
 import { CommonPriority } from "../data/WebData";
 import { BaseGroupCtrl } from "./BaseGroupCtrl";
 
-const baseUrl = `${BASE_URL}/api/actor_tag_group`
+const baseUrl = "/actor_tag_group"
 
 // region 继承基础控制器
 class ActorTagGroupCtrl extends BaseGroupCtrl<ActorTagGroupData> {
@@ -27,7 +26,7 @@ export async function addActorTagGroup(actor_group: ActorTagGroupData) {
 	return await actorTagGroupCtrl.add(actor_group)
 }
 
-export async function updateActorTagGroup(actor_group: ActorTagGroupData): Promise<[boolean, ActorTagGroupData]> {
+export async function updateActorTagGroup(actor_group: ActorTagGroupData) {
 	return await actorTagGroupCtrl.update(actor_group)
 }
 
@@ -44,19 +43,11 @@ export async function updatePriorities(priorities: CommonPriority[]) {
 
 export async function addActorTagToGroup(group_id: number, tag_id: number) {
 	const url = `${baseUrl}/${group_id}/add_tag/${tag_id}`
-	const [ok, response] = await fetchPatch(url)
-	if (!ok) {
-		return [false, response]
-	}
-	return [true, response.value]
+	return await fetchPatch(url)
 }
 
 export async function delActorTagFromGroup(group_id: number, tag_id: number) {
 	const url = `${baseUrl}/${group_id}/remove_tag/${tag_id}`
-	const [ok, response] = await fetchPatch(url)
-	if (!ok) {
-		return [false, response]
-	}
-	return [true, response.value]
+	return await fetchPatch(url)
 }
 

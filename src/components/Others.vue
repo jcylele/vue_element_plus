@@ -130,6 +130,7 @@ import { EFilterRow } from "../data/Enums";
 import { ActorFilterData } from "../data/ActorFilterData";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import { useRouter } from "vue-router";
+import { LogMessages } from "../data/Messages";
 
 enum ETab {
 	OutDated = "outdated",
@@ -215,7 +216,7 @@ async function removeDownloadingFile(actor_id: number) {
 			const removed_stats = downloading_file_stats.value[index]
 			total_downloading_file.value.remove(removed_stats)
 			downloading_file_stats.value.splice(index, 1)
-			logInfo(`remove downloading file succeed`)
+			logInfo(LogMessages.RemoveDownloadingFiles())
 		}
 	}
 }
@@ -230,21 +231,21 @@ async function clearGroupFolder(group_id: number) {
 async function clean() {
 	const [ok, _] = await cleanFiles()
 	if (ok) {
-		logInfo("remove outdated files succeed")
+		logInfo(LogMessages.RemoveOutdatedFiles())
 	}
 }
 
 async function validate() {
 	const [ok, count] = await validateFileInfos()
 	if (ok) {
-		logInfo(`validate file info succeed, ${count} actors validated`)
+		logInfo(LogMessages.ValidateFileInfos(count))
 	}
 }
 
 async function resetAllManual() {
 	const [ok, _] = await resetManual()
 	if (ok) {
-		logInfo("reset manual succeed")
+		logInfo(LogMessages.ResetManual())
 	}
 }
 

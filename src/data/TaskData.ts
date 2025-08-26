@@ -2,6 +2,7 @@ import { DownloadLimitForm } from "./DownloadForms";
 import { PostFilter, ResType } from "./Enums";
 import { format_file_size } from "./DataUtil";
 import BaseData from "./BaseData";
+import { IDownloadLimit, IDownloadTask } from "./SchemasOthers";
 
 export class DownloadProgress extends BaseData {
 	actor_count: number
@@ -13,10 +14,12 @@ export class DownloadLimit extends BaseData {
 	private limit: DownloadLimitForm
 	private progress: DownloadProgress
 
-	constructor(json_data?) {
+	constructor(json_data?: IDownloadLimit) {
 		super(json_data);
-		this.limit = new DownloadLimitForm(json_data.limit)
-		this.progress = new DownloadProgress(json_data.progress)
+		if (json_data){
+			this.limit = new DownloadLimitForm(json_data.limit)
+			this.progress = new DownloadProgress(json_data.progress)
+		}
 	}
 
 	get limit_desc_list(): string[] {
@@ -74,8 +77,10 @@ export class TaskData extends BaseData {
 	worker_count: Map<string, number>
 	queue_count: Map<string, number>
 
-	constructor(json_data?) {
+	constructor(json_data?: IDownloadTask) {
 		super(json_data);
-		this.download_limit = new DownloadLimit(json_data.download_limit)
+		if (json_data){
+			this.download_limit = new DownloadLimit(json_data.download_limit)
+		}
 	}
 }

@@ -102,21 +102,21 @@ async function removeDownloading() {
 	if (ok) {
 		downloading_files.value = []
 		total_downloading_file.value = ResFileInfo.getTotal([])
-		logInfo("remove downloading files succeed")
+		logInfo(LogMessages.RemoveDownloadingFiles())
 	}
 }
 
 async function resumeDownloading() {
 	const [ok, _] = await resumeActorDownload(props.actor_id)
 	if (ok) {
-		logInfo("resume downloading succeed")
+		logInfo(LogMessages.ResumeDownloading())
 	}
 }
 
 async function toFixPosts() {
 	const [ok, _] = await fixPosts(props.actor_id)
 	if (ok) {
-		logInfo("fixing posts started")
+		logInfo(LogMessages.TaskFixPosts())
 		emit('close')
 	}
 }
@@ -164,7 +164,7 @@ async function openFolder() {
 async function renameFiles() {
 	const [ok, _] = await renameActorFiles(props.actor_id)
 	if (ok) {
-		logInfo("rename files succeed")
+		logInfo(LogMessages.RenameFiles())
 	}
 }
 

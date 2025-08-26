@@ -105,7 +105,7 @@ export default {
 		async getLogs() {
 			const [ok, new_list] = await getActorLogs(this.specific_actor_id)
 			if (ok) {
-				this.actor_log_list = new_list.map(item => new ActorLog(item))
+				this.actor_log_list = new_list
 			}
 		},
 	},

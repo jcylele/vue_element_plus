@@ -42,6 +42,7 @@ import { updatePriorities } from "../ctrls/ActorTagCtrl";
 import { logInfo } from "../ctrls/FetchCtrl";
 import { Tag_Colors } from "../data/Consts";
 import { CommonPriority } from "../data/WebData";
+import { LogMessages } from "../data/Messages";
 
 
 export default {
@@ -97,7 +98,7 @@ export default {
 
 			let [ok, _] = await updatePriorities(changed_priorities)
 			if (ok) {
-				logInfo("priorities of tags saved")
+				logInfo(LogMessages.TagPrioritiesSaved())
 				this.changed = false
 			}
 		},

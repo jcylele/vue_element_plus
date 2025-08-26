@@ -148,7 +148,7 @@ import { ActorFilterStore } from "../store/ActorFilterStore";
 import { FavFolderStore } from "../store/FavFolderStore";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagFilter from "./ActorTagFilter.vue";
-import { getActorCountOfGroups } from "../ctrls/ActorCtrl";
+import { getActorCountInGroups } from "../ctrls/ActorCtrl";
 import { BoolEnum } from "../data/Enums";
 import { Filter_Row_Names } from "../data/Consts";
 import { nextTick } from "vue";
@@ -171,7 +171,7 @@ export default {
 		return {
 			cond_changed: false,
 			is_group_all: false,
-			group_count_map: new Map<number, number>(),
+			group_count_map: {} as Record<number, number>,
 			show_rows: [],
 		}
 	},
@@ -278,11 +278,11 @@ export default {
 			this.filter_condition.setAllGroupList(this.actor_group_list.map(group => group.group_id))
 		},
 		getActorCount(group_id: number): number {
-			return this.group_count_map.get(group_id) || 0
+			return this.group_count_map[group_id] || 0
 		},
 
 		async refreshGroupCount() {
-			const [ok, gc_map] = await getActorCountOfGroups()
+			const [ok, gc_map] = await getActorCountInGroups()
 			if (ok) {
 				this.group_count_map = gc_map
 			}

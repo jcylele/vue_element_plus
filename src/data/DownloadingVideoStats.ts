@@ -1,4 +1,5 @@
 import BaseData from "./BaseData"
+import { IDownloadingVideoStats } from "./SchemasOthers"
 
 export default class DownloadingVideoStats extends BaseData {
 	actor_id: number = 0
@@ -11,7 +12,7 @@ export default class DownloadingVideoStats extends BaseData {
 		return this.file_size / this.res_size
 	}
 
-	constructor(json_data?: Record<string, any>) {
+	constructor(json_data?: IDownloadingVideoStats) {
 		// 1. 先调用super()，完成父类的初始化
 		super()
 		if (json_data) {

@@ -61,6 +61,7 @@ import { updateActorTagGroup, addActorTagGroup, delActorTagGroup, addActorTagToG
 import { ActorTagStore } from "../store/ActorTagStore";
 import { logInfo } from "../ctrls/FetchCtrl";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
+import { LogMessages } from "../data/Messages";
 // emits
 // stores/routers
 const actor_tag_group_store = ActorTagGroupStore()
@@ -128,25 +129,25 @@ async function moveGroup(group_id: number, up: boolean) {
 }
 
 async function addTagToGroup(tag_id: number) {
-	const [ok, succeed] = await addActorTagToGroup(to_add_group_id.value, tag_id)
-	if (ok && succeed) {
+	const [ok, _] = await addActorTagToGroup(to_add_group_id.value, tag_id)
+	if (ok) {
 		const tag = actor_tag_store.get(tag_id)
 		const group = actor_tag_group_store.get(to_add_group_id.value)
 		tag.tag_group_id = to_add_group_id.value
 		group.tag_ids = actor_tag_store.getTagIdsInGroup(group.group_id)
 		to_add_group_id.value = 0
-		logInfo(`Added tag ${tag.tag_name} to group ${group.group_name} succeed`)
+		logInfo(LogMessages.AddTagToGroup(tag.tag_name, group.group_name))
 	}
 }
 
 async function delTagFromGroup(group_id: number, tag_id: number) {
-	const [ok, succeed] = await delActorTagFromGroup(group_id, tag_id)
-	if (ok && succeed) {
+	const [ok, _] = await delActorTagFromGroup(group_id, tag_id)
+	if (ok) {
 		const tag = actor_tag_store.get(tag_id)
 		const group = actor_tag_group_store.get(group_id)
 		tag.tag_group_id = 0
 		group.tag_ids = actor_tag_store.getTagIdsInGroup(group_id)
-		logInfo(`Removed tag ${tag.tag_name} from group ${group.group_name} succeed`)
+		logInfo(LogMessages.DelTagFromGroup(tag.tag_name, group.group_name))
 	}
 }
 

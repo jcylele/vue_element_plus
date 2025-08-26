@@ -1,18 +1,17 @@
 import { ActorTagData } from "../data/ActorTagData";
-import { fetchDelete, fetchGet, fetchPost, fetchPostStr, fetchPut } from "./FetchCtrl";
+import { fetchDelete, fetchGet, fetchPost, fetchPostStr } from "./FetchCtrl";
 import { CommonPriority } from "../data/WebData";
-import { BASE_URL } from "../data/Consts";
 
-const baseUrl = `${BASE_URL}/api/actor_tag`
+const baseUrl = "/actor_tag"
+
+export async function getActorTagList() {
+	const url = `${baseUrl}/list`
+	return await fetchGet(url, ActorTagData, true)
+}
 
 export async function addActorTag(actor_tag: ActorTagData) {
 	const url = `${baseUrl}/add`
-	const [ok, response] = await fetchPost(url, actor_tag)
-	if (!ok) {
-		return [ok, response]
-	}
-	const tag = new ActorTagData(response)
-	return [true, tag]
+	return await fetchPost<ActorTagData>(url, actor_tag, ActorTagData, false)
 }
 
 export async function updateTagName(tag_id: number, tag_name: string) {
@@ -27,26 +26,7 @@ export async function updatePriorities(tag_priorities: CommonPriority[]) {
 
 export async function getActorTag(tag_id: number) {
 	const url = `${baseUrl}/${tag_id}`
-	const [ok, response] = await fetchGet(url)
-	if (!ok) {
-		return [ok, response]
-	}
-	const tag = new ActorTagData(response)
-	return [true, tag]
-}
-
-export async function getActorTagList() {
-	const url = `${baseUrl}/list`
-	const [ok, response] = await fetchGet(url)
-	if (!ok) {
-		return [ok, response]
-	}
-	const list = [] as ActorTagData[]
-	for (const json_data of response) {
-		list.push(new ActorTagData(json_data))
-	}
-	// list.sort(compareActorTag)
-	return [true, list]
+	return await fetchGet<ActorTagData>(url, ActorTagData, false)
 }
 
 

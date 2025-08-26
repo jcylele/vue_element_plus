@@ -1,5 +1,6 @@
 import { PostFilter, ResType } from "./Enums";
 import { mb_size } from "./DataUtil";
+import BaseData from "./BaseData";
 
 export class ActorUrl {
 	actor_name: string
@@ -26,7 +27,7 @@ export class UrlDownloadForm extends GroupDownloadForm {
 	urls: ActorUrl[]
 }
 
-export class DownloadLimitForm {
+export class DownloadLimitForm extends BaseData {
 	actor_count: number
 
 	post_count: number
@@ -35,12 +36,8 @@ export class DownloadLimitForm {
 	res_type: ResType
 	file_count: number
 	total_file_size: number
-	single_file_size: number = 0
+	single_file_size: number
 
-
-	constructor(json_data?) {
-		Object.assign(this, json_data)
-	}
 
 	get show_single_file_size() {
 		return this.single_file_size / (mb_size)

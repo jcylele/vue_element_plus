@@ -69,6 +69,7 @@ import GroupCondEditor from "./GroupCondEditor.vue";
 import ActorGroupCond from "../data/ActorGroupCond";
 import { computed, onMounted, ref } from "vue";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
+import { LogMessages } from "../data/Messages";
 
 // stores/routers
 const actor_group_store = ActorGroupStore()
@@ -146,7 +147,7 @@ async function onSubmitCondition(cond_list: ActorGroupCond[]) {
 	const [ok, _] = await setGroupCondition(cond_actor_group.value!.group_id, cond_list)
 	if (ok) {
 		cond_actor_group.value!.cond_list = cond_list
-		logInfo("set condition succeed")
+		logInfo(LogMessages.GroupSetCondition())
 	}
 	cond_actor_group.value = undefined
 }

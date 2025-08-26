@@ -1,6 +1,7 @@
 import { GroupEntity } from "../data/Interfaces";
 import { CommonPriority } from "../data/WebData";
-import { fetchDelete, fetchGet, fetchPost } from "./FetchCtrl";
+import { Constructable, fetchDelete, fetchGet, fetchPost, ListResult, SingleResult, VoidResult } from "./FetchCtrl";
+
 
 export function swapGroup<T extends GroupEntity>(group_list: T[], group_id: number, up: boolean): CommonPriority[] | undefined {
 	const index = group_list.findIndex(group => group.key == group_id)
@@ -22,9 +23,6 @@ export function swapGroup<T extends GroupEntity>(group_list: T[], group_id: numb
 	return priorities
 }
 
-// 定义可构造的泛型约束
-type Constructable<T> = new (data?: any) => T;
-
 // 基础控制器类
 export abstract class BaseGroupCtrl<T extends GroupEntity> {
 	protected baseUrl: string;
@@ -35,65 +33,37 @@ export abstract class BaseGroupCtrl<T extends GroupEntity> {
 
 	protected abstract getDataClass(): Constructable<T>;
 
-	async getList(): Promise<[boolean, T[] | any]> {
+	async getList(): Promise<ListResult<T>> {
 		const url = `${this.baseUrl}/list`;
-		const [ok, response] = await fetchGet(url);
-		if (!ok) {
-			return [ok, response];
-		}
 		const DataClass = this.getDataClass();
-		const items = response.map((item: any) => new DataClass(item));
-		return [true, items];
+		return await fetchGet(url, DataClass, true);
 	}
 
-	async getById(id: number): Promise<[boolean, T | any]> {
+	async getById(id: number): Promise<SingleResult<T>> {
 		const url = `${this.baseUrl}/${id}`;
-		const [ok, response] = await fetchGet(url);
-		if (!ok) {
-			return [ok, response];
-		}
 		const DataClass = this.getDataClass();
-		const item = new DataClass(response);
-		return [true, item];
+		return await fetchGet(url, DataClass, false);
 	}
 
-	async add(data: T): Promise<[boolean, T | any]> {
+	async add(data: T): Promise<SingleResult<T>> {
 		const url = `${this.baseUrl}/add`;
-		const [ok, response] = await fetchPost(url, data.toForm());
-		if (!ok) {
-			return [ok, response];
-		}
 		const DataClass = this.getDataClass();
-		const item = new DataClass(response);
-		return [true, item];
+		return await fetchPost(url, data.toForm(), DataClass, false);
 	}
 
-	async update(data: T): Promise<[boolean, T | any]> {
+	async update(data: T): Promise<SingleResult<T>> {
 		const url = `${this.baseUrl}/${data.key}/update`;
-		const [ok, response] = await fetchPost(url, data.toForm());
-		if (!ok) {
-			return [ok, response];
-		}
 		const DataClass = this.getDataClass();
-		const item = new DataClass(response);
-		return [true, item];
+		return await fetchPost(url, data.toForm(), DataClass, false);
 	}
 
-	async delete(id: number): Promise<[boolean, any]> {
+	async delete(id: number): Promise<VoidResult> {
 		const url = `${this.baseUrl}/${id}`;
-		const [ok, response] = await fetchDelete(url);
-		if (!ok) {
-			return [ok, response];
-		}
-		return [true, response.value];
+		return await fetchDelete(url, undefined, false);
 	}
 
-	async updatePriorities(priorities: CommonPriority[]): Promise<[boolean, any]> {
+	async updatePriorities(priorities: CommonPriority[]): Promise<VoidResult> {
 		const url = `${this.baseUrl}/priority`
-		const [ok, response] = await fetchPost(url, priorities)
-		if (!ok) {
-			return [ok, response]
-		}
-		return [true, response.value]
+		return await fetchPost(url, priorities, undefined, false);
 	}
 }

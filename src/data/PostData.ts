@@ -1,5 +1,6 @@
 import BaseData from "./BaseData";
 import { EditingData }from "./EditingData";
+import { IPost } from "./Schemas";
 
 export class ActorPostInfo extends BaseData {
 	readonly actor_id: number
@@ -68,14 +69,14 @@ export class PostData extends BaseData {
     comment: string
 	editing_comment: string
 
-	constructor(json_data?: Record<string, any>) {
+	constructor(json_data?: IPost) {
 		super(json_data)
 		this.editing_comment = this.comment
 	}
 }
 
 export class EditingPostData extends EditingData<PostData> {
-	constructor(json_data?: Record<string, any>) {
+	constructor(json_data?: IPost) {
 		super(new PostData(json_data))
 	}
 }

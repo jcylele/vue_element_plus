@@ -4,13 +4,17 @@ import {
     GroupDownloadForm,
     DownloadLimitForm,
     ActorIdDownloadForm,
-    UrlDownloadForm, BaseDownloadForm, NewDownloadForm
+    UrlDownloadForm, NewDownloadForm
 } from "../data/DownloadForms";
 import {TaskData} from "../data/TaskData";
-import {BASE_URL} from "../data/Consts";
 
-const baseUrl = `${BASE_URL}/api/download`
+const baseUrl = `/download`
 
+
+export async function getCustomPage() {
+    const url = `${baseUrl}/custom_page`
+    return await fetchGet<number>(url, undefined, false)
+}
 
 export async function downloadNewActors(download_limit: DownloadLimitForm, group_id: number, start_page: number) {
     const url = `${baseUrl}/new`
@@ -18,12 +22,7 @@ export async function downloadNewActors(download_limit: DownloadLimitForm, group
     downForm.actor_group_id = group_id
     downForm.download_limit = download_limit
     downForm.start_page = start_page
-    const [ok, response] = await fetchPost(url, downForm)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPost(url, downForm)
 }
 
 export async function downloadByGroup(download_limit: DownloadLimitForm, group_id: number) {
@@ -31,12 +30,7 @@ export async function downloadByGroup(download_limit: DownloadLimitForm, group_i
     const downForm = new GroupDownloadForm()
     downForm.actor_group_id = group_id
     downForm.download_limit = download_limit
-    const [ok, response] = await fetchPost(url, downForm)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPost(url, downForm)
 }
 
 export async function downloadByActorIds(download_limit: DownloadLimitForm, actor_ids: number[]) {
@@ -44,12 +38,7 @@ export async function downloadByActorIds(download_limit: DownloadLimitForm, acto
     const nameDownForm = new ActorIdDownloadForm()
     nameDownForm.download_limit = download_limit
     nameDownForm.actor_ids = actor_ids
-    const [ok, response] = await fetchPost(url, nameDownForm)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPost(url, nameDownForm)
 }
 
 export async function downloadByUrls(download_limit: DownloadLimitForm, group_id: number, urls: ActorUrl[]) {
@@ -59,34 +48,19 @@ export async function downloadByUrls(download_limit: DownloadLimitForm, group_id
     urlDownForm.download_limit = download_limit
     urlDownForm.urls = urls
 
-    const [ok, response] = await fetchPost(url, urlDownForm)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPost(url, urlDownForm)
 }
 
 export async function resumeActorDownload(actor_id: number) {
     let url = `${baseUrl}/resume/${actor_id}`
 
-    const [ok, response] = await fetchPatch(url)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPatch(url)
 }
 
 export async function fixPosts(actor_id: number) {
     let url = `${baseUrl}/fix_posts/${actor_id}`
 
-    const [ok, response] = await fetchPatch(url)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPatch(url)
 }
 
 export async function manualDownload(download_limit: DownloadLimitForm, group_id: number) {
@@ -95,72 +69,41 @@ export async function manualDownload(download_limit: DownloadLimitForm, group_id
     downloadForm.download_limit = download_limit
     downloadForm.actor_group_id = group_id
 
-    const [ok, response] = await fetchPost(url, downloadForm)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchPost(url, downloadForm)
 }
 
 export async function getTaskCount() {
     const url = `${baseUrl}/count`
-    return await fetchGet(url)
+    return await fetchGet<number>(url, undefined, false)
 }
 
 export async function getAllTasks() {
     const url = `${baseUrl}/list`
-    const [ok, response] = await fetchGet(url)
-    if (!ok) {
-        return [ok, response]
-    }
-    const list = [] as TaskData[]
-    for (const json_data of response) {
-        list.push(new TaskData(json_data))
-    }
-    return [true, list]
+    return await fetchGet<TaskData>(url, TaskData, true)
 }
 
 export async function stopAllTasks() {
     const url = `${baseUrl}/all`
-    const [ok, response] = await fetchDelete(url)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchDelete(url)
 }
 
 export async function stopTask(task_id: number) {
     const url = `${baseUrl}/${task_id}`
-    const [ok, response] = await fetchDelete(url)
-    if (!ok) {
-        return [ok, response]
-    }
-
-    return [true, response.value]
+    return await fetchDelete(url)
 }
 
 export async function cleanFiles() {
     const url = `${baseUrl}/clean`
-    const [ok, response] = await fetchGet(url)
-    return [ok, response]
+    return await fetchGet(url)
 }
 
 export async function getActorIds() {
     const url = `${baseUrl}/actor_ids`
-    const [ok, response] = await fetchGet(url)
-    return [ok, response]
+    return await fetchGet<number>(url, undefined, true)
 }
 
 // openLogs
 export async function openLogs() {
     const url = `${baseUrl}/logs`
-    const [ok, response] = await fetchGet(url)
-    return [ok, response]
-}
-
-export async function getCustomPage() {
-    const url = `${baseUrl}/custom_page`
     return await fetchGet(url)
 }

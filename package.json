@@ -13,6 +13,7 @@
   "dependencies": {
     "@element-plus/icons-vue": "^2.0.10",
     "@vueuse/core": "^12.7.0",
+    "axios": "^1.11.0",
     "echarts": "^5.5.1",
     "element-plus": "^2.7.8",
     "fast-glob": "^3.2.12",

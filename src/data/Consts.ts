@@ -10,7 +10,8 @@ import {
 } from "./Enums";
 import { CommonOption, NoticeColumn, NoticeTypeConfig, SortGroup } from "./Interfaces";
 
-export const BASE_URL = "http://127.0.0.1:7878"
+export const ROOT_URL = "http://127.0.0.1:7878"
+export const BASE_URL = `${ROOT_URL}/api`
 
 export const MAX_SCORE = 12
 

@@ -2,23 +2,23 @@ import { ISortItem } from "./Interfaces";
 import { Star_Colors } from "./Consts";
 import BaseData from "./BaseData";
 import { EditingData } from "./EditingData";
+import { IActorTagData } from "./SchemasOthers";
 
 export class ActorTagData extends BaseData implements ISortItem {
-	readonly tag_id: number
-	tag_name: string
-	tag_priority: number
-	used_count: number
-	avg_score: number
-	tag_group_id: number
+	tag_id: number = 0
+	tag_name: string = ""
+	tag_priority: number = 0
+	used_count: number = 0
+	avg_score: number = 0
+	tag_group_id: number = 0
 
-	constructor(json_data?) {
-		super(json_data);
-		if (!json_data) {
-			this.tag_name = ""
-			this.tag_priority = 0
-			this.used_count = 0
-			this.avg_score = 0
-			this.tag_group_id = 0
+	constructor(json_data?: IActorTagData) {
+		// 1. super constructor
+		super()
+		// 2. field default value is set after super()
+		if (json_data) {
+			// 3. override default value
+			Object.assign(this, json_data)
 		}
 	}
 

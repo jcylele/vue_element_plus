@@ -67,6 +67,7 @@ import { PostConditionForm, EditingPostData, ActorPostInfo } from "../data/PostD
 import { logInfo, logWarn } from "../ctrls/FetchCtrl";
 import { computed, onMounted, ref } from "vue";
 import ActorData from "../data/ActorData";
+import { LogMessages } from "../data/Messages";
 
 
 const props = defineProps({
@@ -96,7 +97,7 @@ function startEdit() {
 
 async function endEdit() {
 	if (!condition_form.value.checkPostIdPrefix()) {
-		logWarn(`prefix of post id too short`)
+		logWarn(LogMessages.ShortPostIdPrefix())
 		return
 	}
 
@@ -124,10 +125,12 @@ async function getActorNames() {
 		expanded_actors.value = []
 		actor_post_list.value = []
 		actor_post_dict.value = new Map()
+		// sort by actor name
+		new_list.sort((a, b) => a.actor_name.localeCompare(b.actor_name))
+		actor_post_list.value = new_list
 		for (const actor_info of new_list) {
 			actor_post_dict.value.set(actor_info.actor_id, [])
 		}
-		actor_post_list.value = new_list
 	}
 }
 async function getActorPosts(actor_id: number) {
@@ -149,8 +152,8 @@ async function onPostSubmitClick(actor_info: ActorPostInfo, post_info: EditingPo
 	if (ok) {
 		post_info.is_editing = false
 		post_info.data.comment = post_info.data.editing_comment
+		logInfo(LogMessages.SetPostComment())
 		emit("comment", actor_info.actor_id, post_info.data.post_id, post_info.data.comment)
-		logInfo("set comment for post succeed")
 	}
 }
 

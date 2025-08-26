@@ -1,6 +1,7 @@
 import { ActorLogType } from "./Enums";
 import { Actor_Log_Type_Names } from "./Consts";
 import BaseData from "./BaseData";
+import { IActorLog } from "./Schemas";
 
 export default class ActorLog extends BaseData {
     log_type: ActorLogType
@@ -47,7 +48,7 @@ export default class ActorLog extends BaseData {
         return parseInt(this.log_param)
     }
 
-    constructor(json_data?) {
+    constructor(json_data?: IActorLog) {
         super(json_data);
     }
 }

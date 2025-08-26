@@ -1,11 +1,10 @@
 import { fetchPost } from "./FetchCtrl";
 import ActorGroupData from "../data/ActorGroupData";
-import { BASE_URL } from "../data/Consts";
 import ActorGroupCond from "../data/ActorGroupCond";
 import { CommonPriority } from "../data/WebData";
 import { BaseGroupCtrl } from "./BaseGroupCtrl";
 
-const baseUrl = `${BASE_URL}/api/actor_group`
+const baseUrl = "/actor_group"
 
 // region 继承基础控制器
 class ActorGroupCtrl extends BaseGroupCtrl<ActorGroupData> {
@@ -28,7 +27,7 @@ export async function addActorGroup(actor_group: ActorGroupData) {
 	return await actorGroupCtrl.add(actor_group)
 }
 
-export async function updateActorGroup(actor_group: ActorGroupData): Promise<[boolean, ActorGroupData]> {
+export async function updateActorGroup(actor_group: ActorGroupData) {
 	return await actorGroupCtrl.update(actor_group)
 }
 

@@ -1,5 +1,5 @@
 <template>
-    <el-form label-width="120px" label-position="left">
+    <el-form label-width="150px" label-position="left">
         <el-form-item label="Score Range">
             <el-slider v-model="scores"
                        :min="0" :max="max_score"

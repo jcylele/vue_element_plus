@@ -10,10 +10,6 @@ class ActorFileInfo extends BaseData {
     img_count: number
     video_count: number
 
-    constructor(json_data?) {
-        super(json_data);
-    }
-
     public get res_state_color(): string {
         return video_state_color[this.res_state]
     }
@@ -53,7 +49,7 @@ class ActorFileInfo extends BaseData {
         }
     }
 }
-export default class ActorFileStats extends BaseData {
+export default class ActorFileDetail extends BaseData {
     res_info: ActorFileInfo[]
     total_post_count: number
     unfinished_post_count: number

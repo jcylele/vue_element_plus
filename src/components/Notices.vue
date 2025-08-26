@@ -86,6 +86,7 @@ import { findSimilarActorNames } from "../ctrls/ActorCtrl";
 import { logInfo } from "../ctrls/FetchCtrl";
 import { NoticeColumn, NoticeTypeConfig } from "../data/Interfaces";
 import SvgIcon from "./SvgIcon/index.vue";
+import { LogMessages } from "../data/Messages";
 
 export default {
 	name: "Notices",
@@ -205,7 +206,7 @@ export default {
 			const [ok, _] = await findSimilarActorNames()
 			if (ok) {
 				await this.fetchAllNoticeCount()
-				logInfo("find similar actor names finished")
+				logInfo(LogMessages.SimilarActorNames())
 				await this.onNoticeTypeChange(this.cur_notice_type.toString())
 			}
 		},

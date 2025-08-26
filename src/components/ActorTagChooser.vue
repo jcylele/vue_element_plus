@@ -59,15 +59,33 @@ const tag_group_info_list = ref<TagGroupInfo[]>([])
 // methods
 function init() {
 	const actor_tag_ids = new Set(props.actor.tag_ids)
-	const tag_groups = actor_tag_group_store.sorted_list.map(group => {
-		return {
-			group_name: group.group_name,
-			tag_infos: actor_tag_store.sorted_list.filter(tag => tag.tag_group_id == group.group_id).map(tag => {
-				return { tag_id: tag.tag_id, selected: actor_tag_ids.has(tag.tag_id) }
-			})
+	const tag_group_ids = actor_tag_group_store.sorted_list.map(group => group.group_id)
+	tag_group_ids.push(0)
+	const tag_group_map = new Map<number, TagInfo[]>()
+	for (const actor_tag of actor_tag_store.sorted_list) {
+		let tag_group = tag_group_map.get(actor_tag.tag_group_id)
+		if (!tag_group) {
+			tag_group = []
+			tag_group_map.set(actor_tag.tag_group_id, tag_group)
 		}
-	})
-	tag_group_info_list.value = tag_groups
+		tag_group.push({
+			tag_id: actor_tag.tag_id,
+			selected: actor_tag_ids.has(actor_tag.tag_id)
+		})
+	}
+	const group_info_list: TagGroupInfo[] = []
+	for (const tag_group_id of tag_group_ids) {
+		const tag_group = tag_group_map.get(tag_group_id)
+		if (!tag_group) {
+			continue
+		}
+		group_info_list.push({
+			group_name: tag_group_id == 0 ? "Ungrouped" : actor_tag_group_store.getName(tag_group_id),
+			tag_infos: tag_group
+		})
+	}
+
+	tag_group_info_list.value = group_info_list
 }
 
 function getTagStyle(tag_info: TagInfo) {
@@ -107,4 +125,5 @@ onMounted(() => {
 })
 
 </script>
-<style scoped></style>
+<style scoped>
+</style>

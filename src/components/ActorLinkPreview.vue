@@ -52,7 +52,10 @@ const actorTagStore = ActorTagStore()
 // props/models
 
 const props = defineProps({
-	actors: Array<ActorData>
+	actors: {
+		type: Array<ActorData>,
+		required: true
+	}
 })
 // variables
 const tag_list: Ref<number[]> = ref([])

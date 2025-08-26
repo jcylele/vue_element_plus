@@ -31,7 +31,6 @@ import { ActorTagData } from "../data/ActorTagData";
 import { addActorTag } from "../ctrls/ActorTagCtrl";
 import { mapActions } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
-import { logInfo } from "../ctrls/FetchCtrl";
 import { Tag_Colors } from "../data/Consts";
 
 export default {
@@ -62,7 +61,6 @@ export default {
 				this.new_actor_tag = new ActorTagData()
 				this.show_add = false
 				this.addActorTag(tag)
-				// logInfo(`tag added: ${tag.tag_name}`)
 				this.$emit("tag_added")
 			}
 		},

@@ -159,6 +159,7 @@ import { FavFolderStore } from "../store/FavFolderStore";
 import { ActorsDialog, EActorsDialog } from "../data/ActorsDialog";
 import FavFolderSelector from "./FavFolderSelector.vue";
 import { batchAddActorToFolder, batchDelActorFromFolder } from "../ctrls/FolderCtrl";
+import { LogMessages } from "../data/Messages";
 
 enum FilterType {
 	Normal = "Normal",
@@ -415,7 +416,7 @@ export default {
 		async batchSetGroup(group_id: number) {
 			let actor_ids = this.getSelectedActorIds()
 			if (actor_ids.length == 0) {
-				logWarn("No actor to set group")
+				logWarn(LogMessages.NoActorSelected())
 				return
 			}
 			let [ok, actor_map] = await batchChangeActorGroup(actor_ids, group_id)
@@ -459,7 +460,7 @@ export default {
 		onLinkClick() {
 			const link_actor_list = this.getSelectedActors()
 			if (link_actor_list.length < 2) {
-				logWarn("Not enough actors to link")
+				logWarn(LogMessages.NotEnoughActorsToLink())
 				return
 			}
 			this.actors_dialog.showDialog(EActorsDialog.link, undefined, link_actor_list)
@@ -473,6 +474,7 @@ export default {
 			const actor_ids = this.actors_dialog.selected_actors.map(actor => actor.actor_id)
 			const [ok, actor_map] = await linkSameActors(actor_ids, score, remark, tag_list)
 			if (ok) {
+				logInfo(LogMessages.LinkActors(actor_ids.length))
 				this.actors_dialog.closeDialog(EActorsDialog.link)
 				this.refreshActors(actor_map)
 			}
@@ -481,12 +483,13 @@ export default {
 		async unlinkActors() {
 			let actor_ids = this.getSelectedActorIds()
 			if (actor_ids.length == 0) {
-				logWarn("No actor to unlink")
+				logWarn(LogMessages.NoActorSelected())
 				return
 			}
 
 			const [ok, actor_map] = await unlinkSameActors(actor_ids)
 			if (ok) {
+				logInfo(LogMessages.UnlinkActors(actor_ids.length))
 				this.refreshActors(actor_map)
 			}
 		},
@@ -509,7 +512,7 @@ export default {
 		batchShowDownload() {
 			let actor_ids = this.getSelectedActorIds()
 			if (actor_ids.length == 0) {
-				logWarn("No actor to download")
+				logWarn(LogMessages.NoActorSelected())
 				return
 			}
 			this.showDownloadLimit(actor_ids)
@@ -521,7 +524,7 @@ export default {
 			if (ok) {
 				await this.fetchTaskCount()
 				await this.getDowningFromServer()
-				logInfo("download started")
+				logInfo(LogMessages.TaskStart())
 			}
 		},
 
@@ -536,7 +539,7 @@ export default {
 		batchShowFolderAdd() {
 			let actor_ids = this.getSelectedActorIds()
 			if (actor_ids.length == 0) {
-				logWarn("No actor to add to folder")
+				logWarn(LogMessages.NoActorSelected())
 				return
 			}
 			this.actors_dialog.showDialog(EActorsDialog.folder_add, actor_ids, undefined)
@@ -544,7 +547,7 @@ export default {
 		batchShowFolderRemove() {
 			let actor_ids = this.getSelectedActorIds()
 			if (actor_ids.length == 0) {
-				logWarn("No actor to remove from folder")
+				logWarn(LogMessages.NoActorSelected())
 				return
 			}
 			this.actors_dialog.showDialog(EActorsDialog.folder_remove, actor_ids, undefined)

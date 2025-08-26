@@ -43,6 +43,7 @@ import {ActorGroupStore} from "../store/ActorGroupStore.js";
 import ActorGroupData from "../data/ActorGroupData";
 import {addActorGroup} from "../ctrls/ActorGroupCtrl";
 import {logInfo} from "../ctrls/FetchCtrl";
+import { LogMessages } from "../data/Messages.js";
 
 export default {
   name: "NewActorGroup",
@@ -69,7 +70,7 @@ export default {
         this.new_actor_group = new ActorGroupData()
         this.show_add = false
         this.addActorGroup(group)
-        logInfo("add succeed")
+        logInfo(LogMessages.GroupAdded())
         this.$emit("group_added")
       }
     },

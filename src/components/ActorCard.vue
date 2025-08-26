@@ -233,7 +233,7 @@ import ActorGroupData from "../data/ActorGroupData";
 import { Popper_Styles } from "../data/Consts";
 import { logInfo } from "../ctrls/FetchCtrl";
 import { ActorFilterStore } from "../store/ActorFilterStore";
-import ActorFileStats from "../data/FileInfo";
+import ActorFileDetail from "../data/FileInfo";
 import { ActorCardDialog, EActorDialog } from "../data/ActorCardDialog";
 import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
 import { FavFolderStore } from "../store/FavFolderStore";
@@ -241,6 +241,7 @@ import { addActorToFolder, delActorFromFolder } from "../ctrls/FolderCtrl";
 import FavFolderSelector from "./FavFolderSelector.vue";
 import { ECardRefresh } from "../data/Enums";
 import MyRate from "./MyRate.vue";
+import { LogMessages } from "../data/Messages";
 
 
 export default {
@@ -345,6 +346,7 @@ export default {
 
 		gotoActorPage() {
 			this.hideOp()
+			console.log(this.actor.href)
 			window.open(this.actor.href, '_blank', 'noreferrer');
 		},
 		openFolder() {
@@ -356,7 +358,7 @@ export default {
 			const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
 			if (ok) {
 				this.setFileInfo(file_info)
-				logInfo("clear folder succeed")
+				logInfo(LogMessages.ClearFolder())
 			}
 		},
 		async resetPosts() {
@@ -364,13 +366,14 @@ export default {
 			const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
 			if (ok) {
 				this.setFileInfo(file_info)
-				logInfo("reset posts succeed")
+				logInfo(LogMessages.ResetPosts())
 			}
 		},
 		async setActorGroup() {
 			const [ok, ar] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
 			if (ok) {
 				this.onRecvActorMsg(ar)
+				logInfo(LogMessages.ActorChangeGroup(this.actor.actor_name))
 				this.$emit('refresh', this.actor_data.data.actor_id, ECardRefresh.Group)
 			}
 		},
@@ -436,6 +439,7 @@ export default {
 		async changeScore() {
 			const [ok, actor_map] = await changeActorScore(this.actor.actor_id, this.edit_score * 2)
 			if (ok) {
+				logInfo(LogMessages.ActorChangeScore())
 				this.$emit('update', actor_map)
 			}
 		},
@@ -455,6 +459,7 @@ export default {
 			}
 			const [ok, actor_map] = await changeActorRemark(this.actor.actor_id, new_remark)
 			if (ok) {
+				logInfo(LogMessages.ActorChangeRemark())
 				this.$emit('update', actor_map)
 			}
 		},
@@ -463,10 +468,10 @@ export default {
 			if (new_comment == this.actor.comment) {
 				return
 			}
-			console.log(`onSubmitComment: ${new_comment.length}`)
 			const [ok, ar] = await changeActorComment(this.actor.actor_id, new_comment)
 			if (ok) {
 				this.onRecvActorMsg(ar)
+				logInfo(LogMessages.ActorChangeComment())
 				this.$emit('refresh', this.actor_data.data.actor_id, ECardRefresh.Comment)
 			}
 		},
@@ -483,8 +488,8 @@ export default {
 				this.setFileInfo(file_info)
 			}
 		},
-		setFileInfo(file_info) {
-			this.actor.file_info = new ActorFileStats(file_info)
+		setFileInfo(file_info: ActorFileDetail) {
+			this.actor.file_info = file_info
 		},
 		async getLinkedGroups() {
 			if (!this.actor.is_linked) {
@@ -507,13 +512,13 @@ export default {
 				const [ok, _] = await delActorFromFolder(this.actor.actor_id, folder_id)
 				if (ok) {
 					this.actor.folder_ids.splice(folder_index, 1)
-					logInfo(`del actor from folder succeed`)
+					logInfo(LogMessages.DelActorFromFolder())
 				}
 			} else {
 				const [ok, _] = await addActorToFolder(this.actor.actor_id, folder_id)
 				if (ok) {
 					this.actor.folder_ids.push(folder_id)
-					logInfo(`add actor to folder succeed`)
+					logInfo(LogMessages.AddActorToFolder())
 				}
 			}
 		}

@@ -125,7 +125,7 @@ export default {
             this.is_choosing_tags = false
         },
         refreshChart(score_arr) {
-            console.log(score_arr)
+            // console.log(score_arr)
             // x axis 0-12
             const x_axis = []
             for (let i = 0; i <= MAX_SCORE; i++) {

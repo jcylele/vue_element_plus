@@ -1,11 +1,10 @@
-import { BASE_URL } from "../data/Consts";
 import { fetchPost } from "./FetchCtrl";
 import { FolderData } from "../data/FolderData";
 import { CommonPriority } from "../data/WebData";
 import { BaseGroupCtrl } from "./BaseGroupCtrl";
 
 
-const baseUrl = `${BASE_URL}/api/favorite_folder`
+const baseUrl = "/favorite_folder"
 
 // 继承基础控制器
 

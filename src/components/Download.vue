@@ -86,6 +86,7 @@ import {Download_Options, Start_Page_Options} from "../data/Consts";
 import {CommonOption} from "../data/Interfaces";
 import {BadgeStore} from "../store/BadgeStore";
 import ActorGroupData from "../data/ActorGroupData";
+import { LogMessages } from "../data/Messages";
 
 export default {
 
@@ -150,7 +151,7 @@ export default {
         checkActorGroup(): boolean {
             let group = this.getGroup(this.actor_group)
             if (group == undefined) {
-                logWarn("choose correct group")
+                logWarn(LogMessages.ChooseCorrectActorGroup())
                 return false
             }
             return true
@@ -169,7 +170,7 @@ export default {
             }
 
             let ok = false
-            let ret = ""
+            let ret: any = null
             switch (this.down_type) {
                 case DownloadType.New: {
                     let real_start_page = 0
@@ -186,7 +187,7 @@ export default {
                     break
                 case DownloadType.Url:
                     if (this.actor_urls.length == 0) {
-                        logWarn("no url is assigned")
+                        logWarn(LogMessages.NoUrlAssigned())
                         return
                     }
                     [ok, ret] = await downloadByUrls(this.download_limit, this.actor_group, this.actor_urls)
@@ -195,12 +196,12 @@ export default {
                     [ok, ret] = await manualDownload(this.download_limit, this.actor_group)
                     break
                 default:
-                    logError("invalid download type")
-                    break
+                    logError(LogMessages.InvalidDownloadType())
+                    return
             }
             if (ok) {
                 await this.fetchTaskCount()
-                logInfo("download started")
+                logInfo(LogMessages.TaskStart())
             }
         },
 

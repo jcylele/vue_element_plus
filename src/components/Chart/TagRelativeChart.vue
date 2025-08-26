@@ -1,5 +1,5 @@
 <template>
-    <el-form label-width="120px" label-position="left">
+    <el-form label-width="150px" label-position="left">
         <el-form-item label="Tag">
             <el-select v-model="cur_tag_id"
                        style="width: 150px;"

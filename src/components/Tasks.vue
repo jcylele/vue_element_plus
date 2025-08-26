@@ -57,6 +57,7 @@ import {logInfo} from "../ctrls/FetchCtrl";
 import {mapActions} from "pinia";
 import {BadgeStore} from "../store/BadgeStore";
 import {TaskData} from "../data/TaskData";
+import { LogMessages } from "../data/Messages.js";
 
 export default {
     name: "Tasks",
@@ -72,7 +73,7 @@ export default {
         async stopTask(uid: number) {
             const [ok, ret] = await stopTask(uid)
             if (ok) {
-                logInfo("stop task succeed")
+                logInfo(LogMessages.TaskStop())
                 this.task_list.splice(this.task_list.findIndex((task: any) => task.uid === uid), 1)
                 this.setTaskCount(this.task_list.length)
             }
@@ -81,7 +82,7 @@ export default {
         async stopAll() {
             const [ok, _] = await stopAllTasks()
             if (ok) {
-                logInfo("stop all task succeed")
+                logInfo(LogMessages.TaskStopAll())
                 this.task_list = []
                 this.setTaskCount(0)
             }
