@@ -2,6 +2,9 @@ import { ErrorCode } from './Enums';
 
 export const ErrorMessages: { [key in ErrorCode]?: string } = {
     [ErrorCode.Success]: 'operation succeed',
+
+	[ErrorCode.Unavailable]: 'function unavailable',
+
     [ErrorCode.MainActorNotFound]: 'main actor not found',
     [ErrorCode.ActorNotFound]: 'actor not found',
     [ErrorCode.ActorGroupNotFound]: 'actor group not found',

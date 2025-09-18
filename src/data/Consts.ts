@@ -1,6 +1,8 @@
 import {
 	ActorLogType, BoolEnum,
 	DownloadType,
+	EConfirmOp,
+	EOtherOp,
 	EStartPage,
 	NoticeType,
 	PostFilter,
@@ -8,7 +10,7 @@ import {
 	ResState, ResType,
 	SortType
 } from "./Enums";
-import { CommonOption, NoticeColumn, NoticeTypeConfig, SortGroup } from "./Interfaces";
+import { CommonOption, ConfirmOp, NoticeColumn, NoticeTypeConfig, OtherOp, SortGroup } from "./Interfaces";
 
 export const ROOT_URL = "http://127.0.0.1:7878"
 export const BASE_URL = `${ROOT_URL}/api`
@@ -182,47 +184,47 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 	[NoticeType.InvalidPost]: {
 		tip: "invalid post id, skip",
 		notice_columns: [{
-		col_name: "Actor Name",
-		prop_name: "notice_param0"
-	}, {
-		col_name: "Page",
-		prop_name: "notice_param1"
-	}, {
-		col_name: "Post ID",
-		prop_name: "notice_param2"
+			col_name: "Actor Name",
+			prop_name: "notice_param0"
+		}, {
+			col_name: "Page",
+			prop_name: "notice_param1"
+		}, {
+			col_name: "Post ID",
+			prop_name: "notice_param2"
 		}]
 	},
 	[NoticeType.SameActorName]: {
 		tip: "same actor name on different platforms",
 		notice_columns: [{
-		col_name: "Actor Name",
-		prop_name: "notice_param0"
+			col_name: "Actor Name",
+			prop_name: "notice_param0"
 		}]
 	},
 	[NoticeType.HasLinkedAccount]: {
 		tip: "officially linked accounts",
 		notice_columns: [{
-		col_name: "Actor Name 1",
-		prop_name: "notice_param0"
-	}, {
-		col_name: "Actor Name 2",
-		prop_name: "notice_param1"
+			col_name: "Actor Name 1",
+			prop_name: "notice_param0"
+		}, {
+			col_name: "Actor Name 2",
+			prop_name: "notice_param1"
 		}]
 	},
 	[NoticeType.SimilarActorName]: {
 		tip: "similar actor names, indicating the same actor",
 		notice_columns: [{
-		col_name: "Actor Name 1",
-		prop_name: "notice_param0"
-	}, {
-		col_name: "Actor Name 2",
-		prop_name: "notice_param1"
-	}, {
-		col_name: "Actor Name 3",
-		prop_name: "notice_param2"
-	}, {
-		col_name: "Actor Name 4",
-		prop_name: "notice_param3"
+			col_name: "Actor Name 1",
+			prop_name: "notice_param0"
+		}, {
+			col_name: "Actor Name 2",
+			prop_name: "notice_param1"
+		}, {
+			col_name: "Actor Name 3",
+			prop_name: "notice_param2"
+		}, {
+			col_name: "Actor Name 4",
+			prop_name: "notice_param3"
 		}]
 	},
 }
@@ -239,6 +241,19 @@ export const Actor_Log_Type_Names = {
 	[ActorLogType.PostCount]: "Post Count",
 	[ActorLogType.ClearFolder]: "Clear Folder",
 	[ActorLogType.Comment]: "Set Comment",
+}
+
+export const Other_Ops: OtherOp[] = [
+	{ op: EOtherOp.Outdated, label: "Outdated Files", desc: "when actor is done, there may be downloading files of this actor", btn_text: "Remove Files" },
+	{ op: EOtherOp.Validate, label: "Validate File Info", desc: "correct incorrect file info in database", btn_text: "Validate" },
+	{ op: EOtherOp.Manual, label: "Reset Manual", desc: "reset manual flag for all actors", btn_text: "Reset Manual" },
+	{ op: EOtherOp.Logs, label: "Log Folder", desc: "open log folder in explorer", btn_text: "Open Log Folder" },
+]
+
+export const Confirm_Ops: Record<EConfirmOp, ConfirmOp> =
+{
+	[EConfirmOp.ClearFolder]: { title: "Clear Folder", content: "clear all actor files, make sure you have watched them" },
+	[EConfirmOp.ResetPosts]: { title: "Reset Posts", content: "reset  last post id of actor, so to download old posts" },
 }
 
 export const Popper_Styles = {

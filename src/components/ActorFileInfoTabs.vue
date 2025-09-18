@@ -66,6 +66,7 @@ import { getActorDownloadingFiles, getActorVideoInfo, openActorFolder, removeDow
 import { logInfo } from "../ctrls/FetchCtrl";
 import { fixPosts, resumeActorDownload } from "../ctrls/DownloadCtrl";
 import { format_file_size, format_percent } from "../data/DataUtil";
+import { LogMessages } from "../data/Messages";
 
 enum ETabNames {
 	All,

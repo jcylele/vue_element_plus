@@ -1,4 +1,5 @@
 import BaseData from "./BaseData";
+import { EConfirmOp, EOtherOp } from "./Enums";
 import { CommonGroupForm } from "./WebData"
 
 export interface ISortItem {
@@ -51,4 +52,16 @@ export interface TagRecord {
 	last_used: number
 }
 
+
+export interface OtherOp {
+	op: EOtherOp
+	label: string
+	desc: string
+	btn_text: string
+}
+
+export interface ConfirmOp {
+	title: string
+	content: string
+}
 

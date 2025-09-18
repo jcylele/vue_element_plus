@@ -4,7 +4,7 @@ import { ActorFilterData } from "../data/ActorFilterData";
 import ResSizeCount from "../data/ResSizeCount";
 import { ActorVideoInfo } from "../data/ActorVideoInfo";
 import { ResFileInfo } from "../data/ResFileInfo";
-import { IUnifiedResponse } from "../data/SchemasOthers";
+import { ICommentCount, IUnifiedResponse } from "../data/SchemasOthers";
 import { ErrorCode } from "../data/Enums";
 import ActorFileDetail from "../data/FileInfo";
 import ActorLog from "../data/ActorLog";
@@ -197,6 +197,11 @@ export async function getLinkedActorGroupIds(actor_id: number) {
 export async function getVideoSizes(actor_id: number) {
 	const url = `${baseUrl}/${actor_id}/video_sizes`
 	return await fetchGet<ResSizeCount>(url, ResSizeCount, true)
+}
+
+export async function getComments() {
+	const url = `${baseUrl}/comments`
+	return await fetchGet<ICommentCount>(url, undefined, true)
 }
 
 export async function resetManual() {

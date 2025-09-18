@@ -1,60 +1,77 @@
 <template>
-	<el-space direction="vertical" size="small" style="width: 100%" fill>
-		<!-- posts -->
-		<el-form label-width="auto" label-position="left">
-			<el-form-item v-for="actor_log in actor_log_list" :label="actor_log.log_type_name">
+	<!-- posts -->
+	<el-table :data="show_log_list" height="480">
+		<el-table-column label="Type" width="150">
+			<template #header>
+				<el-tooltip content="check to collapse continous same logs" placement="top">
+					<div class="left-row">
+						<el-checkbox v-model="is_simplified" label="Type" size="default" border />
+					</div>
+				</el-tooltip>
+			</template>
+			<template #default="scope">
+				<div class="left-row">
+					<span v-if="is_simplified">{{ scope.row.log_type_name_count }}</span>
+					<span v-else >{{ scope.row.log_type_name }}</span>
+				</div>
+			</template>
+		</el-table-column>
+		<el-table-column label="Param" min-width="500">
+			<template #default="scope">
 				<div class="split-row" style="align-items: flex-end;">
-					<div v-if="actor_log.log_type == ActorLogType.Add">
+					<div v-if="scope.row.log_type == ActorLogType.Add">
 						<el-text>
 							{{ specific_actor_id }}
 						</el-text>
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.Group">
-						<el-text :style="{ 'color': getGroupColor(actor_log.group_id) }">
-							{{ getGroupName(actor_log.group_id) }}
+					<div v-else-if="scope.row.log_type == ActorLogType.Group">
+						<el-text :style="{ 'color': getGroupColor(scope.row.group_id) }">
+							{{ getGroupName(scope.row.group_id) }}
 						</el-text>
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.Score" class="center-column">
-						<MyRate v-model="actor_log.show_score" style="background-color: #1a1a1a50;" disabled />
+					<div v-else-if="scope.row.log_type == ActorLogType.Score" class="center-column">
+						<MyRate v-model="scope.row.show_score" style="background-color: #1a1a1a50;" disabled />
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.Tag" class="left-row">
-						<el-tag v-for="tag_id in actor_log.tag_id_list" :style="getTagStyle(tag_id)" round>
+					<div v-else-if="scope.row.log_type == ActorLogType.Tag" class="left-row wrap">
+						<el-tag v-for="tag_id in scope.row.tag_id_list" :style="getTagStyle(tag_id)" round>
 							{{ getTagName(tag_id) }}
 						</el-tag>
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.Remark">
+					<div v-else-if="scope.row.log_type == ActorLogType.Remark">
 						<el-text class="log-string remark-color">
-							{{ actor_log.remark }}
+							{{ scope.row.remark }}
 						</el-text>
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.Comment">
+					<div v-else-if="scope.row.log_type == ActorLogType.Comment">
 						<el-text class="log-string comment-color">
-							{{ actor_log.comment }}
+							{{ scope.row.comment }}
 						</el-text>
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.Link" class="left-row">
-						<el-text v-for="actor_name in actor_log.actor_names"
+					<div v-else-if="scope.row.log_type == ActorLogType.Link" class="left-row">
+						<el-text v-for="actor_name in scope.row.actor_names"
 							style="margin-right:10px;text-decoration-line: underline">
 							{{ actor_name }}
 						</el-text>
 					</div>
-					<div v-else-if="actor_log.log_type == ActorLogType.PostCount">
+					<div v-else-if="scope.row.log_type == ActorLogType.PostCount">
 						<el-text>
-							{{ actor_log.post_count }}
+							{{ scope.row.post_count }}
 						</el-text>
 					</div>
 					<div v-else>
 						<el-text>
-							{{ actor_log.log_param }}
+							{{ scope.row.log_param }}
 						</el-text>
 					</div>
-					<span class="log-time">
-						{{ actor_log.log_time }}
-					</span>
 				</div>
-			</el-form-item>
-		</el-form>
-	</el-space>
+			</template>
+		</el-table-column>
+		<el-table-column label="Time" width="170">
+			<template #default="scope">
+				<span class="log-time">{{ scope.row.log_time }}</span>
+			</template>
+		</el-table-column>
+	</el-table>
 </template>
 
 <script lang="ts">
@@ -69,11 +86,6 @@ import MyRate from "./MyRate.vue";
 export default {
 	name: "ActorLogs",
 	components: { MyRate },
-	computed: {
-		ActorLogType() {
-			return ActorLogType
-		},
-	},
 	// props from parent
 	props: {
 		specific_actor_id: Number
@@ -81,7 +93,18 @@ export default {
 	data() {
 		return {
 			actor_log_list: [] as ActorLog[],
+			simplified_log_list: [] as ActorLog[],
+			simplified_count: 0,
+			is_simplified: true,
 		}
+	},
+	computed: {
+		ActorLogType() {
+			return ActorLogType
+		},
+		show_log_list(): ActorLog[] {
+			return this.is_simplified ? this.simplified_log_list : this.actor_log_list
+		},
 	},
 	methods: {
 		...mapActions(ActorTagStore, {
@@ -106,6 +129,8 @@ export default {
 			const [ok, new_list] = await getActorLogs(this.specific_actor_id)
 			if (ok) {
 				this.actor_log_list = new_list
+				this.simplified_log_list = ActorLog.simplifyLogs(new_list)
+				this.simplified_count = this.actor_log_list.length - this.simplified_log_list.length
 			}
 		},
 	},
@@ -118,13 +143,15 @@ export default {
 
 <style scoped>
 
-.el-form-item {
-	padding-right: 0;
+.collapse-label {
+	text-decoration: line-through;
 }
 
 .log-string {
+	font-size: var(--el-font-size-large);
 	white-space: pre-wrap;
-	word-break: break-all;
+	/* word-break: break-all; */
+	overflow-wrap: break-word;
 }
 
 .log-time {

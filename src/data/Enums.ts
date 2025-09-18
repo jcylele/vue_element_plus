@@ -48,6 +48,7 @@ export enum MainMenu {
 }
 
 export enum ActorLogType {
+	None = 0,
 	Add = 1,
 	Group = 2,
 	Score = 3,
@@ -111,22 +112,36 @@ export enum ECardRefresh {
 export enum ErrorCode {
 	Success = 0,
 
-	MainActorNotFound = 1,
-	ActorNotFound = 2,
-	ActorGroupNotFound = 3,
-	TagNotFound = 4,
-	TagGroupNotFound = 5,
-	FolderNotFound = 6,
+	Unavailable = 1,
 
-	MultiLinkGroups = 100,
-	NotAllLinkedActors = 101,
-	UnlinkedActor = 102,
+	MainActorNotFound = 101,
+	ActorNotFound = 102,
+	ActorGroupNotFound = 103,
+	TagNotFound = 104,
+	TagGroupNotFound = 105,
+	FolderNotFound = 106,
+
+	MultiLinkGroups = 201,
+	NotAllLinkedActors = 202,
+	UnlinkedActor = 203,
 
 
-	GroupAlreadyIn = 200,
-	GroupCondFailed = 201,
-	GroupHasActors = 202,
+	GroupAlreadyIn = 301,
+	GroupCondFailed = 302,
+	GroupHasActors = 303,
 
-	TagInOtherGroup = 300,
-	TagNotInGroup = 301,
+	TagInOtherGroup = 401,
+	TagNotInGroup = 402,
+}
+
+export enum EOtherOp {
+	Outdated = 0,
+	Validate = 1,
+	Manual = 2,
+	Logs = 3,
+}
+
+export enum EConfirmOp {
+	ClearFolder = 1,
+	ResetPosts = 2,
 }

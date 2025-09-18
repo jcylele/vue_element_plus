@@ -1,20 +1,52 @@
 <template>
 	<el-space direction="vertical" fill>
-		<el-space v-for="edit_info in edit_info_list" :class="edit_info.root_class" direction="vertical"
-			alignment="start" size="small">
-			<el-space direction="horizontal" size="large" alignment="flex-end">
+		<el-space :class="remark_edit_info.config.root_class" direction="vertical" alignment="start" size="small" fill>
+			<el-space direction="horizontal" alignment="flex-end">
 				<el-text class="rc-title bold-text this-color">
-					{{ edit_info.title }}
+					{{ remark_edit_info.config.title }}
 				</el-text>
-				<svg-icon v-if="!edit_info.is_editing" name="edit" class="this-color" size="30px"
-					@click="onEditClick(edit_info.edit_id)" />
-				<svg-icon v-if="edit_info.is_editing" name="completed" class="this-color" size="32px"
-					@click="onSubmitClick(edit_info.edit_id)" />
-				<svg-icon v-if="edit_info.is_editing" name="close" class="this-color" size="32px"
-					@click="onCancelClick(edit_info.edit_id)" />
+				<svg-icon v-if="!remark_edit_info.is_editing" name="edit" class="this-color" size="30px"
+					@click="onEditClick(remark_edit_info)" />
+				<svg-icon v-if="remark_edit_info.is_editing" name="completed" class="this-color" size="32px"
+					@click="onSubmitClick(remark_edit_info)" />
+				<svg-icon v-if="remark_edit_info.is_editing" name="close" class="this-color" size="32px"
+					@click="onCancelClick(remark_edit_info)" />
 			</el-space>
-			<el-input v-if="edit_info.is_editing" v-model="edit_info.data" class="rc-input" type="textarea" autosize />
-			<el-text v-else class="rc-text multi-line-text">{{ edit_info.data }}</el-text>
+			<el-input v-if="remark_edit_info.is_editing" v-model="remark_edit_info.data" class="rc-input"
+				type="textarea" autosize />
+			<el-text v-else class="rc-text multi-line-text">{{ remark_edit_info.data }}</el-text>
+			<el-divider style="margin: 2px" />
+		</el-space>
+		<el-space :class="comment_edit_info.config.root_class" direction="vertical" alignment="start" size="small" fill>
+			<div class="split-row">
+				<el-space direction="horizontal" alignment="flex-end">
+					<el-text class="rc-title bold-text this-color">
+						{{ comment_edit_info.config.title }}
+					</el-text>
+					<svg-icon v-if="!comment_edit_info.is_editing" name="edit" class="this-color" size="30px"
+						@click="onEditClick(comment_edit_info)" />
+					<svg-icon v-if="comment_edit_info.is_editing" name="completed" class="this-color" size="32px"
+						@click="onSubmitClick(comment_edit_info)" />
+					<svg-icon v-if="comment_edit_info.is_editing" name="close" class="this-color" size="32px"
+						@click="onCancelClick(comment_edit_info)" />
+				</el-space>
+				<el-select placeholder="common used" @change="onSelectComment" placement="bottom-end"
+					style="width: 180px;">
+					<template v-if="comment_edit_info.data" #header>
+						<el-button size="small" type="primary" @click="onSelectComment('')" plain>
+							Remove
+						</el-button>
+					</template>
+					<el-option v-for="comment in common_comments" :key="comment.comment" :label="comment.comment"
+						:value="comment.comment">
+						<span style="float: left">{{ comment.count > 1 ? `${comment.comment} (${comment.count})` :
+							comment.comment }}</span>
+					</el-option>
+				</el-select>
+			</div>
+			<el-input v-if="comment_edit_info.is_editing" v-model="comment_edit_info.data" class="rc-input"
+				type="textarea" autosize />
+			<el-text v-else class="rc-text multi-line-text">{{ comment_edit_info.data }}</el-text>
 			<el-divider style="margin: 2px" />
 		</el-space>
 		<el-space direction="horizontal">
@@ -43,20 +75,10 @@
 
 <script lang="ts">
 
+import { getComments } from "../ctrls/ActorCtrl";
 import ActorData from "../data/ActorData";
-
-enum EditType {
-	REMARK = 0,
-	COMMENT = 1,
-}
-
-interface IEditInfo {
-	edit_id: EditType;
-	title: string;
-	root_class: string;
-	data: string;
-	is_editing: boolean;
-}
+import { DescEditInfo, EditType } from "../data/DescEditInfo";
+import { ICommentCount } from "../data/SchemasOthers";
 
 export default {
 	name: "RemarkEditor",
@@ -69,52 +91,47 @@ export default {
 	emits: ["remark", "comment", "posts"],
 	data() {
 		return {
-			edit_info_list: [
-				{
-					edit_id: EditType.REMARK,
-					title: "Remark(shared)",
-					root_class: "remark-root",
-					data: "",
-					is_editing: false,
-				},
-				{
-					edit_id: EditType.COMMENT,
-					title: "Comment(single)",
-					root_class: "comment-root",
-					data: "",
-					is_editing: false,
-				},
-			] as IEditInfo[],
+			common_comments: [] as ICommentCount[],
+			remark_edit_info: new DescEditInfo(EditType.REMARK),
+			comment_edit_info: new DescEditInfo(EditType.COMMENT),
 		}
 	},
 	methods: {
-		onEditClick(edit_id: EditType) {
-			this.edit_info_list[edit_id].is_editing = true
+		onSelectComment(new_comment: string) {
+			this.comment_edit_info.data = new_comment
+			this.comment_edit_info.is_editing = true
 		},
-		onSubmitClick(edit_id: EditType) {
-			if (edit_id === EditType.REMARK) {
-				this.$emit("remark", this.edit_info_list[edit_id].data)
+		removeComment() {
+			this.comment_edit_info.data = ""
+			this.$emit("comment", "")
+		},
+		onEditClick(edit_info: DescEditInfo) {
+			edit_info.startEdit()
+		},
+		onSubmitClick(edit_info: DescEditInfo) {
+			if (edit_info.edit_id === EditType.REMARK) {
+				this.$emit("remark", edit_info.data)
 			} else {
-				this.$emit("comment", this.edit_info_list[edit_id].data)
+				this.$emit("comment", edit_info.data)
 			}
 		},
-		onCancelClick(edit_id: EditType) {
-			this.resetEdit(edit_id)
+		onCancelClick(edit_info: DescEditInfo) {
+			edit_info.reset(this.actor)
 		},
 		toPosts() {
 			this.$emit("posts")
 		},
 
-		resetEdit(edit_id: EditType) {
-			const edit_info = this.edit_info_list[edit_id]
-			edit_info.data = edit_info.edit_id === EditType.REMARK ? this.actor.remark : this.actor.comment
-			edit_info.is_editing = false
+		resetAllEdit() {
+			this.remark_edit_info.reset(this.actor)
+			this.comment_edit_info.reset(this.actor)
 		},
 
-		resetAllEdit() {
-			this.edit_info_list.forEach(edit_info => {
-				this.resetEdit(edit_info.edit_id)
-			})
+		async refreshCommonComments() {
+			const [ok, comments] = await getComments()
+			if (ok) {
+				this.common_comments = comments
+			}
 		}
 	},
 	watch: {
@@ -126,6 +143,7 @@ export default {
 	},
 	mounted() {
 		this.resetAllEdit()
+		this.refreshCommonComments()
 	}
 }
 </script>

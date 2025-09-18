@@ -1,13 +1,18 @@
 import { DownloadLimitForm } from "./DownloadForms"
 import { ErrorCode, ResState } from "./Enums"
 
-export interface IUnifiedResponse<T>{
-    error_code: ErrorCode
-    data: T | null
+export interface IUnifiedResponse<T> {
+	error_code: ErrorCode
+	data: T | null
 }
 
 export interface INoticeCount {
 	notice_type: number
+	count: number
+}
+
+export interface ICommentCount {
+	comment: string
 	count: number
 }
 
@@ -56,7 +61,7 @@ export interface IActorTagData {
 
 
 export interface IResSizeCount {
-    min: number
-    max: number
-    count_map: Map<ResState, number>
+	min: number
+	max: number
+	count_map: Map<ResState, number>
 }

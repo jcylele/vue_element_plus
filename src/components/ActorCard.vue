@@ -29,8 +29,7 @@
 			<div v-if="actor.is_linked" class="avatar-friend-container center-column" style="gap: 0"
 				@click="findLinkedActor">
 				<svg-icon size="40px" name="avatar" :style="{ 'color': group_color }" />
-				<div v-if="linked_group_ids.length > 1" class="center-row wrap"
-					style="gap: 2px;max-width: 40px;">
+				<div v-if="linked_group_ids.length > 1" class="center-row wrap" style="gap: 2px;max-width: 40px;">
 					<svg-icon v-for="group_id in linked_group_ids" size="10px" name="circle"
 						:style="{ 'color': getGroupColor(group_id) }" />
 				</div>
@@ -231,7 +230,7 @@ import { ActorElement } from "../data/ArrayElement";
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import ActorGroupData from "../data/ActorGroupData";
 import { Popper_Styles } from "../data/Consts";
-import { logInfo } from "../ctrls/FetchCtrl";
+import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import ActorFileDetail from "../data/FileInfo";
 import { ActorCardDialog, EActorDialog } from "../data/ActorCardDialog";
@@ -239,7 +238,7 @@ import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
 import { FavFolderStore } from "../store/FavFolderStore";
 import { addActorToFolder, delActorFromFolder } from "../ctrls/FolderCtrl";
 import FavFolderSelector from "./FavFolderSelector.vue";
-import { ECardRefresh } from "../data/Enums";
+import { ECardRefresh, EConfirmOp } from "../data/Enums";
 import MyRate from "./MyRate.vue";
 import { LogMessages } from "../data/Messages";
 
@@ -355,19 +354,23 @@ export default {
 		},
 		async clearFolder() {
 			this.hideOp()
-			const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
-			if (ok) {
-				this.setFileInfo(file_info)
-				logInfo(LogMessages.ClearFolder())
-			}
+			await confirmOp(EConfirmOp.ClearFolder, async () => {
+				const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
+				if (ok) {
+					this.setFileInfo(file_info)
+					logInfo(LogMessages.ClearFolder())
+				}
+			})
 		},
 		async resetPosts() {
 			this.hideOp()
-			const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
-			if (ok) {
-				this.setFileInfo(file_info)
-				logInfo(LogMessages.ResetPosts())
-			}
+			await confirmOp(EConfirmOp.ResetPosts, async () => {
+				const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
+				if (ok) {
+					this.setFileInfo(file_info)
+					logInfo(LogMessages.ResetPosts())
+				}
+			})
 		},
 		async setActorGroup() {
 			const [ok, ar] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)

@@ -1,8 +1,8 @@
 // import 'element-plus/es/components/message/style/css'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import axios, { AxiosInstance, AxiosResponse } from 'axios';
-import { BASE_URL } from '../data/Consts';
-import { ErrorCode } from '../data/Enums';
+import { BASE_URL, Confirm_Ops } from '../data/Consts';
+import { EConfirmOp, ErrorCode } from '../data/Enums';
 import { ErrorMessages, LogMessages } from '../data/Messages';
 
 export type SingleResult<T> = [true, T] | [false, undefined]
@@ -26,6 +26,20 @@ export function logError(msg: string) {
 
 export function logErrorCode(code: ErrorCode) {
 	ElMessage({ message: ErrorMessages[code], type: "error" })
+}
+
+export async function confirmOp(op: EConfirmOp, yes: () => Promise<void>) {
+	const op_config = Confirm_Ops[op]
+	try {
+		await ElMessageBox.confirm(op_config.content, op_config.title, {
+			confirmButtonText: "Confirm",
+			cancelButtonText: "Cancel",
+			type: "warning",
+		})
+		await yes()
+	} catch (error) {
+		return
+	}
 }
 
 const rtrim = /^[\s\uFEFF\xA0]+|[\s\uFEFF\xA0]+$/g;

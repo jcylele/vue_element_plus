@@ -1,4 +1,4 @@
-import { fetchGet, fetchPost } from "./FetchCtrl";
+import { fetchGet, fetchPost, SingleResult } from "./FetchCtrl";
 import DownloadingVideoStats from "../data/DownloadingVideoStats";
 import { ITagCount } from "../data/SchemasOthers";
 
@@ -19,9 +19,9 @@ export async function getTagsByScore(min_score: number, max_score: number, limit
 	return await fetchGet<ITagCount>(url, undefined, true)
 }
 
-export async function getGroupSizes() {
+export async function getGroupSizes(): Promise<SingleResult<Map<number, number>>> {
 	const url = `${baseUrl}/down_size_of_groups`;
-	return await fetchGet(url)
+	return await fetchGet<Map<number, number>>(url, undefined, false)
 }
 
 export async function getDownloadingFileStats() {
