@@ -7,6 +7,8 @@
 				</el-text>
 				<svg-icon v-if="!remark_edit_info.is_editing" name="edit" class="this-color" size="30px"
 					@click="onEditClick(remark_edit_info)" />
+				<svg-icon v-if="!remark_edit_info.is_editing" name="remove" class="this-color" size="30px"
+					@click="onRemoveClick(remark_edit_info)" />
 				<svg-icon v-if="remark_edit_info.is_editing" name="completed" class="this-color" size="32px"
 					@click="onSubmitClick(remark_edit_info)" />
 				<svg-icon v-if="remark_edit_info.is_editing" name="close" class="this-color" size="32px"
@@ -25,6 +27,8 @@
 					</el-text>
 					<svg-icon v-if="!comment_edit_info.is_editing" name="edit" class="this-color" size="30px"
 						@click="onEditClick(comment_edit_info)" />
+					<svg-icon v-if="!comment_edit_info.is_editing" name="remove" class="this-color" size="30px"
+						@click="onRemoveClick(comment_edit_info)" />
 					<svg-icon v-if="comment_edit_info.is_editing" name="completed" class="this-color" size="32px"
 						@click="onSubmitClick(comment_edit_info)" />
 					<svg-icon v-if="comment_edit_info.is_editing" name="close" class="this-color" size="32px"
@@ -32,11 +36,6 @@
 				</el-space>
 				<el-select placeholder="common used" @change="onSelectComment" placement="bottom-end"
 					style="width: 180px;">
-					<template v-if="comment_edit_info.data" #header>
-						<el-button size="small" type="primary" @click="onSelectComment('')" plain>
-							Remove
-						</el-button>
-					</template>
 					<el-option v-for="comment in common_comments" :key="comment.comment" :label="comment.comment"
 						:value="comment.comment">
 						<span style="float: left">{{ comment.count > 1 ? `${comment.comment} (${comment.count})` :
@@ -101,12 +100,12 @@ export default {
 			this.comment_edit_info.data = new_comment
 			this.comment_edit_info.is_editing = true
 		},
-		removeComment() {
-			this.comment_edit_info.data = ""
-			this.$emit("comment", "")
-		},
 		onEditClick(edit_info: DescEditInfo) {
 			edit_info.startEdit()
+		},
+		onRemoveClick(edit_info: DescEditInfo) {
+			edit_info.data = ""
+			this.onSubmitClick(edit_info)
 		},
 		onSubmitClick(edit_info: DescEditInfo) {
 			if (edit_info.edit_id === EditType.REMARK) {

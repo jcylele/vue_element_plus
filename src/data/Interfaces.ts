@@ -1,5 +1,5 @@
 import BaseData from "./BaseData";
-import { EConfirmOp, EOtherOp } from "./Enums";
+import { ECacheKey, EConfirmOp, EOtherOp, ESettingType } from "./Enums";
 import { CommonGroupForm } from "./WebData"
 
 export interface ISortItem {
@@ -63,5 +63,17 @@ export interface OtherOp {
 export interface ConfirmOp {
 	title: string
 	content: string
+}
+
+export interface SettingItemConfig {
+	key: ECacheKey
+	label: string
+	type: ESettingType
+}
+
+export interface ActorAbstract {
+	actor_id: number
+	actor_name: string
+	actor_group_id: number
 }
 

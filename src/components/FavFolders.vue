@@ -54,9 +54,10 @@ import { addFolder, deleteFolder, updateFolder, updatePriorities } from "../ctrl
 import { FavFolderStore } from "../store/FavFolderStore";
 import { useRouter } from "vue-router";
 import { ActorFilterData } from "../data/ActorFilterData";
-import { EFilterRow } from "../data/Enums";
+import { EConfirmOp, EFilterRow } from "../data/Enums";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
+import { confirmOp } from "../ctrls/FetchCtrl";
 // emits
 // stores/routers
 const router = useRouter()
@@ -86,11 +87,13 @@ async function saveFolder() {
 }
 
 async function delFolder() {
-	const [ok, _] = await deleteFolder(edit_folder.value.folder_id)
-	if (ok) {
-		fav_folder_store.remove(edit_folder.value.folder_id)
-		stopEdit()
-	}
+	await confirmOp(EConfirmOp.DelActorFolder, async () => {
+		const [ok, _] = await deleteFolder(edit_folder.value.folder_id)
+		if (ok) {
+			fav_folder_store.remove(edit_folder.value.folder_id)
+			stopEdit()
+		}
+	})
 }
 
 function stopEdit() {

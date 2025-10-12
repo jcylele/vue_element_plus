@@ -1,8 +1,10 @@
 import { DownloadLimitForm } from "./DownloadForms";
-import { PostFilter, ResType } from "./Enums";
+import { PostFilter, ResType, TaskType } from "./Enums";
 import { format_file_size } from "./DataUtil";
 import BaseData from "./BaseData";
 import { IDownloadLimit, IDownloadTask } from "./SchemasOthers";
+import { Task_Type_Descs } from "./Consts";
+import { ActorAbstract } from "./Interfaces";
 
 export class DownloadProgress extends BaseData {
 	actor_count: number
@@ -16,7 +18,7 @@ export class DownloadLimit extends BaseData {
 
 	constructor(json_data?: IDownloadLimit) {
 		super(json_data);
-		if (json_data){
+		if (json_data) {
 			this.limit = new DownloadLimitForm(json_data.limit)
 			this.progress = new DownloadProgress(json_data.progress)
 		}
@@ -71,16 +73,37 @@ export class DownloadLimit extends BaseData {
 }
 
 export class TaskData extends BaseData {
-	readonly uid: number
-	desc: string
+	uid: number
+	type: TaskType
+	arg: number
 	download_limit: DownloadLimit
 	worker_count: Map<string, number>
 	queue_count: Map<string, number>
+	actor_abstract: ActorAbstract | undefined
 
 	constructor(json_data?: IDownloadTask) {
 		super(json_data);
-		if (json_data){
+		if (json_data) {
 			this.download_limit = new DownloadLimit(json_data.download_limit)
 		}
+	}
+
+	get desc(): string {
+		return Task_Type_Descs[this.type]
+	}
+
+	get group_id(): number {
+		if (this.actor_abstract) {
+			return this.actor_abstract.actor_group_id
+		}
+		return this.arg
+	}
+
+	get show_group_name(): boolean {
+		return this.type === TaskType.Group
+	}
+
+	get show_actor_name(): boolean {
+		return this.type < TaskType.MaxSingleActor
 	}
 }

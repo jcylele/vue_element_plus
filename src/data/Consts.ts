@@ -1,23 +1,26 @@
 import {
 	ActorLogType, BoolEnum,
 	DownloadType,
+	ECacheKey,
 	EConfirmOp,
 	EOtherOp,
+	ESettingType,
 	EStartPage,
 	NoticeType,
 	PostFilter,
 	ResSizeUnit,
 	ResState, ResType,
-	SortType
+	SortType,
+	TaskType
 } from "./Enums";
-import { CommonOption, ConfirmOp, NoticeColumn, NoticeTypeConfig, OtherOp, SortGroup } from "./Interfaces";
+import { CommonOption, ConfirmOp, NoticeColumn, NoticeTypeConfig, OtherOp, SettingItemConfig, SortGroup } from "./Interfaces";
 
 export const ROOT_URL = "http://127.0.0.1:7878"
 export const BASE_URL = `${ROOT_URL}/api`
 
 export const MAX_SCORE = 12
 
-export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Folder", "Progress"]
+export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Comment", "Folder", "Progress"]
 
 export const ResStateList: ResState[] = [ResState.Del, ResState.Skip, ResState.Init, ResState.Down]
 export const video_state_color = {
@@ -59,7 +62,7 @@ export const Sort_Groups: SortGroup[] = [
 	{
 		label: "Post Count", options: [
 			{ label: "Total", value: SortType.TotalPostCount, default_asc: true, full_label: "Total Post Count" },
-			{ label: "Current", value: SortType.CurPostCount, default_asc: false, full_label: "Current Post Count" }
+			{ label: "Completed", value: SortType.CompletedPostCount, default_asc: false, full_label: "Completed Post Count" }
 		]
 	},
 	{
@@ -89,6 +92,13 @@ export const Remark_Options: CommonOption[] = [
 	{ label: "Has Remark", value: BoolEnum.TRUE },
 	{ label: "No Remark", value: BoolEnum.FALSE },
 ]
+
+export const Comment_Options: CommonOption[] = [
+	{ label: "All", value: BoolEnum.ALL },
+	{ label: "Has Comment", value: BoolEnum.TRUE },
+	{ label: "No Comment", value: BoolEnum.FALSE },
+]
+
 
 export const Post_Completed_Options: CommonOption[] = [
 	{ label: "Posts All", value: BoolEnum.ALL },
@@ -209,6 +219,12 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 		}, {
 			col_name: "Actor Name 2",
 			prop_name: "notice_param1"
+		}, {
+			col_name: "Actor Name 3",
+			prop_name: "notice_param2"
+		}, {
+			col_name: "Actor Name 4",
+			prop_name: "notice_param3"
 		}]
 	},
 	[NoticeType.SimilarActorName]: {
@@ -250,10 +266,36 @@ export const Other_Ops: OtherOp[] = [
 	{ op: EOtherOp.Logs, label: "Log Folder", desc: "open log folder in explorer", btn_text: "Open Log Folder" },
 ]
 
+export const Setting_Item_Configs: SettingItemConfig[] = [
+	{ key: ECacheKey.DbConnectString, label: "Db Connect String", type: ESettingType.Text },
+	{ key: ECacheKey.RootUrl, label: "Root url to download files", type: ESettingType.Text },
+	{ key: ECacheKey.RootFolder, label: "Root folder for downloading", type: ESettingType.Text },
+	{ key: ECacheKey.ServerPort, label: "Port of my server", type: ESettingType.Number },
+	{ key: ECacheKey.ShowBrowser, label: "Show browser when downloading", type: ESettingType.Boolean },
+]
+
 export const Confirm_Ops: Record<EConfirmOp, ConfirmOp> =
 {
-	[EConfirmOp.ClearFolder]: { title: "Clear Folder", content: "clear all actor files, make sure you have watched them" },
+	[EConfirmOp.ClearActorFolder]: { title: "Clear Actor Folder", content: "clear all files of actor, make sure you have watched them" },
 	[EConfirmOp.ResetPosts]: { title: "Reset Posts", content: "reset  last post id of actor, so to download old posts" },
+	[EConfirmOp.RemoveDownloading]: { title: "Remove Downloading", content: "remove all downloading files of actor" },
+	[EConfirmOp.ClearGroupFolder]: { title: "Clear Group Folder", content: "clear all files of actors in this group, be careful" },
+	[EConfirmOp.DelActorGroup]: { title: "Delete Actor Group", content: "will fail if there are actors within" },
+	[EConfirmOp.DelActorTag]: { title: "Delete Actor Tag", content: "should comment related actors first" },
+	[EConfirmOp.DelActorTagGroup]: { title: "Delete Actor Tag Group", content: "delete actor tag group" },
+	[EConfirmOp.DelActorFolder]: { title: "Delete Actor Folder", content: "delete actor folder" },
+}
+
+export const Task_Type_Descs: Record<TaskType, string> = {
+	[TaskType.Default]: "Default",
+	[TaskType.Specific]: "Specific Actor",
+	[TaskType.Resume]: "Resume Actor",
+	[TaskType.MaxSingleActor]: "Max Single Actor",
+	[TaskType.New]: "New Actors",
+	[TaskType.Url]: "Specific Urls",
+	[TaskType.Group]: "Actors in Group",
+	[TaskType.FixPost]: "Fix Posts of Actor",
+	[TaskType.Manual]: "Manual",
 }
 
 export const Popper_Styles = {

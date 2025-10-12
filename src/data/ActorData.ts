@@ -64,6 +64,10 @@ export default class ActorData extends BaseData {
 		}
 	}
 
+	get thumbnail_desc() {
+		return `(${this.file_info.thumbnail_count}P)`
+	}
+
 	get show_score() {
 		return this.score / 2
 	}

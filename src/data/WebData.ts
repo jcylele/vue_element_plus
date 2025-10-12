@@ -32,6 +32,7 @@ export class CommonGroupForm {
 export class ActorGroupForm extends CommonGroupForm {
 	group_color: string
 	has_folder: boolean
+	is_initial: boolean
 }
 
 export class FilterItem {

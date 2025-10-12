@@ -9,6 +9,7 @@ export default class ActorGroupData extends BaseData implements GroupEntity {
 	group_desc: string
 	group_color: string
 	has_folder: boolean
+	is_initial: boolean
 	group_priority: number
 
 	cond_list: ActorGroupCond[]
@@ -52,6 +53,7 @@ export default class ActorGroupData extends BaseData implements GroupEntity {
 			this.group_desc = ""
 			this.group_color = "#000000"
 			this.has_folder = false
+			this.is_initial = false
 			this.group_priority = 0
 		} else {
 			this.group_id = other.group_id
@@ -59,6 +61,7 @@ export default class ActorGroupData extends BaseData implements GroupEntity {
 			this.group_desc = other.group_desc
 			this.group_color = other.group_color
 			this.has_folder = other.has_folder
+			this.is_initial = other.is_initial
 			this.group_priority = other.group_priority
 			// skip cond_list
 		}
@@ -71,6 +74,7 @@ export default class ActorGroupData extends BaseData implements GroupEntity {
 		form.priority = this.group_priority
 		form.group_color = this.group_color
 		form.has_folder = this.has_folder
+		form.is_initial = this.is_initial
 		return form
 	}
 }

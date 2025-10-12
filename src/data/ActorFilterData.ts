@@ -218,8 +218,11 @@ export class ActorFilterData extends BaseCloneable {
 	min_score: number
 	max_score: number
 
-	remark_str: string
 	has_remark: BoolEnum
+	remark_str: string
+
+	has_comment: BoolEnum
+	comment_str: string
 
 	post_completed: BoolEnum
 	get is_post_completed() {
@@ -251,6 +254,9 @@ export class ActorFilterData extends BaseCloneable {
 				break
 			case EFilterRow.Remark:
 				this.resetRemark()
+				break
+			case EFilterRow.Comment:
+				this.resetComment()
 				break
 			case EFilterRow.Folder:
 				this.resetFolder()
@@ -322,6 +328,10 @@ export class ActorFilterData extends BaseCloneable {
 		return this.show_rows[EFilterRow.Remark]
 	}
 
+	get show_comment() {
+		return this.show_rows[EFilterRow.Comment]
+	}
+
 	get show_folder() {
 		return this.show_rows[EFilterRow.Folder]
 	}
@@ -387,6 +397,7 @@ export class ActorFilterData extends BaseCloneable {
 		this.resetScores()
 		this.resetNameLink()
 		this.resetRemark()
+		this.resetComment()
 		this.resetFolder()
 		this.resetProgress()
 		this.resetSort()
@@ -413,6 +424,8 @@ export class ActorFilterData extends BaseCloneable {
 		this.max_score = data.max_score
 		this.remark_str = data.remark_str
 		this.has_remark = data.has_remark
+		this.comment_str = data.comment_str
+		this.has_comment = data.has_comment
 		this.post_completed = data.post_completed
 		this.res_completed = data.res_completed
 
@@ -461,6 +474,11 @@ export class ActorFilterData extends BaseCloneable {
 		this.has_remark = BoolEnum.ALL
 	}
 
+	resetComment() {
+		this.comment_str = ""
+		this.has_comment = BoolEnum.ALL
+	}
+
 	resetFolder() {
 		this.folder_id = 0
 	}
@@ -486,6 +504,8 @@ export class ActorFilterData extends BaseCloneable {
 			this.max_score === data.max_score &&
 			this.remark_str === data.remark_str &&
 			this.has_remark === data.has_remark &&
+			this.comment_str === data.comment_str &&
+			this.has_comment === data.has_comment &&
 			this.post_completed === data.post_completed &&
 			this.res_completed === data.res_completed
 	}

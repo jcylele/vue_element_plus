@@ -82,9 +82,8 @@ import { ActorFilterStore } from "../store/ActorFilterStore";
 import { SubMenuStore } from "../store/SubMenuStore";
 import { ActorFilterData } from "../data/ActorFilterData";
 import { BadgeStore } from "../store/BadgeStore";
-import { findSimilarActorNames } from "../ctrls/ActorCtrl";
+import { findSimilarActorNames } from "../ctrls/OtherCtrl";
 import { logInfo } from "../ctrls/FetchCtrl";
-import { NoticeColumn, NoticeTypeConfig } from "../data/Interfaces";
 import SvgIcon from "./SvgIcon/index.vue";
 import { LogMessages } from "../data/Messages";
 

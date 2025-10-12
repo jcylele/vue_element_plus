@@ -70,12 +70,30 @@
 						placeholder="search in remark" class="filter-item" clearable />
 				</el-form-item>
 
+				<!-- comment -->
+				<el-form-item label="Comment" v-if="filter_condition.show_comment">
+					<el-select v-model="filter_condition.has_comment" @change="onAnyConditionChange"
+						class="filter-item">
+						<el-option v-for="option in comment_option_list" :label="option.label" :value="option.value" />
+					</el-select>
+					<el-select v-if="has_comment" v-model="filter_condition.comment_str" @change="onAnyConditionChange"
+						placement="bottom-end" class="filter-item">
+						<el-option v-for="comment in common_comments" :key="comment.comment" :label="comment.comment"
+							:value="comment.comment">
+							<span style="float: left">{{ comment.count > 1 ? `${comment.comment} (${comment.count})` :
+								comment.comment }}</span>
+						</el-option>
+					</el-select>
+				</el-form-item>
+
 				<!-- progress -->
 				<el-form-item label="Progress" v-if="filter_condition.show_progress">
-					<el-select v-model="filter_condition.post_completed" placeholder="Post" @change="onAnyConditionChange" class="filter-item">
+					<el-select v-model="filter_condition.post_completed" placeholder="Post"
+						@change="onAnyConditionChange" class="filter-item">
 						<el-option v-for="option in post_option_list" :label="option.label" :value="option.value" />
 					</el-select>
-					<el-select v-if="filter_condition.is_post_completed" placeholder="Res" v-model="filter_condition.res_completed" @change="onAnyConditionChange" class="filter-item">
+					<el-select v-if="filter_condition.is_post_completed" placeholder="Res"
+						v-model="filter_condition.res_completed" @change="onAnyConditionChange" class="filter-item">
 						<el-option v-for="option in res_option_list" :label="option.label" :value="option.value" />
 					</el-select>
 				</el-form-item>
@@ -143,17 +161,18 @@ import NewActorTag from "./NewActorTag.vue";
 import { mapActions, mapState } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
 import { ActorGroupStore } from "../store/ActorGroupStore";
-import { Popper_Styles, Post_Completed_Options, Remark_Options, Res_Completed_Options, Sort_Groups } from "../data/Consts";
+import { Comment_Options, Popper_Styles, Post_Completed_Options, Remark_Options, Res_Completed_Options, Sort_Groups } from "../data/Consts";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import { FavFolderStore } from "../store/FavFolderStore";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagFilter from "./ActorTagFilter.vue";
-import { getActorCountInGroups } from "../ctrls/ActorCtrl";
+import { getActorCountInGroups, getComments } from "../ctrls/ActorCtrl";
 import { BoolEnum } from "../data/Enums";
 import { Filter_Row_Names } from "../data/Consts";
 import { nextTick } from "vue";
 import ActorFilterItem from "./ActorFilterItem.vue";
 import MyRate from "./MyRate.vue";
+import { ICommentCount } from "../data/SchemasOthers";
 
 export default {
 	name: "ActorFilter",
@@ -173,6 +192,7 @@ export default {
 			is_group_all: false,
 			group_count_map: {} as Record<number, number>,
 			show_rows: [],
+			common_comments: [] as ICommentCount[],
 		}
 	},
 
@@ -194,6 +214,9 @@ export default {
 		remark_option_list() {
 			return Remark_Options
 		},
+		comment_option_list() {
+			return Comment_Options
+		},
 		post_option_list() {
 			return Post_Completed_Options
 		},
@@ -203,11 +226,11 @@ export default {
 		has_remark() {
 			return this.filter_condition.has_remark == BoolEnum.TRUE
 		},
+		has_comment() {
+			return this.filter_condition.has_comment == BoolEnum.TRUE
+		},
 		filter_names() {
 			return Filter_Row_Names
-		},
-		is_show_group() {
-			return this.filter_condition.show_group
 		},
 		popper_style(): any {
 			return Popper_Styles
@@ -222,11 +245,31 @@ export default {
 			this.filter_condition.checkAllGroup(new_val)
 		},
 
-		async is_show_group(new_val, _) {
-			if (!new_val) {
-				return
+		'filter_condition.show_group': {
+			async handler(new_val) {
+				if (!new_val) {
+					return
+				}
+				await this.refreshGroupCount()
+			},
+		},
+
+		'filter_condition.has_remark': {
+			async handler(new_val) {
+				if (new_val !== BoolEnum.TRUE) {
+					this.filter_condition.remark_str = ""
+				}
 			}
-			await this.refreshGroupCount()
+		},
+
+		'filter_condition.has_comment': {
+			async handler(new_val) {
+				if (new_val === BoolEnum.TRUE) {
+					await this.refreshCommonComments()
+				} else {
+					this.filter_condition.comment_str = ""
+				}
+			}
 		},
 
 		'filter_condition.show_rows': {
@@ -240,6 +283,13 @@ export default {
 		...mapActions(ActorFilterStore, {
 			selectFilter: "selectFilter"
 		}),
+
+		async refreshCommonComments() {
+			const [ok, comments] = await getComments()
+			if (ok) {
+				this.common_comments = comments
+			}
+		},
 
 		restoreShowRows() {
 			this.show_rows = this.filter_condition.getShowRows()

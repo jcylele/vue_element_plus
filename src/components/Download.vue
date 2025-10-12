@@ -72,9 +72,10 @@ import {ActorUrl, DownloadLimitForm} from "../data/DownloadForms";
 import {
     downloadByGroup,
     downloadByUrls,
-    downloadNewActors, getCustomPage,
+    downloadNewActors,
     manualDownload,
 } from "../ctrls/DownloadCtrl";
+import { getCustomPage } from "../ctrls/OtherCtrl";
 import {mapActions, mapState} from "pinia";
 import DownloadLimit from "./DownloadLimit.vue";
 import {getActorCount} from "../ctrls/ActorCtrl";

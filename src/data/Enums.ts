@@ -13,12 +13,26 @@ export enum DownloadType {
 	Manual
 }
 
+export enum TaskType {
+	Default = 0,
+	Specific = 1,
+	Resume = 2,
+
+	MaxSingleActor = 100,  // above are single actor tasks, below are multiple actor tasks
+
+	New = 101,
+	Url = 102,
+	Group = 103,
+	FixPost = 104,
+	Manual = 105,
+}
+
 export enum SortType {
 	Default,
 	Score,
 	GroupTime,
 	TotalPostCount,
-	CurPostCount,
+	CompletedPostCount,
 	InitFileSize,
 	DownFileSize,
 	TotalFileSize,
@@ -99,8 +113,9 @@ export enum EFilterRow {
 	Score = 2,
 	Name = 3,
 	Remark = 4,
-	Folder = 5,
-	Progress = 6,
+	Comment = 5,
+	Folder = 6,
+	Progress = 7,
 }
 
 export enum ECardRefresh {
@@ -142,6 +157,26 @@ export enum EOtherOp {
 }
 
 export enum EConfirmOp {
-	ClearFolder = 1,
+	ClearActorFolder = 1,
 	ResetPosts = 2,
+	RemoveDownloading = 3,
+	ClearGroupFolder = 4,
+	DelActorGroup = 5,
+	DelActorTag = 6,
+	DelActorTagGroup = 7,
+	DelActorFolder = 8,
+}
+
+export enum ECacheKey {
+	DbConnectString = 'DbConnectString',
+	RootUrl = 'RootUrl',
+	ServerPort = 'ServerPort',
+	RootFolder = 'RootFolder',
+	ShowBrowser = 'ShowBrowser',
+}
+
+export enum ESettingType {
+	Text,
+	Number,
+	Boolean,
 }

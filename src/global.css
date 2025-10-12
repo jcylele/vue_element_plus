@@ -298,8 +298,8 @@ tr:nth-child(odd) {
 	justify-content: space-between;
 	align-items: center;
 
-	width: 100%;
-	/* 占满父元素， 不然子元素还是会挤在一起 */
+	width: 100%;/* 占满父元素， 不然子元素还是会挤在一起 */
+	gap: 60px;
 }
 
 .center-column,

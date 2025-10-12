@@ -11,11 +11,6 @@ import {TaskData} from "../data/TaskData";
 const baseUrl = `/download`
 
 
-export async function getCustomPage() {
-    const url = `${baseUrl}/custom_page`
-    return await fetchGet<number>(url, undefined, false)
-}
-
 export async function downloadNewActors(download_limit: DownloadLimitForm, group_id: number, start_page: number) {
     const url = `${baseUrl}/new`
     const downForm = new NewDownloadForm()
@@ -87,23 +82,12 @@ export async function stopAllTasks() {
     return await fetchDelete(url)
 }
 
-export async function stopTask(task_id: number) {
+export async function stopSingleTask(task_id: number) {
     const url = `${baseUrl}/${task_id}`
     return await fetchDelete(url)
-}
-
-export async function cleanFiles() {
-    const url = `${baseUrl}/clean`
-    return await fetchGet(url)
 }
 
 export async function getActorIds() {
     const url = `${baseUrl}/actor_ids`
     return await fetchGet<number>(url, undefined, true)
-}
-
-// openLogs
-export async function openLogs() {
-    const url = `${baseUrl}/logs`
-    return await fetchGet(url)
 }

@@ -9,7 +9,12 @@
 					<span class="common-group-name" :style="{ color: group.group_color }">
 						{{ group.group_name }}
 					</span>
-					<svg-icon v-if="group.has_folder" name="file_checked" size="24px" class="is-disabled" />
+					<el-tooltip content="actor in group has folder" placement="top">
+						<svg-icon v-if="group.has_folder" name="file_checked" size="24px" class="is-disabled" />
+					</el-tooltip>
+					<el-tooltip content="suitable for new actors" placement="top">
+						<svg-icon v-if="group.is_initial" name="flag" size="24px" class="is-disabled" />
+					</el-tooltip>
 				</div>
 				<div class="center-row">
 					<svg-icon name="edit" size="24px" @click.stop="toEditGroup(group)" />
@@ -39,6 +44,9 @@
 			<el-form-item label="Folder">
 				<el-switch v-model="edit_group.has_folder" size="large" active-text="has" inactive-text="no" />
 			</el-form-item>
+			<el-form-item label="Is Initial">
+				<el-switch v-model="edit_group.is_initial" size="large" active-text="is" inactive-text="not" />
+			</el-form-item>
 			<el-form-item label="Color">
 				<el-color-picker v-model="edit_group.group_color" />
 			</el-form-item>
@@ -63,13 +71,14 @@
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import ActorGroupData from "../data/ActorGroupData";
 import { addActorGroup, delActorGroup, setGroupCondition, updateActorGroup, updatePriorities } from "../ctrls/ActorGroupCtrl";
-import { logInfo } from "../ctrls/FetchCtrl";
+import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import GroupCondEditor from "./GroupCondEditor.vue";
 import ActorGroupCond from "../data/ActorGroupCond";
 import { computed, onMounted, ref } from "vue";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
 import { LogMessages } from "../data/Messages";
+import { EConfirmOp } from "../data/Enums";
 
 // stores/routers
 const actor_group_store = ActorGroupStore()
@@ -101,11 +110,13 @@ async function saveGroup() {
 }
 
 async function delGroup() {
-	const [ok, _] = await delActorGroup(edit_group.value.group_id)
-	if (ok) {
-		actor_group_store.remove(edit_group.value.group_id)
-		stopEdit()
-	}
+	await confirmOp(EConfirmOp.DelActorGroup, async () => {
+		const [ok, _] = await delActorGroup(edit_group.value.group_id)
+		if (ok) {
+			actor_group_store.remove(edit_group.value.group_id)
+			stopEdit()
+		}
+	})
 }
 
 function stopEdit() {

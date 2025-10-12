@@ -1,5 +1,5 @@
 import { DownloadLimitForm } from "./DownloadForms"
-import { ErrorCode, ResState } from "./Enums"
+import { ECacheKey, ErrorCode, ResState } from "./Enums"
 
 export interface IUnifiedResponse<T> {
 	error_code: ErrorCode
@@ -64,4 +64,9 @@ export interface IResSizeCount {
 	min: number
 	max: number
 	count_map: Map<ResState, number>
+}
+
+export interface ISettingItem {
+    key: ECacheKey
+    value: string|number|boolean
 }

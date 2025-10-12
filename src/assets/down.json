@@ -14,8 +14,8 @@
     "post_filter": 1,
     "res_type": 1,
     "actor_count": 50,
-    "post_count": 50,
-    "file_count": 50,
+    "post_count": 100,
+    "file_count": 10,
     "show_single_file_size": 4,
     "show_total_file_size": 64
   },

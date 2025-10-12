@@ -31,6 +31,8 @@ import { computed } from "vue";
 import { ActorTagStore } from "../store/ActorTagStore";
 import { delActorTag, updateTagName, getActorTag } from "../ctrls/ActorTagCtrl";
 import { EditingTagData } from "../data/ActorTagData";
+import { confirmOp } from "../ctrls/FetchCtrl";
+import { EConfirmOp } from "../data/Enums";
 // emits
 const emit = defineEmits(['delete'])
 // stores/routers
@@ -67,12 +69,14 @@ async function onReset() {
 	}
 }
 async function onDelete() {
-	const tag_id = props.tag_edit_info.data.tag_id
-	const [ok, _] = await delActorTag(tag_id)
-	if (ok) {
-		actorTagStore.remove(tag_id)
-		emit('delete', tag_id)
-	}
+	await confirmOp(EConfirmOp.DelActorTag, async () => {
+		const tag_id = props.tag_edit_info.data.tag_id
+		const [ok, _] = await delActorTag(tag_id)
+		if (ok) {
+			actorTagStore.remove(tag_id)
+			emit('delete', tag_id)
+		}
+	})
 }
 // lifecycle
 </script>

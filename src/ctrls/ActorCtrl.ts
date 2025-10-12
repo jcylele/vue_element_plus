@@ -204,19 +204,9 @@ export async function getComments() {
 	return await fetchGet<ICommentCount>(url, undefined, true)
 }
 
-export async function resetManual() {
-	const url = `${baseUrl}/reset_manual`
-	return await fetchGet(url)
-}
-
 export async function validateFileInfos() {
 	const url = `${baseUrl}/validate_all_file_info`
 	return await fetchGet<number>(url, undefined, false)
-}
-
-export async function findSimilarActorNames() {
-	const url = `${baseUrl}/similar_names`
-	return await fetchGet(url)
 }
 
 export async function clearFolderOfGroup(group_id: number) {

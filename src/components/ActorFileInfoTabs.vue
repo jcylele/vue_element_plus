@@ -25,7 +25,7 @@
 					<el-table-column prop="percent" label="Percent" sortable :formatter="formatPercent"
 						min-width="100" />
 				</el-table>
-				<div v-if="downloading_files.length > 0" class="center-row" >
+				<div v-if="downloading_files.length > 0" class="center-row">
 					<el-button type="warning" @click="removeDownloading">
 						Remove All Files
 					</el-button>
@@ -63,10 +63,11 @@ import VideoSizesChart from "./Chart/VideoSizesChart.vue";
 import { ActorVideoInfo } from "../data/ActorVideoInfo";
 import { ResFileInfo } from "../data/ResFileInfo";
 import { getActorDownloadingFiles, getActorVideoInfo, openActorFolder, removeDownloadingFiles, renameActorFiles } from "../ctrls/ActorCtrl";
-import { logInfo } from "../ctrls/FetchCtrl";
+import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
 import { fixPosts, resumeActorDownload } from "../ctrls/DownloadCtrl";
 import { format_file_size, format_percent } from "../data/DataUtil";
 import { LogMessages } from "../data/Messages";
+import { EConfirmOp } from "../data/Enums";
 
 enum ETabNames {
 	All,
@@ -99,12 +100,14 @@ const downed_video_count = computed(() => downed_files.value.reduce((sum, avi: A
 // watch
 // methods
 async function removeDownloading() {
-	const [ok, _] = await removeDownloadingFiles(props.actor_id)
-	if (ok) {
-		downloading_files.value = []
-		total_downloading_file.value = ResFileInfo.getTotal([])
-		logInfo(LogMessages.RemoveDownloadingFiles())
-	}
+	await confirmOp(EConfirmOp.RemoveDownloading, async () => {
+		const [ok, _] = await removeDownloadingFiles(props.actor_id)
+		if (ok) {
+			downloading_files.value = []
+			total_downloading_file.value = ResFileInfo.getTotal([])
+			logInfo(LogMessages.RemoveDownloadingFiles())
+		}
+	})
 }
 
 async function resumeDownloading() {

@@ -331,25 +331,32 @@ export default {
 		},
 		async onPageFilterChange(clear: boolean = false) {
 			if (clear) {
-				this.refreshActorIds();
+				this.refreshActorIds()
 				this.actor_count = 0
+				this.page_index = 1
 			}
 			const [ok, actor_count] = await getActorCount(this.page_filter_condition)
 			if (ok) {
 				this.actor_count = actor_count
-				this.refreshPageIndex()
+				if (!clear) {
+					this.page_index = this.getCachedPageIndex()
+				}
 				await this.onActorPageChange()
 			}
 		},
-		refreshPageIndex() {
+		getCachedPageIndex(): number {
+			let cached_page_index = this.cached_page_index
+
 			let max_page_count = Math.ceil(this.actor_count / this.page_size)
-			this.page_index = this.cached_page_index
-			if (this.page_index > max_page_count) {
-				this.page_index = max_page_count
+			if (cached_page_index > max_page_count) {
+				cached_page_index = max_page_count
 			}
-			if (this.page_index < 1) {
-				this.page_index = 1
+
+			if (cached_page_index < 1) {
+				cached_page_index = 1
 			}
+
+			return cached_page_index
 		},
 		async refreshPage() {
 			await this.onPageFilterChange()

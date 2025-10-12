@@ -33,6 +33,7 @@ export interface IActorGroup {
 	group_desc: string
 	group_color: string
 	has_folder: boolean
+	is_initial: boolean
 	group_priority: number
 
 	cond_list: IActorGroupCond[]

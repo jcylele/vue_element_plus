@@ -50,6 +50,7 @@ class ActorFileInfo extends BaseData {
     }
 }
 export default class ActorFileDetail extends BaseData {
+	thumbnail_count: number
     res_info: ActorFileInfo[]
     total_post_count: number
     unfinished_post_count: number

@@ -59,9 +59,10 @@ import { ActorTagGroupStore } from "../store/ActorTagGroupStore";
 import { ActorTagGroupData } from "../data/ActorTagGroupData";
 import { updateActorTagGroup, addActorTagGroup, delActorTagGroup, addActorTagToGroup, delActorTagFromGroup, updatePriorities } from "../ctrls/ActorTagGroupCtrl";
 import { ActorTagStore } from "../store/ActorTagStore";
-import { logInfo } from "../ctrls/FetchCtrl";
+import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
 import { LogMessages } from "../data/Messages";
+import { EConfirmOp } from "../data/Enums";
 // emits
 // stores/routers
 const actor_tag_group_store = ActorTagGroupStore()
@@ -94,11 +95,13 @@ async function saveGroup() {
 }
 
 async function delGroup() {
-	const [ok, _] = await delActorTagGroup(edit_group.value.group_id)
-	if (ok) {
-		actor_tag_group_store.remove(edit_group.value.group_id)
-		stopEdit()
-	}
+	await confirmOp(EConfirmOp.DelActorTagGroup, async () => {
+		const [ok, _] = await delActorTagGroup(edit_group.value.group_id)
+		if (ok) {
+			actor_tag_group_store.remove(edit_group.value.group_id)
+			stopEdit()
+		}
+	})
 }
 
 function stopEdit() {

@@ -112,10 +112,13 @@
 
 		<!-- actor post info -->
 		<el-space direction="vertical" v-if="actor.file_info" style="gap: 1px 0" fill>
-			<div class="center-row">
-				<el-text class="post_count hint-selectable" tag="ins" @click="showFileInfo">
+			<div class="center-row" style="gap: 0 3px">
+				<span class="post_count hint-selectable" @click="showFileInfo">
 					{{ actor.post_desc }}
-				</el-text>
+				</span>
+				<span v-if="show_thumbnail_count" class="thumbnail_count">
+					{{ actor.thumbnail_desc }}
+				</span>
 				<svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px" />
 				<svg-icon v-if="is_video_all" name="file_checked" style="color: orange" size="24px" />
 			</div>
@@ -273,6 +276,17 @@ export default {
 			let group = this.getActorGroup(this.actor_data.data.actor_group_id)
 			return group.group_color
 		},
+		show_thumbnail_count(): boolean {
+			const actor = this.actor_data.data
+			if (!actor.file_info) {
+				return false
+			}
+			if (actor.file_info.thumbnail_count == 0) {
+				return false
+			}
+			let group = this.getActorGroup(this.actor_data.data.actor_group_id)
+			return group.is_initial
+		},
 		is_downing(): boolean {
 			return this.is_actor_downing(this.actor_data.data.actor_id)
 		},
@@ -354,7 +368,7 @@ export default {
 		},
 		async clearFolder() {
 			this.hideOp()
-			await confirmOp(EConfirmOp.ClearFolder, async () => {
+			await confirmOp(EConfirmOp.ClearActorFolder, async () => {
 				const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
 				if (ok) {
 					this.setFileInfo(file_info)
@@ -576,7 +590,15 @@ export default {
 }
 
 .post_count {
-	color: var(--el-text-color);
+	color: var(--el-text-color-regular);
+	font-size: var(--el-font-size-base);
+	text-decoration: underline;
+	text-align: center;
+}
+
+.thumbnail_count {
+	/* color: var(--el-text-color-regular); */
+	font-size: var(--el-font-size-base);
 	text-align: center;
 }
 

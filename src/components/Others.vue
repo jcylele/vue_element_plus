@@ -1,7 +1,7 @@
 <template>
 	<div id="others">
 		<el-tabs v-model="default_tab" tab-position="left" type="border-card" @tab-change="onTabChange">
-			<el-tab-pane label="Oprations" :name="EOtherTab.Op">
+			<el-tab-pane label="Operations" :name="EOtherTab.Op">
 				<div class="fill-column">
 					<div v-for="op in Other_Ops" class="common-group-item">
 						<span class="common-group-name">{{ op.label }}</span>
@@ -13,6 +13,9 @@
 						</el-button>
 					</div>
 				</div>
+			</el-tab-pane>
+			<el-tab-pane label="Settings" :name="EOtherTab.Settings">
+				<Settings />
 			</el-tab-pane>
 			<el-tab-pane label="Res Size Stats" :name="EOtherTab.ResSize">
 				<div class="left-column">
@@ -70,23 +73,26 @@
 // imports
 import { computed, ref } from "vue";
 import { useRouter } from "vue-router";
-import { cleanFiles, openLogs } from "../ctrls/DownloadCtrl";
-import { logInfo } from "../ctrls/FetchCtrl";
-import { clearFolderOfGroup, removeDownloadingFiles, resetManual, validateFileInfos } from "../ctrls/ActorCtrl";
+import { openLogs } from "../ctrls/OtherCtrl";
+import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
+import { clearFolderOfGroup, removeDownloadingFiles, validateFileInfos } from "../ctrls/ActorCtrl";
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import { getDownloadingFileStats, getGroupSizes } from "../ctrls/ChartCtrl";
 import { format_file_size, format_percent } from "../data/DataUtil";
 import DownloadingVideoStats from "../data/DownloadingVideoStats";
-import { EFilterRow, EOtherOp } from "../data/Enums";
+import { EConfirmOp, EFilterRow, EOtherOp } from "../data/Enums";
 import { ActorFilterData } from "../data/ActorFilterData";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import { LogMessages } from "../data/Messages";
 import { Other_Ops } from "../data/Consts";
+import { cleanFiles, resetManual } from "../ctrls/OtherCtrl";
+import Settings from "./Settings.vue";
 
 enum EOtherTab {
 	Op = "Op",
 	ResSize = "ResSize",
 	Downloading = "Downloading",
+	Settings = "Settings",
 }
 
 interface IGroupSize {
@@ -191,13 +197,15 @@ async function removeDownloadingFile(actor_id: number) {
 }
 
 async function clearGroupFolder(group_id: number) {
-	const [ok, _] = await clearFolderOfGroup(group_id)
-	if (ok) {
-		const index = group_size_list.value.findIndex(group => group.group_id === group_id)
-		if (index !== -1) {
-			group_size_list.value.splice(index, 1)
+	await confirmOp(EConfirmOp.ClearGroupFolder, async () => {
+		const [ok, _] = await clearFolderOfGroup(group_id)
+		if (ok) {
+			const index = group_size_list.value.findIndex(group => group.group_id === group_id)
+			if (index !== -1) {
+				group_size_list.value.splice(index, 1)
+			}
 		}
-	}
+	})
 }
 
 async function onOpClick(op: EOtherOp) {
