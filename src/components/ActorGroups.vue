@@ -9,11 +9,8 @@
 					<span class="common-group-name" :style="{ color: group.group_color }">
 						{{ group.group_name }}
 					</span>
-					<el-tooltip content="actor in group has folder" placement="top">
-						<svg-icon v-if="group.has_folder" name="file_checked" size="24px" class="is-disabled" />
-					</el-tooltip>
-					<el-tooltip content="suitable for new actors" placement="top">
-						<svg-icon v-if="group.is_initial" name="flag" size="24px" class="is-disabled" />
+					<el-tooltip v-for="config in group.owned_flags" :content="config.desc" placement="top">
+						<svg-icon :name="config.icon" size="24px" class="is-disabled" />
 					</el-tooltip>
 				</div>
 				<div class="center-row">
@@ -33,30 +30,31 @@
 			</el-space>
 		</div>
 	</el-space>
-	<el-dialog v-model="is_editing" title="Add/Edit Folder" style="min-width: 600px;">
+	<el-dialog v-model="is_editing" :title="add_edit_title" style="min-width: 600px;">
 		<el-form label-width="auto">
 			<el-form-item label="Name">
-				<el-input v-model="edit_group.group_name" />
+				<el-input v-model="edit_group.group_name" maxlength="30" show-word-limit />
 			</el-form-item>
 			<el-form-item label="Desc">
-				<el-input v-model="edit_group.group_desc" />
-			</el-form-item>
-			<el-form-item label="Folder">
-				<el-switch v-model="edit_group.has_folder" size="large" active-text="has" inactive-text="no" />
-			</el-form-item>
-			<el-form-item label="Is Initial">
-				<el-switch v-model="edit_group.is_initial" size="large" active-text="is" inactive-text="not" />
+				<el-input v-model="edit_group.group_desc" maxlength="100" show-word-limit />
 			</el-form-item>
 			<el-form-item label="Color">
 				<el-color-picker v-model="edit_group.group_color" />
 			</el-form-item>
-			<el-form-item>
+			<el-form-item v-for="config in flag_configs" :label="config.label">
+				<el-switch :model-value="edit_group.getFlag(config.flag)"
+					@update:model-value="edit_group.setFlag(config.flag, $event)" size="large" />
+				<span> {{ config.desc }}</span>
+			</el-form-item>
+			<el-form-item label="Op">
 				<div class="split-row" style="padding: 10px">
 					<el-space direction="horizontal" size="large" alignment="center">
 						<el-button type="primary" @click="saveGroup">Save</el-button>
 						<el-button type="warning" @click="stopEdit">Cancel</el-button>
 					</el-space>
-					<el-button type="danger" @click="delGroup">Delete</el-button>
+					<div v-if="!is_add_group">
+						<el-button type="danger" @click="delGroup">Delete</el-button>
+					</div>
 				</div>
 			</el-form-item>
 		</el-form>
@@ -79,7 +77,9 @@ import { computed, onMounted, ref } from "vue";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
 import { LogMessages } from "../data/Messages";
 import { EConfirmOp } from "../data/Enums";
+import { Actor_Group_Flag_Configs } from "../data/Consts";
 
+const flag_configs = Actor_Group_Flag_Configs
 // stores/routers
 const actor_group_store = ActorGroupStore()
 // props/models
@@ -88,6 +88,8 @@ const cond_actor_group = ref<ActorGroupData | undefined>(undefined)
 const edit_group = ref<ActorGroupData>(new ActorGroupData())
 const is_editing = ref(false)
 // computed
+const is_add_group = computed(() => edit_group.value.group_id == 0)
+const add_edit_title = computed(() => is_add_group.value ? "Add New Actor Group" : "Edit Actor Group")
 const is_show_condition = computed(() => cond_actor_group.value !== undefined)
 const cond_title = computed(() => cond_actor_group.value !== undefined ? cond_actor_group.value.group_name : "")
 // watch
@@ -137,8 +139,8 @@ async function moveGroup(group_id: number, up: boolean) {
 	const group_list = actor_group_store.sorted_list
 	const priorities = swapGroup(group_list, group_id, up)
 	if (priorities) {
-		const [ok, succeed] = await updatePriorities(priorities)
-		if (ok && succeed) {
+		const [ok, _] = await updatePriorities(priorities)
+		if (ok) {
 			actor_group_store.updatePriorities(priorities)
 		} else {
 			actor_group_store.dirty()

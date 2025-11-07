@@ -3,10 +3,10 @@
 		:style="{ 'color': group_color }">
 		<!-- actor avatar -->
 		<div class="avatar">
-			<el-tooltip v-if="actor.has_remark" placement="top" :offset="3" effect="light"
+			<el-tooltip v-if="actor.has_remark || actor.has_video_info" placement="top" :offset="3" effect="light"
 				:popper-style="{ 'max-width': 'var(--me-remark-width)' }">
 				<template #content>
-					<el-space direction="vertical" size="small" fill>
+					<div class="fill-column">
 						<el-text v-if="actor.remark" class="pop-remark remark-color multi-line-text">
 							{{ actor.remark }}
 						</el-text>
@@ -16,7 +16,10 @@
 						<el-text v-for="post in actor.commented_posts" class="pop-remark post-color multi-line-text">
 							* {{ post.comment }}
 						</el-text>
-					</el-space>
+						<el-text v-if="actor.str_video_infos" class="pop-remark multi-line-text">
+							{{ actor.str_video_infos }}
+						</el-text>
+					</div>
 				</template>
 				<el-image class="avatar-img" :src="actor.icon_url" />
 			</el-tooltip>
@@ -41,14 +44,9 @@
 				class="avatar-select" @click="onSelectCLick" />
 
 			<div class="avatar-bottom-container center-row" style="gap: 0;">
-				<!-- fav folder -->
-				<div class="fav-container" @click="showFolders">
-					<svg-icon name="heart" class="fav-icon"
-						:class="actor.in_fav_folder ? 'remark-color' : 'comment-color'" />
-					<span class="fav-number fav-number-text logic-transparent" v-if="actor.in_fav_folder">{{
-						actor.fav_count
-					}}</span>
-				</div>
+				<!-- actor remark -->
+				<svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'" @click="startEditRemark"
+					class="remark-icon" />
 				<!-- Stars -->
 				<el-popover placement="top" trigger="click" :offset="-2" :show-arrow="false"
 					:popper-style="popper_style.withColor(group_color)" @show="onShowScore">
@@ -137,8 +135,18 @@
 
 		<!--actor remark + group + edit button -->
 		<div style="display: flex;flex-direction: row;align-items: stretch;gap: 0 5px">
-			<!-- actor remark -->
-			<svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'" @click="startEditRemark" size="32px" />
+			<!-- fav folder -->
+			<el-tooltip v-if="actor.in_fav_folder" placement="top-start" :offset="3" effect="light">
+				<template #content>
+					<div class="center-column" style="gap: 2px;">
+						<span v-for="folder_id in actor.folder_ids" class="pop-remark remark-color">
+							{{ getFolderName(folder_id) }}
+						</span>
+					</div>
+				</template>
+				<svg-icon name="star_filled" class="remark-color" size="32px" @click="showFolders" />
+			</el-tooltip>
+			<svg-icon v-else name="star_empty" class="comment-color" size="32px" @click="showFolders" />
 			<!-- actor group -->
 			<el-select v-model="actor.actor_group_id" @change="setActorGroup" placement="right" style="flex-grow: 1">
 				<el-option v-for="group in group_list" :label="group.group_name" :value="group.group_id"
@@ -220,7 +228,8 @@ import {
 	clearActorFolder,
 	resetActorPosts,
 	getLinkedActorGroupIds,
-	changeActorComment
+	changeActorComment,
+	getActorVideoInfo
 } from "../ctrls/ActorCtrl";
 import { mapActions, mapState } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
@@ -297,6 +306,10 @@ export default {
 			let group = this.getActorGroupData()
 			return group.has_folder
 		},
+		show_video_info(): boolean {
+			let group = this.getActorGroupData()
+			return group.show_video_info
+		},
 	},
 	// declare emitted events to parent
 	emits: ['refresh', 'download', 'friend', 'update'],
@@ -313,6 +326,7 @@ export default {
 		this.actor.sortTags(this.compareActorTagId)
 		this.getFileInfo()
 		this.getLinkedGroups()
+		this.getVideoInfos()
 	},
 	methods: {
 		...mapActions(ActorTagStore, {
@@ -330,6 +344,21 @@ export default {
 		...mapActions(ActorFilterStore, {
 			is_actor_downing: "is_downing",
 		}),
+
+		...mapActions(FavFolderStore, {
+			getFolderName: 'getName',
+		}),
+
+		async getVideoInfos() {
+			//TODO group增加一个bool项，显示视频信息， 只有Good组为True
+			if (!this.show_video_info) {
+				return
+			}
+			const [ok, video_infos] = await getActorVideoInfo(this.actor.actor_id)
+			if (ok) {
+				this.actor.video_infos = video_infos
+			}
+		},
 
 		getGroupColor(group_id: number): string {
 			let group = this.getActorGroup(group_id)
@@ -557,6 +586,12 @@ export default {
 .actor_name_line {
 	height: 32px;
 	background-color: #000000a0;
+}
+
+.remark-icon {
+	position: relative;
+	width: var(--avatar-bottom-height);
+	height: var(--avatar-bottom-height);
 }
 
 .fav-container {

@@ -6,7 +6,3 @@ html.dark {
     --me-even-bg-color: #303f07;
     --me-odd-bg-color: #073f30;
 }
-
-html.dark .el-tag__content {
-	/* font-family: Microsoft YaHei; */
-}

@@ -1,15 +1,32 @@
 import BaseData from "./BaseData"
-import { IDownloadingVideoStats } from "./SchemasOthers"
+import { format_file_size, format_percent } from "./DataUtil"
+import { ITableItem } from "./Interfaces"
+import { IDownloadingVideoStats, IActorAbstract } from "./SchemasOthers"
 
-export default class DownloadingVideoStats extends BaseData {
-	actor_id: number = 0
-	actor_name: string = ""
+export default class DownloadingVideoStats extends BaseData implements ITableItem {
+	actor_abstract: IActorAbstract
 	file_count: number = 0
 	file_size: number = 0
 	res_size: number = 0
 
+	get actor_id(): number {
+		return this.actor_abstract?.actor_id ?? 0
+	}
+
+	get actor_name(): string {
+		return this.actor_abstract?.actor_name ?? ""
+	}
+
+	get actor_group_id(): number {
+		return this.actor_abstract?.actor_group_id ?? 0
+	}
+
 	get percent(): number {
 		return this.file_size / this.res_size
+	}
+
+	get key(): number {
+		return this.actor_id
 	}
 
 	constructor(json_data?: IDownloadingVideoStats) {
@@ -20,14 +37,27 @@ export default class DownloadingVideoStats extends BaseData {
 			Object.assign(this, json_data)
 		}
 	}
-
-	static getTotal(list: DownloadingVideoStats[]): DownloadingVideoStats {
-		const total = list.reduce((acc, cur) => {
-			acc.add(cur)
-			return acc
-		}, new DownloadingVideoStats())
-		total.actor_name = "Total"
-		return total
+	toSummaries(): string[] {
+		return [
+			this.actor_name,
+			this.file_count.toString(),
+			format_file_size(this.file_size),
+			format_file_size(this.res_size),
+			format_percent(this.percent)
+		]
+	}
+	sum(items: this[]): void {
+		this.actor_abstract = {
+			actor_id: 0,
+			actor_name: "Total",
+			actor_group_id: 0
+		}
+		this.file_count = 0
+		this.file_size = 0
+		this.res_size = 0
+		for (const item of items) {
+			this.add(item)
+		}
 	}
 
 	add(info: DownloadingVideoStats) {

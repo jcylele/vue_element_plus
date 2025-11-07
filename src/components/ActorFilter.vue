@@ -157,7 +157,6 @@
 
 <script lang="ts">
 import { ActorFilterData } from "../data/ActorFilterData";
-import NewActorTag from "./NewActorTag.vue";
 import { mapActions, mapState } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
 import { ActorGroupStore } from "../store/ActorGroupStore";
@@ -185,7 +184,7 @@ export default {
 	},
 	// declare emitted events to parent
 	emits: ['submit'],
-	components: { ActorTagFilter, SvgIcon, NewActorTag, ActorFilterItem, MyRate },
+	components: { ActorTagFilter, SvgIcon, ActorFilterItem, MyRate },
 	data() {
 		return {
 			cond_changed: false,

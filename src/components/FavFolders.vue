@@ -23,7 +23,7 @@
 			</p>
 		</div>
 	</el-space>
-	<el-dialog v-model="is_editing" title="Add/Edit Folder" style="min-width: 600px;">
+	<el-dialog v-model="is_editing" :title="add_edit_title" style="min-width: 600px;">
 		<el-form label-width="100px">
 			<el-form-item label="Name">
 				<el-input v-model="edit_folder.folder_name" maxlength="30" show-word-limit />
@@ -33,11 +33,11 @@
 			</el-form-item>
 			<el-form-item label="Op">
 				<div class="split-row" style="padding: 10px">
-					<div class="left-buttons">
+					<div class="center-row">
 						<el-button type="primary" @click="saveFolder">Save</el-button>
 						<el-button type="warning" @click="stopEdit">Cancel</el-button>
 					</div>
-					<div class="right-button">
+					<div v-if="!is_add_folder">
 						<el-button type="danger" @click="delFolder">Delete</el-button>
 					</div>
 				</div>
@@ -48,7 +48,7 @@
 
 <script setup lang="ts">
 // imports
-import { onMounted, Ref, ref } from "vue";
+import { computed, onMounted, Ref, ref } from "vue";
 import { FolderData } from "../data/FolderData";
 import { addFolder, deleteFolder, updateFolder, updatePriorities } from "../ctrls/FolderCtrl";
 import { FavFolderStore } from "../store/FavFolderStore";
@@ -68,19 +68,22 @@ const actor_filter_store = ActorFilterStore()
 const edit_folder = ref(new FolderData()) as Ref<FolderData>
 const is_editing = ref(false)
 // computed
+const is_add_folder = computed(() => edit_folder.value.folder_id == 0)
+const add_edit_title = computed(() => is_add_folder.value ? "Add New Fav Folder" : "Edit Fav Folder")
+
 // watch
 // methods
 async function saveFolder() {
-	if (edit_folder.value.folder_id != 0) {
-		const [ok, folder] = await updateFolder(edit_folder.value)
-		if (ok) {
-			fav_folder_store.update(folder)
-			stopEdit()
-		}
-	} else {
+	if (is_add_folder.value) {
 		const [ok, folder] = await addFolder(edit_folder.value)
 		if (ok) {
 			fav_folder_store.add(folder)
+			stopEdit()
+		}
+	} else {
+		const [ok, folder] = await updateFolder(edit_folder.value)
+		if (ok) {
+			fav_folder_store.update(folder)
 			stopEdit()
 		}
 	}
@@ -122,8 +125,8 @@ async function moveFolder(folder_id: number, up: boolean) {
 	const folder_list = fav_folder_store.sorted_list
 	const priorities = swapGroup(folder_list, folder_id, up)
 	if (priorities) {
-		const [ok, succeed] = await updatePriorities(priorities)
-		if (ok && succeed) {
+		const [ok, _] = await updatePriorities(priorities)
+		if (ok) {
 			fav_folder_store.updatePriorities(priorities)
 		} else {
 			fav_folder_store.dirty()

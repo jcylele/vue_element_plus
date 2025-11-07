@@ -1,13 +1,12 @@
-import BaseData from "./BaseData";
 
 export class CommonPriority {
-    id: number
-    priority: number
+	id: number
+	priority: number
 
-    constructor(id: number, priority: number) {
-        this.id = id
-        this.priority = priority
-    }
+	constructor(id: number, priority: number) {
+		this.id = id
+		this.priority = priority
+	}
 }
 
 export class StrForm {
@@ -31,8 +30,7 @@ export class CommonGroupForm {
 
 export class ActorGroupForm extends CommonGroupForm {
 	group_color: string
-	has_folder: boolean
-	is_initial: boolean
+	flags: number
 }
 
 export class FilterItem {
@@ -49,3 +47,8 @@ export class FilterItem {
 	}
 }
 
+export class GroupTimeStatsForm {
+	start_date: string
+	end_date: string
+	group_ids: number[]
+}

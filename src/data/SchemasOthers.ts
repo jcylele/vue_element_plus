@@ -70,3 +70,20 @@ export interface ISettingItem {
     key: ECacheKey
     value: string|number|boolean
 }
+
+export interface IGroupTimeStats {
+    stat_date: string
+    actor_group_id: number
+    actor_count: number
+}
+
+export interface IActorAbstract {
+	actor_id: number
+	actor_name: string
+	actor_group_id: number
+}
+
+export interface IPostFetchTimeStats {
+	stat_date: string
+	post_count: number
+}

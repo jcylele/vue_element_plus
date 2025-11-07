@@ -26,16 +26,20 @@
 			<el-popover placement="bottom" width="170" trigger="hover" :show-after="200">
 				<template #reference>
 					<el-button size="large" plain>
-						Filter Actors
+						Downloading
 					</el-button>
 				</template>
 
 				<template #default>
-					<el-space direction="vertical" size="default" fill>
-						<el-button :disabled="!has_downing_actors" type="primary" size="large" @click="onDowningClick">
-							Downloading
+					<div class="fill-column">
+						<el-button :disabled="!has_downing_actors" type="primary" size="large"
+							@click="filterDownloadingActors">
+							Actors
 						</el-button>
-					</el-space>
+						<el-button type="primary" size="large" @click="showDownloadingFileStats">
+							File Stats
+						</el-button>
+					</div>
 				</template>
 			</el-popover>
 
@@ -90,12 +94,12 @@
 		<div class="card_row left-row wrap stretch">
 			<!-- TODO change is not triggered, why   -->
 			<!-- specify a key is essential when using v-for, otherwise mounted may not be called when data is changed   -->
-			<ActorCard v-for="actor_data in locked_actor_list" :actor_data="actor_data" :show_select="is_show_batch_op"
-				:key="actor_data.uuid" :locked="true" @refresh="onActorChange" @friend="onActorFriendClick"
-				@download="singleShowDownload" @update="refreshActors" />
-			<ActorCard v-for="actor_data in actor_list" :actor_data="actor_data" :show_select="is_show_batch_op"
-				:key="actor_data.uuid" :locked="false" @refresh="onActorChange" @friend="onActorFriendClick"
-				@download="singleShowDownload" @update="refreshActors" />
+			<ActorCard v-for="actor_data in actor_data_mgr.locked_actor_list" :actor_data="actor_data"
+				:show_select="is_show_batch_op" :key="actor_data.uuid" :locked="true" @refresh="onActorChange"
+				@friend="onActorFriendClick" @download="singleShowDownload" @update="refreshActors" />
+			<ActorCard v-for="actor_data in actor_data_mgr.actor_list" :actor_data="actor_data"
+				:show_select="is_show_batch_op" :key="actor_data.uuid" :locked="false" @refresh="onActorChange"
+				@friend="onActorFriendClick" @download="singleShowDownload" @update="refreshActors" />
 		</div>
 	</el-space>
 	<!-- download  dialog -->
@@ -125,6 +129,10 @@
 	<el-dialog v-model="actors_dialog.is_show_folder_remove" :title="actors_dialog.title">
 		<FavFolderSelector @select="onFolderRemoveSubmit" />
 	</el-dialog>
+	<!-- downloading file stats dialog -->
+	<el-dialog v-model="actors_dialog.is_show_downloading" :title="actors_dialog.title">
+		<DownloadingStats @search="onActorSearch" />
+	</el-dialog>
 </template>
 
 <script lang="ts">
@@ -133,7 +141,7 @@ import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import { ActorElement } from "../data/ArrayElement";
 import {
-	batchChangeActorGroup, getActor,
+	batchChangeActorGroup, 
 	getActorCount,
 	getActorIds,
 	getLinkedActorIds,
@@ -153,13 +161,14 @@ import { BadgeStore } from "../store/BadgeStore";
 import ActorLinkPreview from "./ActorLinkPreview.vue";
 import ActorFilterItem from "./ActorFilterItem.vue";
 import { FilterItem } from "../data/WebData";
-import { MAX_SCORE } from "../data/Consts";
-import { BoolEnum, ECardRefresh } from "../data/Enums";
+import { ECardRefresh, EStoreType } from "../data/Enums";
 import { FavFolderStore } from "../store/FavFolderStore";
 import { ActorsDialog, EActorsDialog } from "../data/ActorsDialog";
 import FavFolderSelector from "./FavFolderSelector.vue";
+import DownloadingStats from "./DownloadingStats.vue";
 import { batchAddActorToFolder, batchDelActorFromFolder } from "../ctrls/FolderCtrl";
 import { LogMessages } from "../data/Messages";
+import ActorDataMgr from "../data/ActorDataMgr";
 
 enum FilterType {
 	Normal = "Normal",
@@ -168,7 +177,7 @@ enum FilterType {
 }
 
 export default {
-	components: { ActorLinkPreview, SvgIcon, ActorCard, ActorFilter, DownloadLimit, ActorFilterItem, FavFolderSelector },
+	components: { ActorLinkPreview, SvgIcon, ActorCard, ActorFilter, DownloadLimit, ActorFilterItem, FavFolderSelector, DownloadingStats },
 	data() {
 		return {
 			actorFilterRef: undefined,
@@ -176,9 +185,7 @@ export default {
 			page_filter_condition: new ActorFilterData(),
 			filter_type: FilterType.Normal,
 			filter_item: new FilterItem("", ""),
-			locked_actor_list: [] as ActorElement[],
-			actor_list: [] as ActorElement[],
-			actor_ids: [] as number[],
+			actor_data_mgr: new ActorDataMgr(),
 			page_size: 12,
 			page_index: 1,
 			actor_count: 0,
@@ -229,76 +236,22 @@ export default {
 		}),
 		...mapActions(FavFolderStore, { getFolderName: 'getName' }),
 
+		getNameFunc(store_type: EStoreType, group_id: number): string {
+			switch (store_type) {
+				case EStoreType.ActorGroup:
+					return this.getGroupName(group_id)
+				case EStoreType.ActorTag:
+					return this.getTagName(group_id)
+				case EStoreType.ActorFavFolder:
+					return this.getFolderName(group_id)
+				default:
+					throw new Error(`Unknown store type: ${store_type}`)
+			}
+		},
+
 		formatFilterItems(page_filter: ActorFilterData): FilterItem[] {
-			const desc_list: FilterItem[] = []
-			// group
-			if (page_filter.group_id_list.length > 0 && page_filter.group_id_list.length < this.group_count) {
-				const group_name_list = page_filter.group_id_list.map(group_id => this.getGroupName(group_id))
-				desc_list.push(new FilterItem("Group", group_name_list.join(", ")))
-			}
-
-			// tag
-			const tag_item = page_filter.tag_filter.getTagItem(this.getTagName)
-			if (tag_item) {
-				desc_list.push(tag_item)
-			}
-
-			// score
-			if (page_filter.min_score > 0 && page_filter.max_score < MAX_SCORE) {
-				desc_list.push(new FilterItem("Score", `${page_filter.min_score} - ${page_filter.max_score}`))
-			} else if (page_filter.min_score > 0) {
-				desc_list.push(new FilterItem("score", `>= ${page_filter.min_score}`))
-			} else if (page_filter.max_score < MAX_SCORE) {
-				desc_list.push(new FilterItem("Score", `<= ${page_filter.max_score}`))
-			}
-
-			// name
-			if (page_filter.name.length > 0) {
-				desc_list.push(new FilterItem("Name", page_filter.name))
-			}
-
-			// linked
-			if (page_filter.linked) {
-				desc_list.push(new FilterItem("Linked", "Yes"))
-			}
-
-			// remark
-			switch (page_filter.has_remark) {
-				case BoolEnum.TRUE:
-					desc_list.push(new FilterItem("Remark", page_filter.remark_str))
-					break
-				case BoolEnum.FALSE:
-					desc_list.push(new FilterItem("Remark", "X"))
-					break
-			}
-
-			// folder
-			if (page_filter.folder_id > 0) {
-				desc_list.push(new FilterItem("Folder", this.getFolderName(page_filter.folder_id)))
-			}
-
-			if (desc_list.length == 0) {
-				desc_list.push(new FilterItem("All", "actors"))
-			}
-
-			// progress
-			switch (page_filter.post_completed) {
-				case BoolEnum.TRUE:
-					desc_list.push(new FilterItem("Post", "Completed"))
-					switch (page_filter.res_completed) {
-						case BoolEnum.TRUE:
-							desc_list.push(new FilterItem("Res", "Completed"))
-							break
-						case BoolEnum.FALSE:
-							desc_list.push(new FilterItem("Res", "Not Completed"))
-					}
-					break
-				case BoolEnum.FALSE:
-					desc_list.push(new FilterItem("Post", "Not Completed"))
-					break
-			}
-
-			return desc_list
+			const show_group = page_filter.group_id_list.length > 0 && page_filter.group_id_list.length < this.group_count
+			return page_filter.formatFilterItems(this.getNameFunc, show_group)
 		},
 
 		async handleSizeChange(val: number) {
@@ -378,32 +331,29 @@ export default {
 			}
 		},
 
-		async onDowningClick() {
+		async filterDownloadingActors() {
 			await this.getDowningFromServer()
 			this.refreshActorIds(this.downing_actor_ids, FilterType.Download)
 		},
 
-		// region batch, select, lock
-
-		_getSelected(converter: Function) {
-			let result_list: any[] = []
-			for (const actor of this.locked_actor_list) {
-				if (actor.selected) {
-					result_list.push(converter(actor))
-				}
-			}
-			for (const actor of this.actor_list) {
-				if (actor.selected) {
-					result_list.push(converter(actor))
-				}
-			}
-			return result_list
+		showDownloadingFileStats() {
+			this.actors_dialog.showDialog(EActorsDialog.downloading)
 		},
+
+		async onActorSearch(actor_name: string) {
+			this.actors_dialog.closeDialog(EActorsDialog.downloading)
+
+			this.editing_filter_condition.reset()
+			this.editing_filter_condition.setNameLink(`${actor_name}||`)
+			await this.onFilterSubmit()
+		},
+
+		// region batch, select, lock
 		getSelectedActors() {
-			return this._getSelected(actor => actor.data)
+			return this.actor_data_mgr.getSelected().map(actor => actor.data)
 		},
 		getSelectedActorIds() {
-			return this._getSelected(actor => actor.data.actor_id)
+			return this.actor_data_mgr.getSelected().map(actor => actor.data.actor_id)
 		},
 		onBatchOpChange(val: boolean) {
 			if (!val) {
@@ -412,12 +362,7 @@ export default {
 			}
 		},
 		batchSelectAll(val: boolean) {
-			for (const actor of this.locked_actor_list) {
-				actor.selected = val
-			}
-			for (const actor of this.actor_list) {
-				actor.selected = val
-			}
+			this.actor_data_mgr.batchSelectAll(val)
 		},
 
 		async batchSetGroup(group_id: number) {
@@ -433,31 +378,7 @@ export default {
 		},
 
 		lockActors(lock: boolean) {
-			let locked_actor_list: ActorElement[] = []
-			let actor_list: ActorElement[] = []
-			if (lock) {
-				locked_actor_list = [...this.locked_actor_list]
-				for (const actor of this.actor_list) {
-					if (actor.selected) {
-						locked_actor_list.push(actor)
-					} else {
-						actor_list.push(actor)
-					}
-				}
-			} else {
-				for (const actor of this.locked_actor_list) {
-					if (actor.selected) {
-						actor_list.push(actor)
-					} else {
-						locked_actor_list.push(actor)
-					}
-				}
-				actor_list.push(...this.actor_list)
-			}
-
-			this.locked_actor_list = locked_actor_list
-			this.actor_list = actor_list
-			this.batchSelectAll(false)
+			this.actor_data_mgr.lockActors(lock)
 		},
 
 		// endregion
@@ -578,73 +499,24 @@ export default {
 
 		//endregion
 
-		innerRefreshActors(ar_map: Map<number, ActorData>, actor_list: ActorElement[]) {
-			for (const actor_data of actor_list) {
-				const new_actor = ar_map.get(actor_data.data.actor_id)
-				if (new_actor) {
-					actor_data.data = new_actor
-				}
-			}
-		},
-
 		refreshActors(actor_map: Map<number, ActorData>) {
-			this.innerRefreshActors(actor_map, this.locked_actor_list)
-			this.innerRefreshActors(actor_map, this.actor_list)
-			this.batchSelectAll(false)
-		},
-
-		innerUpdateActors(actor_id_set: Set<number>, actor_list: ActorElement[], update: (actor: ActorData) => void) {
-			for (const actor of actor_list) {
-				if (actor_id_set.has(actor.data.actor_id)) {
-					update(actor.data)
-				}
-			}
+			this.actor_data_mgr.refreshActors(actor_map)
 		},
 
 		updateActors(actor_ids: number[], update: (actor: ActorData) => void) {
-			const actor_id_set = new Set(actor_ids)
-			this.innerUpdateActors(actor_id_set, this.locked_actor_list, update)
-			this.innerUpdateActors(actor_id_set, this.actor_list, update)
-			this.batchSelectAll(false)
+			this.actor_data_mgr.updateActors(actor_ids, update)
 		},
 
 		refreshActorIds(actor_ids: number[] | undefined = undefined, filter: FilterType = FilterType.Normal) {
 			this.filter_type = filter
 			this.is_batch_select_all = false
 
-			if (actor_ids == undefined) {
-				this.actor_list = []
-				this.actor_ids = []
-			} else {
-				this.actor_list = []
-				this.actor_ids = actor_ids
-				this.asyncFetchActors()
-			}
+			this.actor_data_mgr.refreshActorIds(actor_ids)
 
 			this.filter_item.label = filter
-			this.filter_item.value = `${this.actor_ids.length} actors`
+			this.filter_item.value = `${this.actor_data_mgr.actor_id_count} actors`
 		},
 
-		async asyncFetchActors() {
-			for (let i = 0; i < this.actor_ids.length; i++) {
-				let actor_id = this.actor_ids[i]
-				const [ok, actor] = await getActor(actor_id)
-				if (ok) {
-					// check if outdated
-					if (this.actor_ids[i] != actor_id
-						|| this.actor_list.length != i) {
-						return
-					}
-					this.actor_list.push(new ActorElement(actor))
-					// wait a moment
-					await new Promise(resolve => {
-						setTimeout(resolve, 100)
-					})
-				} else {
-					return
-				}
-			}
-		},
 		restoreFilter() {
 			const last_filter = this.last_filter_condition
 			if (last_filter) {

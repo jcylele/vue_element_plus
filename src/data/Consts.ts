@@ -1,6 +1,7 @@
 import {
 	ActorLogType, BoolEnum,
 	DownloadType,
+	EActorGroupFlag,
 	ECacheKey,
 	EConfirmOp,
 	EOtherOp,
@@ -13,7 +14,7 @@ import {
 	SortType,
 	TaskType
 } from "./Enums";
-import { CommonOption, ConfirmOp, NoticeColumn, NoticeTypeConfig, OtherOp, SettingItemConfig, SortGroup } from "./Interfaces";
+import { ActorGroupFlagConfig, CommonOption, ConfirmOp, NoticeColumn, NoticeTypeConfig, OtherOp, SettingItemConfig, SortGroup } from "./Interfaces";
 
 export const ROOT_URL = "http://127.0.0.1:7878"
 export const BASE_URL = `${ROOT_URL}/api`
@@ -22,17 +23,15 @@ export const MAX_SCORE = 12
 
 export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Comment", "Folder", "Progress"]
 
-export const ResStateList: ResState[] = [ResState.Del, ResState.Skip, ResState.Init, ResState.Down]
+export const ResStateList: ResState[] = [ResState.Del, ResState.Init, ResState.Down]
 export const video_state_color = {
 	[ResState.Init]: "green",
 	[ResState.Down]: "hotpink",
-	[ResState.Skip]: "orangered",
 	[ResState.Del]: "#409eff",
 }
 export const str_res_state = {
 	[ResState.Init]: "未下载",
 	[ResState.Down]: "已下载",
-	[ResState.Skip]: "大文件",
 	[ResState.Del]: "已删除",
 }
 
@@ -55,7 +54,7 @@ export const Default_Sort_Option = { label: "None", value: SortType.Default, def
 export const Sort_Groups: SortGroup[] = [
 	{
 		label: "Actor", options: [
-			{ label: "Score", value: SortType.Score, default_asc: true, full_label: "Score" },
+			{ label: "Score", value: SortType.Score, default_asc: false, full_label: "Score" },
 			{ label: "Group Time", value: SortType.GroupTime, default_asc: false, full_label: "Group Time" }
 		]
 	},
@@ -68,7 +67,7 @@ export const Sort_Groups: SortGroup[] = [
 	{
 		label: "File Size", options: [
 			{ label: "Init", value: SortType.InitFileSize, default_asc: true, full_label: "Init File Size" },
-			{ label: "Downed", value: SortType.DownFileSize, default_asc: true, full_label: "Downed File Size" },
+			{ label: "Downed", value: SortType.DownFileSize, default_asc: false, full_label: "Downed File Size" },
 			{ label: "Total", value: SortType.TotalFileSize, default_asc: true, full_label: "Total File Size" }
 		]
 	},
@@ -295,8 +294,30 @@ export const Task_Type_Descs: Record<TaskType, string> = {
 	[TaskType.Url]: "Specific Urls",
 	[TaskType.Group]: "Actors in Group",
 	[TaskType.FixPost]: "Fix Posts of Actor",
+	[TaskType.FixRes]: "Fix Res of Actor",
 	[TaskType.Manual]: "Manual",
 }
+
+export const Actor_Group_Flag_Configs: ActorGroupFlagConfig[] = [
+	{
+		flag: EActorGroupFlag.HasFolder,
+		label: "Folder",
+		desc: "actor in group has folder",
+		icon: "bag",
+	},
+	{
+		flag: EActorGroupFlag.IsInitial,
+		label: "Initial",
+		desc: "suitable for new actors",
+		icon: "flag",
+	},
+	{
+		flag: EActorGroupFlag.ShowVideoInfo,
+		label: "Video",
+		desc: "show video durations in tooltip",
+		icon: "camera",
+	}
+]
 
 export const Popper_Styles = {
 	Default: {

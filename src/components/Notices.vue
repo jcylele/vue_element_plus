@@ -188,8 +188,7 @@ export default {
 		toActors(notice: NoticeData) {
 			const actor_name = this.formatActorName(notice)
 			const filter_condition = new ActorFilterData()
-			filter_condition.name = actor_name
-			filter_condition.setRowVisible(EFilterRow.Name, true)
+			filter_condition.setNameLink(actor_name)
 			this.saveFilterCondition(filter_condition)
 			this.$router.push("/actors")
 		},

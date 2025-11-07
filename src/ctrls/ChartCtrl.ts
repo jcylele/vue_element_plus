@@ -1,6 +1,7 @@
 import { fetchGet, fetchPost, SingleResult } from "./FetchCtrl";
 import DownloadingVideoStats from "../data/DownloadingVideoStats";
-import { ITagCount } from "../data/SchemasOthers";
+import { IGroupTimeStats, ITagCount } from "../data/SchemasOthers";
+import { GroupTimeStatsForm } from "../data/WebData";
 
 const baseUrl = "/chart"
 
@@ -27,4 +28,13 @@ export async function getGroupSizes(): Promise<SingleResult<Map<number, number>>
 export async function getDownloadingFileStats() {
 	const url = `${baseUrl}/downloading_video_stats`;
 	return await fetchGet<DownloadingVideoStats>(url, DownloadingVideoStats, true)
+}
+
+export async function getGroupTimeStats(group_ids: number[], start_date: string, end_date: string) {
+	const url = `${baseUrl}/actor_group_time_stats`;
+	const form = new GroupTimeStatsForm()
+	form.group_ids = group_ids
+	form.start_date = start_date
+	form.end_date = end_date
+	return await fetchPost<IGroupTimeStats>(url, form, undefined, true)
 }

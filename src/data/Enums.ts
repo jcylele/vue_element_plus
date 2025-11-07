@@ -15,16 +15,17 @@ export enum DownloadType {
 
 export enum TaskType {
 	Default = 0,
-	Specific = 1,
-	Resume = 2,
+	Specific,
+	Resume,
+	FixPost,
+	FixRes,
 
 	MaxSingleActor = 100,  // above are single actor tasks, below are multiple actor tasks
 
-	New = 101,
-	Url = 102,
-	Group = 103,
-	FixPost = 104,
-	Manual = 105,
+	New,
+	Url,
+	Group,
+	Manual,
 }
 
 export enum SortType {
@@ -52,7 +53,7 @@ export enum NoticeType {
 export enum ResState {
 	Init = 1,
 	Down = 2,
-	Skip = 3,
+	Skip = 3, //已废弃，保留参数名
 	Del = 4,
 }
 
@@ -179,4 +180,33 @@ export enum ESettingType {
 	Text,
 	Number,
 	Boolean,
+}
+export enum ECssVarName {
+	// colors
+	ElTableTextColor = "--el-table-text-color",
+	ElTextColorRegular = "--el-text-color-regular",
+	// font sizes
+	ElFontSizeLarge = "--el-font-size-large",
+	ElFontSizeBase = "--el-font-size-base",
+	ElFontSizeSmall = "--el-font-size-small",
+}
+
+export enum EStoreType {
+	ActorGroup,
+	ActorFavFolder,
+	ActorTagGroup,
+	// above are group stores, below are not
+	ActorTag,
+	ActorFilter,
+	Badge,
+	SubMenu,
+}
+
+/**
+ * actor group flag, used to store actor group boolean properties
+ */
+export enum EActorGroupFlag {
+	HasFolder = 1,
+	IsInitial = 1 << 1,
+	ShowVideoInfo = 1 << 2
 }

@@ -16,7 +16,7 @@
                 Actor Group
             </el-text>
             <el-select v-model="actor_group" placeholder="Select" class="extra-select">
-                <el-option v-for="group in down_group_list" :key="group.group_id" :label="group.group_name"
+                <el-option v-for="group in filtered_group_list" :key="group.group_id" :label="group.group_name"
                            :value="group.group_id"/>
             </el-select>
             <el-text v-if="by_group">
@@ -119,7 +119,10 @@ export default {
         ...mapState(ActorGroupStore, {
             group_list: 'sorted_list',
         }),
-		down_group_list(): ActorGroupData[] {
+		filtered_group_list(): ActorGroupData[] {
+			if (this.down_type === DownloadType.New) {
+				return this.group_list.filter(group => group.is_initial)
+			}
 			return this.group_list.filter(group => group.has_folder)
 		},
         by_group(): boolean {

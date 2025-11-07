@@ -6,6 +6,7 @@ export enum EActorsDialog {
 	link = 'link',
 	folder_add = 'folder_add',
 	folder_remove = 'folder_remove',
+	downloading = 'downloading',
 }
 
 export class ActorsDialog {
@@ -37,6 +38,8 @@ export class ActorsDialog {
 				return `Add to Folder (${this.selected_actor_ids.length} actors)`
 			case EActorsDialog.folder_remove:
 				return `Remove from Folder (${this.selected_actor_ids.length} actors)`
+			case EActorsDialog.downloading:
+				return 'Downloading File Stats'
 			default:
 				return `Title ${this.dialog_type}`
 		}
@@ -79,6 +82,16 @@ export class ActorsDialog {
 	set is_show_folder_remove(val: boolean) {
 		if (!val) {
 			this.closeDialog(EActorsDialog.folder_remove)
+		}
+	}
+
+	get is_show_downloading(): boolean {
+		return this.dialog_type == EActorsDialog.downloading
+	}
+
+	set is_show_downloading(val: boolean) {
+		if (!val) {
+			this.closeDialog(EActorsDialog.downloading)
 		}
 	}
 

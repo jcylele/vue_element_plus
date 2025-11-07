@@ -1,6 +1,12 @@
 import BaseData from "./BaseData";
-import { ECacheKey, EConfirmOp, EOtherOp, ESettingType } from "./Enums";
+import { EActorGroupFlag, ECacheKey, EConfirmOp, EOtherOp, ESettingType } from "./Enums";
 import { CommonGroupForm } from "./WebData"
+
+export interface ITableItem {
+	get key(): number | string
+	toSummaries(): string[]
+	sum(items: this[]): void
+}
 
 export interface ISortItem {
 	get key(): number
@@ -71,9 +77,9 @@ export interface SettingItemConfig {
 	type: ESettingType
 }
 
-export interface ActorAbstract {
-	actor_id: number
-	actor_name: string
-	actor_group_id: number
+export interface ActorGroupFlagConfig {
+	flag: EActorGroupFlag
+	label: string
+	desc: string
+	icon: string
 }
-

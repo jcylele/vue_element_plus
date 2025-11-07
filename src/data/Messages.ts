@@ -68,8 +68,14 @@ export const LogMessages = {
 	RenameFiles(): string {
 		return "rename files succeed"
 	},
+	RemoveFiles(is_landscape: boolean): string {
+		return `remove ${is_landscape ? 'landscape' : 'portrait'} files succeed`
+	},
 	TaskFixPosts(): string {
 		return "fix posts task started"
+	},
+	TaskFixRes(): string {
+		return "fix res task started"
 	},
 	TaskStart(): string {
 		return "download task started"

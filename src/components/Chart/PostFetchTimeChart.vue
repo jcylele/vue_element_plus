@@ -13,11 +13,9 @@ import {
 import { CanvasRenderer } from 'echarts/renderers'
 
 import { ref, markRaw, onMounted, onUnmounted } from "vue";
-import { ResState } from "../../data/Enums";
-import { ResStateList, str_res_state, video_state_color } from "../../data/Consts";
+import { IPostFetchTimeStats } from "../../data/SchemasOthers";
 import { formatCategoryAxis, formatGrid, formatLegend, formatTooltip, formatValueAxis } from "../../data/ChartUtil";
-import ResSizeCount from "../../data/ResSizeCount";
-import { getVideoSizes } from "../../ctrls/ActorCtrl";
+import { getPostFetchTimeStats } from "../../ctrls/ActorCtrl";
 import { logError } from "../../ctrls/FetchCtrl";
 
 echarts.use([
@@ -39,42 +37,41 @@ const props = defineProps({
 })
 
 async function refreshData() {
-	const [ok, rsc_list] = await getVideoSizes(props.actor_id)
+	const [ok, post_fetch_time_stats] = await getPostFetchTimeStats(props.actor_id)
 	if (ok) {
-		refreshChart(rsc_list)
+		console.log(post_fetch_time_stats)
+		refreshChart(post_fetch_time_stats)
 	}
 }
 
-function formatSeriesItem(res_state: ResState, data: number[]) {
+function formatSeriesItem(data: number[]) {
 	return {
 		type: 'bar',
-		name: str_res_state[res_state],
 		barWidth: "80%",
+		barMaxWidth: 50,
 		stack: 'total',
-		itemStyle: { color: video_state_color[res_state] },
-		data: data
+		emphasis: {
+			focus: 'series'
+		},
+		data: data,
 	}
 }
 
-function refreshChart(rsc_list: ResSizeCount[]) {
+function refreshChart(post_fetch_time_stats: IPostFetchTimeStats[]) {
 	if (!chart.value) {
 		logError('Chart not initialized')
 		return
 	}
 
-	const series_items: any[] = ResStateList.map(res_state => formatSeriesItem(res_state,
-		rsc_list.map(rsc => rsc.resCount(res_state))))
-
-	const xAxis = formatValueAxis()
-	xAxis['minInterval'] = 1
+	const category_data = post_fetch_time_stats.map(stat => stat.stat_date)
+	const series_data: number[] = post_fetch_time_stats.map(stat => stat.post_count)
 
 	const option = {
 		grid: formatGrid(true),
-		legend: formatLegend(),
 		tooltip: formatTooltip(),
-		xAxis: xAxis,
-		yAxis: formatCategoryAxis(rsc_list.map(rsc => rsc.str_size)),
-		series: series_items
+		xAxis: formatCategoryAxis(category_data, true),
+		yAxis: formatValueAxis(),
+		series: [formatSeriesItem(series_data)]
 	}
 
 	chart.value.setOption(option)

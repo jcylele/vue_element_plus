@@ -4,7 +4,7 @@ import { ActorFilterData } from "../data/ActorFilterData";
 import ResSizeCount from "../data/ResSizeCount";
 import { ActorVideoInfo } from "../data/ActorVideoInfo";
 import { ResFileInfo } from "../data/ResFileInfo";
-import { ICommentCount, IUnifiedResponse } from "../data/SchemasOthers";
+import { ICommentCount, IPostFetchTimeStats, IUnifiedResponse } from "../data/SchemasOthers";
 import { ErrorCode } from "../data/Enums";
 import ActorFileDetail from "../data/FileInfo";
 import ActorLog from "../data/ActorLog";
@@ -177,6 +177,11 @@ export async function renameActorFiles(actor_id: number) {
 	return await fetchGet(url)
 }
 
+export async function removeActorFiles(actor_id: number, is_landscape: boolean) {
+	const url = `${baseUrl}/${actor_id}/remove_by_dir?is_landscape=${is_landscape}`;
+	return await fetchPatch(url)
+}
+
 export async function getActorLogs(actor_id: number) {
 	const url = `${baseUrl}/${actor_id}/logs`;
 	return await fetchGet<ActorLog>(url, ActorLog, true)
@@ -197,6 +202,11 @@ export async function getLinkedActorGroupIds(actor_id: number) {
 export async function getVideoSizes(actor_id: number) {
 	const url = `${baseUrl}/${actor_id}/video_sizes`
 	return await fetchGet<ResSizeCount>(url, ResSizeCount, true)
+}
+
+export async function getPostFetchTimeStats(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/post_fetch_time_stats`
+	return await fetchGet<IPostFetchTimeStats>(url, undefined, true)
 }
 
 export async function getComments() {

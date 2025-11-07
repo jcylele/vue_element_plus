@@ -2,12 +2,12 @@ import { DownloadLimitForm } from "./DownloadForms";
 import { PostFilter, ResType, TaskType } from "./Enums";
 import { format_file_size } from "./DataUtil";
 import BaseData from "./BaseData";
-import { IDownloadLimit, IDownloadTask } from "./SchemasOthers";
+import { IActorAbstract, IDownloadLimit, IDownloadTask } from "./SchemasOthers";
 import { Task_Type_Descs } from "./Consts";
-import { ActorAbstract } from "./Interfaces";
 
 export class DownloadProgress extends BaseData {
 	actor_count: number
+	post_count: number
 	file_count: number
 	total_file_size: number
 }
@@ -39,9 +39,9 @@ export class DownloadLimit extends BaseData {
 			desc_list.push("current posts")
 		} else {
 			if (this.limit.post_count > 0) {
-				desc_list.push(`${this.limit.post_count} posts`)
+				desc_list.push(`${this.progress.post_count}/${this.limit.post_count} posts`)
 			} else {
-				desc_list.push(`all posts`)
+				desc_list.push(`${this.progress.post_count} posts`)
 			}
 		}
 		// file count / res type
@@ -79,7 +79,7 @@ export class TaskData extends BaseData {
 	download_limit: DownloadLimit
 	worker_count: Map<string, number>
 	queue_count: Map<string, number>
-	actor_abstract: ActorAbstract | undefined
+	actor_abstract: IActorAbstract | undefined
 
 	constructor(json_data?: IDownloadTask) {
 		super(json_data);

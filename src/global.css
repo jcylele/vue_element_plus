@@ -132,10 +132,6 @@ th,
 	font-weight: 700;
 }
 
-.el-tag__content {
-	/* text-shadow: 1px 1px #404040; */
-}
-
 .el-collapse {
 	--el-collapse-header-bg-color: var(--me-header-bg-color);
 	--el-collapse-content-bg-color: var(--el-bg-color);
@@ -221,6 +217,11 @@ tr:nth-child(odd) {
 .el-form-item__content {
 	padding: 3px;
 	gap: 10px;
+	font-size: var(--el-font-size-base);
+}
+
+span {
+	font-size: var(--el-font-size-base);
 }
 
 .el-dialog {
@@ -288,8 +289,7 @@ tr:nth-child(odd) {
 	align-items: stretch;
 }
 
-.center-row .el-button+.el-button,
-.left-row .el-button+.el-button {
+.el-button+.el-button {
 	margin-left: 0;
 }
 

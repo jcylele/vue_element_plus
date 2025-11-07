@@ -1,155 +1,128 @@
 <template>
-    <el-form label-width="150px" label-position="left">
-        <el-form-item label="Score Range">
-            <el-slider v-model="scores"
-                       :min="0" :max="max_score"
-                       range show-stops
-                       style="width: 360px;"/>
-        </el-form-item>
-        <el-form-item label="Tag Count">
-            <el-input-number v-model="tag_count" :min="1" :max="20"/>
-        </el-form-item>
-        <el-form-item label="Op">
-            <el-button type="primary" @click="refreshData">Refresh</el-button>
-        </el-form-item>
-    </el-form>
-    <div ref="dom_score_tags" style="width: 1280px;height: 480px"></div>
+	<el-form label-width="150px" label-position="left">
+		<el-form-item label="Score Range">
+			<el-slider v-model="scores" :min="0" :max="max_score" range show-stops style="width: 360px;" />
+		</el-form-item>
+		<el-form-item label="Tag Count">
+			<el-input-number v-model="tag_count" :min="1" :max="30" />
+		</el-form-item>
+		<el-form-item label="Op">
+			<el-button type="primary" @click="refreshData">Refresh</el-button>
+		</el-form-item>
+	</el-form>
+	<div ref="dom_chart" style="width: 1280px;height: 480px"></div>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
 import * as echarts from "echarts/core";
-import {BarChart} from "echarts/charts";
-
+import { BarChart } from "echarts/charts";
 import {
-    TooltipComponent,
-    GridComponent,
-    DatasetComponent,
-    TransformComponent
+	TooltipComponent,
+	GridComponent,
 } from "echarts/components";
+import { CanvasRenderer } from 'echarts/renderers'
 
-import {LabelLayout, UniversalTransition} from 'echarts/features'
-
-import {CanvasRenderer} from 'echarts/renderers'
+import { ref, computed, onMounted, onUnmounted, markRaw } from "vue";
+import { getTagsByScore } from "../../ctrls/ChartCtrl.js";
+import { ActorTagStore } from "../../store/ActorTagStore";
+import { MAX_SCORE } from "../../data/Consts";
+import { TagCount } from "../../data/Interfaces";
+import { logError } from "../../ctrls/FetchCtrl.js";
+import { formatCategoryAxis, formatCommonTextStyle, formatGrid, formatValueAxis } from "../../data/ChartUtil.js";
+import { ECssVarName } from "../../data/Enums.js";
 
 echarts.use([
-    BarChart,
-    TooltipComponent,
-    GridComponent,
-    DatasetComponent,
-    TransformComponent,
-    LabelLayout,
-    UniversalTransition,
-    CanvasRenderer
+	BarChart,
+	TooltipComponent,
+	GridComponent,
+	CanvasRenderer
 ]);
 
-import {getTagsByScore} from "../../ctrls/ChartCtrl.js";
-import {mapActions} from "pinia";
-import {ActorTagStore} from "../../store/ActorTagStore";
-import {MAX_SCORE} from "../../data/Consts";
-import {TagCount} from "../../data/Interfaces";
-import {ref} from "vue";
+const actorTagStore = ActorTagStore()
 
-export default {
-    name: "ScoreTagsChart",
-    computed: {
-        max_score() {
-            return MAX_SCORE
-        }
-    },
-    setup() {
-        const dom_score_tags = ref(null)
-        return {
-            dom_score_tags
-        }
-    },
-    data() {
-        return {
-            tag_count: 10,
-            scores: [0, MAX_SCORE],
-            score_tags_chart: undefined as BarChart,
-            score_tag_option: {
-                grid: {
-                    top: '5%',
-                    left: '10%',
-                    right: '10%',
-                    bottom: '5%',
-                },
-                xAxis: {
-                    type: 'value',
-                },
-                yAxis: {
-                    type: 'category',
-                    data: [],
-                },
-                series: [
-                    {
-                        type: 'bar',
-                        barWidth: "80%",
-                        barMaxWidth: 50,
-                        colorBy: 'data', // bar color is data.itemStyle.color
-                        data: [],
-                        label: {
-                            show: true,
-                            position: 'right',
-                            distance: 15,
-                            align: 'left',
-                            verticalAlign: 'middle',
-                            fontSize: 18,
-                        },
-                    }
-                ]
-            }
-        }
-    },
-    methods: {
-        ...mapActions(ActorTagStore, {
-            getTagBgColor: 'getBgColor',
-            getTagName: 'getName',
-        }),
-        async refreshData() {
-            const [ok, tag_list] = await getTagsByScore(this.scores[0], this.scores[1], this.tag_count)
-            if (ok) {
-                this.refreshChart(tag_list)
-            }
-        },
-        formatCategory(tc: TagCount) {
-            return {
-                value: this.getTagName(tc.tag_id),
-                textStyle: {
-                    color: this.getTagBgColor(tc.tag_id),
-                    fontSize: 16
-                }
-            }
-        },
-        formatCount(tc: TagCount) {
-            return {
-                value: tc.count,
-                itemStyle: {
-                    color: this.getTagBgColor(tc.tag_id)
-                }
-            }
-        },
-        refreshChart(tag_list: TagCount[]) {
-            tag_list.reverse()
+const max_score = computed(() => MAX_SCORE)
 
-            this.score_tag_option.yAxis.data = tag_list.map(a => this.formatCategory(a))
+const dom_chart = ref<HTMLElement | null>(null)
+const chart = ref<echarts.ECharts | null>(null)
+const scores = ref<[number, number]>([0, MAX_SCORE])
+const tag_count = ref(10)
 
-            this.score_tag_option.series[0].data = tag_list.map(a => this.formatCount(a))
-
-            this.score_tags_chart.setOption(this.score_tag_option, true)
-        },
-    },
-    mounted() {
-        // 2. 判断 dom 是否为空或未定义
-        if (this.score_tags_chart != null && this.score_tags_chart != "" && this.score_tags_chart != undefined) {
-            // 3. 已存在则调用 dispose() 方法销毁
-            this.score_tags_chart.dispose();
-        }
-        this.score_tags_chart = echarts.init(this.dom_score_tags);
-    },
+async function refreshData() {
+	const [ok, tag_list] = await getTagsByScore(scores.value[0], scores.value[1], tag_count.value)
+	if (ok) {
+		refreshChart(tag_list)
+	}
 }
+function formatCategory(tc: TagCount) {
+	return {
+		value: actorTagStore.getName(tc.tag_id),
+		textStyle: formatCommonTextStyle(ECssVarName.ElFontSizeBase, actorTagStore.getBgColor(tc.tag_id))
+	}
+}
+function formatValue(tc: TagCount) {
+	return {
+		value: tc.count,
+		itemStyle: {
+			color: actorTagStore.getBgColor(tc.tag_id)
+		}
+	}
+}
+
+function formatSeriesItem(data: any[]) {
+	return {
+		type: 'bar',
+		barWidth: "80%",
+		// barMinWidth: 20,
+		barMaxWidth: 50,
+		colorBy: 'data', // bar color is data.itemStyle.color
+		data: data,
+		label: {
+			show: true,
+			position: 'right',
+			distance: 15,
+			align: 'left',
+			verticalAlign: 'middle',
+			fontSize: 18,
+		},
+	}
+}
+
+function refreshChart(tag_list: TagCount[]) {
+	if (!chart.value) {
+		logError('Chart not initialized')
+		return
+	}
+
+	tag_list.reverse()
+
+	const category_data = tag_list.map(a => formatCategory(a))
+
+	const value_data = tag_list.map(a => formatValue(a))
+
+	const option = {
+		grid: formatGrid(false),
+		xAxis: formatValueAxis(),
+		yAxis: formatCategoryAxis(category_data),
+		series: [
+			formatSeriesItem(value_data)
+		]
+	}
+
+	chart.value.setOption(option)
+}
+
+onMounted(() => {
+	if (dom_chart.value) {
+		chart.value = markRaw(echarts.init(dom_chart.value))
+	}
+})
+
+onUnmounted(() => {
+	if (chart.value) {
+		chart.value.dispose()
+		chart.value = null
+	}
+})
 </script>
 
-<style scoped>
-
-</style>
+<style scoped></style>

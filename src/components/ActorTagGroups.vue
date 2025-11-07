@@ -31,7 +31,7 @@
 			</el-space>
 		</div>
 	</el-space>
-	<el-dialog v-model="is_editing" title="Add/Edit Folder" style="min-width: 600px;">
+	<el-dialog v-model="is_editing" :title="add_edit_title" style="min-width: 600px;">
 		<el-form label-width="100px">
 			<el-form-item label="Name">
 				<el-input v-model="edit_group.group_name" maxlength="30" show-word-limit />
@@ -39,13 +39,15 @@
 			<el-form-item label="Desc">
 				<el-input v-model="edit_group.group_desc" type="textarea" maxlength="100" show-word-limit />
 			</el-form-item>
-			<el-form-item>
+			<el-form-item label="Op">
 				<div class="split-row" style="padding: 10px">
-					<el-space direction="horizontal" size="large" alignment="center">
+					<div class="center-row">
 						<el-button type="primary" @click="saveGroup">Save</el-button>
 						<el-button type="warning" @click="stopEdit">Cancel</el-button>
-					</el-space>
-					<el-button type="danger" @click="delGroup">Delete</el-button>
+					</div>
+					<div v-if="!is_add_group">
+						<el-button type="danger" @click="delGroup">Delete</el-button>
+					</div>
 				</div>
 			</el-form-item>
 		</el-form>
@@ -54,7 +56,7 @@
 
 <script setup lang="ts">
 // imports
-import { onMounted, Ref, ref } from "vue";
+import { onMounted, Ref, ref, computed } from "vue";
 import { ActorTagGroupStore } from "../store/ActorTagGroupStore";
 import { ActorTagGroupData } from "../data/ActorTagGroupData";
 import { updateActorTagGroup, addActorTagGroup, delActorTagGroup, addActorTagToGroup, delActorTagFromGroup, updatePriorities } from "../ctrls/ActorTagGroupCtrl";
@@ -73,22 +75,25 @@ const edit_group = ref(new ActorTagGroupData()) as Ref<ActorTagGroupData>
 const is_editing = ref(false)
 const to_add_group_id = ref(0)
 // computed
+const is_add_group = computed(() => edit_group.value.group_id == 0)
+const add_edit_title = computed(() => is_add_group.value ? "Add New Tag Group" : "Edit Tag Group")
+
 // watch
 // methods
 
 async function saveGroup() {
-	if (edit_group.value.group_id != 0) {
+	if (is_add_group.value) {
+		const [ok, group] = await addActorTagGroup(edit_group.value)
+		if (ok) {
+			actor_tag_group_store.add(group)
+			stopEdit()
+		}
+	} else {
 		const [ok, group] = await updateActorTagGroup(edit_group.value)
 		if (ok) {
 			// set tag_ids in group again
 			group.tag_ids = actor_tag_store.getTagIdsInGroup(group.group_id)
 			actor_tag_group_store.update(group)
-			stopEdit()
-		}
-	} else {
-		const [ok, group] = await addActorTagGroup(edit_group.value)
-		if (ok) {
-			actor_tag_group_store.add(group)
 			stopEdit()
 		}
 	}
@@ -122,8 +127,8 @@ async function moveGroup(group_id: number, up: boolean) {
 	const group_list = actor_tag_group_store.sorted_list
 	const priorities = swapGroup(group_list, group_id, up)
 	if (priorities) {
-		const [ok, succeed] = await updatePriorities(priorities)
-		if (ok && succeed) {
+		const [ok, _] = await updatePriorities(priorities)
+		if (ok) {
 			actor_tag_group_store.updatePriorities(priorities)
 		} else {
 			actor_tag_group_store.dirty()

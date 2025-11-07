@@ -2,7 +2,7 @@ import { PostData } from "./PostData";
 import ActorFileDetail from "./FileInfo";
 import { ActorVideoInfo } from "./ActorVideoInfo";
 import BaseData from "./BaseData";
-import { BASE_URL, ROOT_URL } from "./Consts";
+import { ROOT_URL } from "./Consts";
 import { IActor } from "./Schemas";
 
 
@@ -77,7 +77,28 @@ export default class ActorData extends BaseData {
 	}
 
 	get has_remark() {
-		return (this.remark !== "") || (this.comment !== "") || this.commented_posts.length > 0
+		return (this.remark !== "")
+			|| (this.comment !== "")
+			|| this.commented_posts.length > 0
+	}
+
+	get has_video_info() {
+		return this.video_infos.length > 0
+	}
+
+	get str_video_infos(): string {
+		let landscape_duration = 0
+		let portrait_duration = 0
+		for (const info of this.video_infos) {
+			if (info.is_landscape) {
+				landscape_duration += info.duration
+			} else {
+				portrait_duration += info.duration
+			}
+		}
+		landscape_duration = Math.floor(landscape_duration / 60)
+		portrait_duration = Math.floor(portrait_duration / 60)
+		return `${landscape_duration}m | ${portrait_duration}m`
 	}
 
 	constructor(json_data?: IActor) {

@@ -1,4 +1,4 @@
-import { BoolEnum, EFilterRow, SortType } from "./Enums";
+import { BoolEnum, EFilterRow, EStoreType, SortType } from "./Enums";
 import { Default_Sort_Option, Filter_Row_Names, MAX_SCORE, Sort_Groups } from "./Consts";
 import { SortOption } from "./Interfaces";
 import BaseData from "./BaseData";
@@ -465,6 +465,12 @@ export class ActorFilterData extends BaseCloneable {
 		this.linked = false
 	}
 
+	setNameLink(name: string = "", linked: boolean = false) {
+		this.name = name
+		this.linked = linked
+		this.setRowVisible(EFilterRow.Name, true)
+	}
+
 	resetSort() {
 		this.sort_items = []
 	}
@@ -508,6 +514,88 @@ export class ActorFilterData extends BaseCloneable {
 			this.has_comment === data.has_comment &&
 			this.post_completed === data.post_completed &&
 			this.res_completed === data.res_completed
+	}
+
+	formatFilterItems(getNameFunc: (store_type: EStoreType, group_id: number) => string, show_group: boolean): FilterItem[] {
+		const desc_list: FilterItem[] = []
+		// group
+		if (show_group) {
+			const group_name_list = this.group_id_list.map(group_id => getNameFunc(EStoreType.ActorGroup, group_id))
+			desc_list.push(new FilterItem("Group", group_name_list.join(", ")))
+		}
+
+		// tag
+		const tag_item = this.tag_filter.getTagItem(tag_id => getNameFunc(EStoreType.ActorTag, tag_id))
+		if (tag_item) {
+			desc_list.push(tag_item)
+		}
+
+		// score
+		if (this.min_score > 0 && this.max_score < MAX_SCORE) {
+			desc_list.push(new FilterItem("Score", `${this.min_score} - ${this.max_score}`))
+		} else if (this.min_score > 0) {
+			desc_list.push(new FilterItem("score", `>= ${this.min_score}`))
+		} else if (this.max_score < MAX_SCORE) {
+			desc_list.push(new FilterItem("Score", `<= ${this.max_score}`))
+		}
+
+		// name
+		if (this.name.length > 0) {
+			desc_list.push(new FilterItem("Name", this.name))
+		}
+
+		// linked
+		if (this.linked) {
+			desc_list.push(new FilterItem("Linked", "Yes"))
+		}
+
+		// remark
+		switch (this.has_remark) {
+			case BoolEnum.TRUE:
+				desc_list.push(new FilterItem("Remark", this.remark_str || "O"))
+				break
+			case BoolEnum.FALSE:
+				desc_list.push(new FilterItem("Remark", "X"))
+				break
+		}
+
+		// comment
+		switch (this.has_comment) {
+			case BoolEnum.TRUE:
+				desc_list.push(new FilterItem("Comment", this.comment_str || "O"))
+				break
+			case BoolEnum.FALSE:
+				desc_list.push(new FilterItem("Comment", "X"))
+				break
+		}
+
+		// folder
+		if (this.folder_id > 0) {
+			desc_list.push(new FilterItem("Folder", getNameFunc(EStoreType.ActorFavFolder, this.folder_id)))
+		}
+
+		if (desc_list.length == 0) {
+			desc_list.push(new FilterItem("All", "actors"))
+		}
+
+		// progress
+		switch (this.post_completed) {
+			case BoolEnum.TRUE:
+				desc_list.push(new FilterItem("Post", "Completed"))
+				switch (this.res_completed) {
+					case BoolEnum.TRUE:
+						desc_list.push(new FilterItem("Res", "Completed"))
+						break
+					case BoolEnum.FALSE:
+						desc_list.push(new FilterItem("Res", "Not Completed"))
+				}
+				break
+			case BoolEnum.FALSE:
+				desc_list.push(new FilterItem("Post", "Not Completed"))
+				break
+		}
+
+		return desc_list
 	}
 }
 
