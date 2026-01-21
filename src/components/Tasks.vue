@@ -1,11 +1,11 @@
 <template>
 	<el-container>
 		<el-main>
-			<el-space direction="vertical">
-				<el-space direction="horizontal" size="large">
-					<el-button type="danger" size="default" @click="stopAll">Stop All</el-button>
-					<el-button type="primary" size="default" @click="getAll">Refresh</el-button>
-				</el-space>
+			<div class="fill-column fit-width">
+				<div class="center-row">
+					<el-button type="danger" size="large" @click="stopAll">Stop All</el-button>
+					<el-button type="primary" size="large" @click="getAll">Refresh</el-button>
+				</div>
 				<el-table :data="task_list" border>
 					<el-table-column label="task" align="center" min-width="300px">
 						<template #default="scope">
@@ -21,41 +21,70 @@
 					</el-table-column>
 					<el-table-column prop="download_limit" label="limit" align="center" min-width="280px">
 						<template #default="scope">
-							<el-space direction="vertical">
+							<div class="center-column">
 								<el-tag v-for="limit in scope.row.download_limit.limit_desc_list" type="success"
 									size="small" effect="light">
 									{{ limit }}
 								</el-tag>
-							</el-space>
+							</div>
 						</template>
 					</el-table-column>
-					<el-table-column prop="worker_count" label="workers" align="center" min-width="200px">
+					<el-table-column label="workers" align="center" min-width="200px">
 						<template #default="scope">
-							<el-space direction="vertical">
-								<el-tag v-for="(count, name) in scope.row.worker_count" :key="name" size="small"
+							<div class="center-column">
+								<el-tag v-for="pair in scope.row.worker_count" :key="pair.name" size="small"
 									effect="light">
-									{{ name }}:{{ count }}
+									{{ pair.name }}:{{ pair.count }}
 								</el-tag>
-							</el-space>
+							</div>
 						</template>
 					</el-table-column>
-					<el-table-column prop="queue_count" label="queues" align="center" min-width="200px">
+					<el-table-column label="queues" align="center" min-width="200px">
 						<template #default="scope">
-							<el-space direction="vertical">
-								<el-tag v-for="(count, name) in scope.row.queue_count" :key="name" size="small"
+							<div class="center-column">
+								<el-tag v-for="pair in scope.row.queue_count" :key="pair.name" size="small"
 									effect="light">
-									{{ name }}:{{ count }}
+									{{ pair.name }}:{{ pair.count }}
 								</el-tag>
-							</el-space>
+							</div>
 						</template>
 					</el-table-column>
-					<el-table-column label="Op" align="center" min-width="100px">
+					<el-table-column label="Op" align="center" min-width="240px">
 						<template #default="scope">
-							<el-button type="danger" @click="stopTask(scope.row.uid)">Stop</el-button>
+							<div class="center-row">
+								<el-popover trigger="hover" placement="left" width="auto">
+									<template #reference>
+										<el-button type="primary" style="width: 100px;" plain>Progress</el-button>
+									</template>
+									<template #default>
+										<div class="fill-column">
+											<el-table :data="scope.row.worker_process_stats"
+												empty-text="no progress yet" border>
+												<el-table-column label="Worker" prop="worker_type" min-width="140px" />
+												<el-table-column label="Failed" prop="failed_count" min-width="80px" />
+												<el-table-column label="Succeed" prop="process_count"
+													min-width="90px" />
+												<el-table-column label="Average" min-width="90px">
+													<template #default="scope">
+														<span>
+															{{ format_duration(scope.row.total_process_time /
+																scope.row.process_count, false) }}
+														</span>
+													</template>
+												</el-table-column>
+												<el-table-column label="Last Time" prop="last_process_time"
+													min-width="120px" />
+											</el-table>
+										</div>
+									</template>
+								</el-popover>
+								<el-button type="danger" style="width: 100px;"
+									@click="stopTask(scope.row.uid)">Stop</el-button>
+							</div>
 						</template>
 					</el-table-column>
 				</el-table>
-			</el-space>
+			</div>
 		</el-main>
 	</el-container>
 </template>
@@ -68,6 +97,7 @@ import { ActorGroupStore } from "../store/ActorGroupStore";
 import { TaskData } from "../data/TaskData";
 import { LogMessages } from "../data/Messages.js";
 import { ref, onMounted } from 'vue';
+import { format_duration } from "../data/DataUtil.js";
 
 const task_list = ref<TaskData[]>([])
 const badgeStore = BadgeStore()

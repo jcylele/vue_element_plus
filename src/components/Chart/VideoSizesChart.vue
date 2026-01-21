@@ -16,7 +16,7 @@ import { ref, markRaw, onMounted, onUnmounted } from "vue";
 import { ResState } from "../../data/Enums";
 import { ResStateList, str_res_state, video_state_color } from "../../data/Consts";
 import { formatCategoryAxis, formatGrid, formatLegend, formatTooltip, formatValueAxis } from "../../data/ChartUtil";
-import ResSizeCount from "../../data/ResSizeCount";
+import { ResSizeCount } from "../../data/ResSizeCount";
 import { getVideoSizes } from "../../ctrls/ActorCtrl";
 import { logError } from "../../ctrls/FetchCtrl";
 

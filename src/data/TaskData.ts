@@ -1,8 +1,8 @@
 import { DownloadLimitForm } from "./DownloadForms";
 import { PostFilter, ResType, TaskType } from "./Enums";
 import { format_file_size } from "./DataUtil";
-import BaseData from "./BaseData";
-import { IActorAbstract, IDownloadLimit, IDownloadTask } from "./SchemasOthers";
+import { BaseData } from "./BaseData";
+import { IActorAbstract, ICommonCount, IDownloadLimit, IDownloadTask, IWorkerProcessStats } from "./SchemasOthers";
 import { Task_Type_Descs } from "./Consts";
 
 export class DownloadProgress extends BaseData {
@@ -77,9 +77,10 @@ export class TaskData extends BaseData {
 	type: TaskType
 	arg: number
 	download_limit: DownloadLimit
-	worker_count: Map<string, number>
-	queue_count: Map<string, number>
+	worker_count: ICommonCount[]
+	queue_count: ICommonCount[]
 	actor_abstract: IActorAbstract | undefined
+	worker_process_stats: IWorkerProcessStats[]
 
 	constructor(json_data?: IDownloadTask) {
 		super(json_data);

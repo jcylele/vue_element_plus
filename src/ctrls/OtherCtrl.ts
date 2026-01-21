@@ -14,6 +14,11 @@ export async function findSimilarActorNames() {
 	return await fetchGet(url)
 }
 
+export async function findSimilarActorIcons() {
+	const url = `${baseUrl}/similar_icons`
+	return await fetchGet(url)
+}
+
 export async function cleanFiles() {
 	const url = `${baseUrl}/remove_outdated`
 	return await fetchGet(url)
@@ -41,4 +46,19 @@ export async function changeSetting(key: ECacheKey, value: string | number | boo
 		value: value
 	}
 	return await fetchPost(url, item)
+}
+
+export async function refreshMissingPosts() {
+	const url = `${baseUrl}/refresh_missing_posts`
+	return await fetchPost(url)
+}
+
+export async function validateFileInfos() {
+	const url = `${baseUrl}/validate_all_file_info`
+	return await fetchPost(url)
+}
+
+export async function getLastRunTimes() {
+	const url = `${baseUrl}/last_run_times`
+	return await fetchGet<Record<string, string>>(url, undefined, false)
 }

@@ -1,5 +1,5 @@
-import BaseData from "./BaseData";
-import { EActorGroupFlag, ECacheKey, EConfirmOp, EOtherOp, ESettingType } from "./Enums";
+import { BaseData } from "./BaseData";
+import { EActorGroupFlag, ECacheKey, EConfirmOp, EFixFilter, EOtherOp, ESettingType } from "./Enums";
 import { CommonGroupForm } from "./WebData"
 
 export interface ITableItem {
@@ -28,13 +28,22 @@ export interface NoticeColumn {
 }
 
 export interface NoticeTypeConfig {
+	name: string
 	tip: string
+	btn_text?: string
+	api_path?: string
 	notice_columns: NoticeColumn[]
 }
 
 export interface CommonOption {
 	label: string
 	value: any
+}
+
+export interface FixOption {
+	label: string
+	value: EFixFilter
+	tooltip: string
 }
 
 export interface SortOption extends CommonOption {
@@ -64,6 +73,7 @@ export interface OtherOp {
 	label: string
 	desc: string
 	btn_text: string
+	api_path?: string
 }
 
 export interface ConfirmOp {
@@ -82,4 +92,11 @@ export interface ActorGroupFlagConfig {
 	label: string
 	desc: string
 	icon: string
+}
+
+export interface ActorGroupAbstract {
+	group_color: string
+	has_folder: boolean
+	is_initial: boolean
+	show_video_info: boolean
 }

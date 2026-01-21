@@ -1,6 +1,6 @@
 import { ResSizeUnit, ResState } from "./Enums";
 import { ResSizeList } from "./Consts";
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { IResSizeCount } from "./SchemasOthers";
 
 class SizeStruct {
@@ -25,7 +25,7 @@ class SizeStruct {
     }
 }
 
-export default class ResSizeCount extends BaseData {
+export class ResSizeCount extends BaseData {
     min: number
     max: number
     count_map: Map<ResState, number>

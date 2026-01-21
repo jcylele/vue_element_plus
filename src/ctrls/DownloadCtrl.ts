@@ -4,7 +4,8 @@ import {
 	GroupDownloadForm,
 	DownloadLimitForm,
 	ActorIdDownloadForm,
-	UrlDownloadForm, NewDownloadForm
+	UrlDownloadForm, NewDownloadForm,
+	FixVideoForm
 } from "../data/DownloadForms";
 import { TaskData } from "../data/TaskData";
 
@@ -52,16 +53,18 @@ export async function resumeActorDownload(actor_id: number) {
 	return await fetchPatch(url)
 }
 
-export async function fixPosts(actor_id: number) {
-	let url = `${baseUrl}/fix_posts/${actor_id}`
+export async function fixPosts(actor_ids: number[]) {
+	let url = `${baseUrl}/fix_posts`
 
-	return await fetchPatch(url)
+	return await fetchPost(url, actor_ids)
 }
 
-export async function fixRes(actor_id: number) {
-	let url = `${baseUrl}/fix_res/${actor_id}`
-
-	return await fetchPatch(url)
+export async function fixRes(actor_ids: number[], end_date: string) {
+	let url = `${baseUrl}/fix_res`
+	let fixForm = new FixVideoForm()
+	fixForm.actor_ids = actor_ids
+	fixForm.end_date = end_date
+	return await fetchPost(url, fixForm)
 }
 
 export async function manualDownload(download_limit: DownloadLimitForm, group_id: number) {

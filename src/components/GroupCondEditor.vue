@@ -1,15 +1,14 @@
 <template>
-	<div class="center-column" style="align-items: stretch;">
-		<div class="left-row" v-for="cond in cond_list"
-			:class="cond.in_use ? 'cond_enabled' : 'cond_disabled'">
+	<div class="fill-column">
+		<div class="left-row" v-for="cond in cond_list" :class="cond.in_use ? 'cond_enabled' : 'cond_disabled'">
 			<el-checkbox v-model="cond.in_use" size="default" border />
 			<div v-if="cond.is_score" class="center-row">
 				<el-text>{{ cond.score_prefix }}</el-text>
 				<MyRate v-model="cond.score_param" :disabled="!cond.in_use" size="large" />
 			</div>
 			<div v-else-if="cond.is_switch" class="center-row">
-				<el-switch v-model="cond.bool_param" :disabled="!cond.in_use" width="50px" :active-text="cond.true_text"
-					:inactive-text="cond.false_text" />
+				<el-switch v-model="cond.bool_param" :disabled="!cond.in_use" class="cond-switch"
+					:active-text="cond.true_text" :inactive-text="cond.false_text" />
 			</div>
 		</div>
 		<!-- submit/cancel -->
@@ -23,8 +22,8 @@
 <script setup lang="ts">
 // imports
 import { onMounted, ref, watch } from "vue";
-import ActorGroupData from "../data/ActorGroupData";
-import ActorGroupCond from "../data/ActorGroupCond";
+import { ActorGroupData } from "../data/ActorGroupData";
+import { ActorGroupCond } from "../data/ActorGroupCond";
 import { GroupCondType } from "../data/Enums";
 import MyRate from "./MyRate.vue";
 // emits
@@ -42,6 +41,7 @@ const cond_list = ref([
 	new ActorGroupCond(GroupCondType.MaxScore),
 	new ActorGroupCond(GroupCondType.HasAnyTag),
 	new ActorGroupCond(GroupCondType.Linked),
+	new ActorGroupCond(GroupCondType.HasRemark),
 ])
 // computed
 
@@ -76,7 +76,7 @@ function onSubmit() {
 //new /new2  HasAnyTag = false Linked = false
 //nice / nicer HasAnyTag = true Linked = false
 //good HasAnyTag = true
-//loved HasAnyTag = true MinScore >= 3.5
+//loved HasAnyTag = true MinScore >= 3.5 hasRemark = true
 //dislike HasAnyTag = true MinScore <= 3
 //enough HasAnyTag = true MinScore >= 3.5
 // recall HasAnyTag = true Linked = true
@@ -92,12 +92,23 @@ onMounted(() => {
 </script>
 
 <style scoped>
-
 .cond_enabled {
 	background-color: var(--me-odd-bg-color);
 }
 
 .cond_disabled {
 	background-color: var(--el-bg-color);
+}
+
+/* .cond-switch {} */
+
+.cond-switch :deep(.el-switch__label--left) {
+	width: 100px;
+	text-align: right;
+}
+
+.cond-switch :deep(.el-switch__label--right) {
+	width: 100px;
+	text-align: left;
 }
 </style>

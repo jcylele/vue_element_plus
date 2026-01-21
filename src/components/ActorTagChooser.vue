@@ -1,16 +1,15 @@
 <template>
 	<el-container>
-		<el-space direction="vertical" size="small" fill>
-			<el-space v-for="tag_group in tag_group_info_list"
-				style="border: 1px solid ; border-radius: 4px; padding: 2px" direction="horizontal" alignment="stretch">
-				<el-text style="font-weight: bold;width: 120px;margin-left: 10px;">{{ tag_group.group_name }}</el-text>
-				<el-space direction="horizontal" :wrap="true" alignment="stretch">
+		<div class="fill-column">
+			<div v-for="tag_group in tag_group_info_list" class="left-row common-border">
+				<span style="font-weight: bold;width: 120px;margin-left: 10px;">{{ tag_group.group_name }}</span>
+				<div class="left-row wrap">
 					<el-tag v-for="tag_info in tag_group.tag_infos" class="hint-selectable" :key="tag_info.tag_id"
 						:style="getTagStyle(tag_info)" size="large" @click="switchSelect(tag_info)">
 						{{ getTagName(tag_info.tag_id) }}
 					</el-tag>
-				</el-space>
-			</el-space>
+				</div>
+			</div>
 			<!-- buttons -->
 			<div class="center-row" style="gap: 30px;">
 				<el-button type="primary" size="large" style="width: 120px;" @click="onSubmit">
@@ -21,7 +20,7 @@
 				</el-button>
 			</div>
 
-		</el-space>
+		</div>
 
 	</el-container>
 </template>
@@ -32,7 +31,7 @@ import { ActorTagData } from "../data/ActorTagData";
 import { ActorTagStore } from "../store/ActorTagStore";
 import { ActorTagGroupStore } from "../store/ActorTagGroupStore";
 import { ref, onMounted } from "vue";
-import ActorData from "../data/ActorData";
+import { ActorData } from "../data/ActorData";
 
 interface TagInfo {
 	tag_id: number,
@@ -125,5 +124,4 @@ onMounted(() => {
 })
 
 </script>
-<style scoped>
-</style>
+<style scoped></style>

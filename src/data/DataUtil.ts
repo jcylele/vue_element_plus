@@ -1,3 +1,6 @@
+/**
+ * DataUtil is the utility functions for the data operations.
+ */
 import { ECssVarName } from "./Enums"
 
 const sizes = [
@@ -54,15 +57,32 @@ export function format_duration(duration: number, padding: boolean = true): stri
 		} else if (minutes > 0) {
 			return `${minutes}:${pad_time(seconds)}`
 		} else {
-			return `${seconds}`
+			return `${seconds}s`
 		}
 	}
+}
+
+export function format_date(date: Date): string {
+	const year = date.getFullYear();
+	const month = String(date.getMonth() + 1).padStart(2, '0');
+	const day = String(date.getDate()).padStart(2, '0');
+	return `${year}-${month}-${day}`;
+}
+
+export function to_date(str_date: string): Date {
+	const [year, month, day] = str_date.split('-').map(Number)
+	return new Date(year, month - 1, day)
 }
 
 export function format_percent(percent: number): string {
 	return `${(percent * 100).toFixed(1)}%`
 }
 
+/**
+ * getCssVarValue is the utility function to get the value of the css variable.
+ * @param cssVarName - the name of the css variable.
+ * @returns the value of the css variable.
+ */
 export function getCssVarValue(
 	cssVarName: ECssVarName
 ): string {

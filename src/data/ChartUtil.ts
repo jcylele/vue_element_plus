@@ -1,7 +1,11 @@
+/**
+ * ChartUtil is the utility functions for the charts.
+ */
+
 import { getCssVarValue } from "./DataUtil"
 import { ECssVarName } from "./Enums"
 
-export function formatCommonTextStyle(font_size: ECssVarName = ECssVarName.ElFontSizeLarge, color: string | undefined = undefined) {
+export function formatCommonTextStyle(font_size: ECssVarName = ECssVarName.ElFontSizeBase, color: string | undefined = undefined) {
 	return {
 		color: color ?? getCssVarValue(ECssVarName.ElTextColorRegular), // 文字颜色
 		fontSize: getCssVarValue(font_size), // 文字大小
@@ -50,7 +54,7 @@ function formatDateToMD(date: string): string {
 export function formatCategoryAxis(data: any[], short_date: boolean = false) {
 	let axis_label = {}
 	if (short_date) {
-		axis_label = formatCommonTextStyle(ECssVarName.ElFontSizeSmall)
+		axis_label = formatCommonTextStyle(ECssVarName.ElFontSizeBase)
 		axis_label['formatter'] = (value: string) => {
 			return formatDateToMD(value)
 		}
@@ -69,5 +73,17 @@ export function formatValueAxis() {
 	return {
 		type: 'value',
 		axisLabel: formatCommonTextStyle(),
+	}
+}
+
+export function formatBarLabel() {
+	return {
+		show: true,
+		position: 'right',
+		distance: 15,
+		align: 'left',
+		verticalAlign: 'middle',
+		fontSize: getCssVarValue(ECssVarName.ElFontSizeLarge),
+		color: getCssVarValue(ECssVarName.ElTextColorRegular),
 	}
 }

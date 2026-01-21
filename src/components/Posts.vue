@@ -1,5 +1,5 @@
 <template>
-	<el-space direction="vertical" size="small" fill style="width: var(--me-remark-width);">
+	<div class="fill-column" style="width: var(--me-remark-width);">
 		<!-- search line -->
 		<div class="left-row">
 			<div class="left-column">
@@ -58,7 +58,7 @@
 				</div>
 			</el-collapse-item>
 		</el-collapse>
-	</el-space>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -66,7 +66,7 @@ import { getPostCountList, getPosts, setPostComment } from "../ctrls/PostCtrl";
 import { PostConditionForm, EditingPostData, ActorPostInfo } from "../data/PostData";
 import { logInfo, logWarn } from "../ctrls/FetchCtrl";
 import { computed, onMounted, ref } from "vue";
-import ActorData from "../data/ActorData";
+import { ActorData } from "../data/ActorData";
 import { LogMessages } from "../data/Messages";
 
 
@@ -92,19 +92,18 @@ function startEdit() {
 	actor_post_list.value = []
 	actor_post_dict.value = new Map()
 
-	condition_form.value.is_editing = true
+	condition_form.value.startEdit()
 }
 
 async function endEdit() {
-	if (!condition_form.value.checkPostIdPrefix()) {
+	if (!condition_form.value.endEdit()) {
 		logWarn(LogMessages.ShortPostIdPrefix())
 		return
 	}
 
-	condition_form.value.is_editing = false
-
 	await getActorNames()
 }
+
 function handlePostId(value: string) {
 	// 移除非数字字符
 	condition_form.value.post_id_prefix = value.replace(/[^\d]/g, '')

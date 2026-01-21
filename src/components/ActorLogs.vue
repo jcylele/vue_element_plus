@@ -12,13 +12,13 @@
 			<template #default="scope">
 				<div class="left-row">
 					<span v-if="is_simplified">{{ scope.row.log_type_name_count }}</span>
-					<span v-else >{{ scope.row.log_type_name }}</span>
+					<span v-else>{{ scope.row.log_type_name }}</span>
 				</div>
 			</template>
 		</el-table-column>
 		<el-table-column label="Param" min-width="500">
 			<template #default="scope">
-				<div class="split-row" style="align-items: flex-end;">
+				<div class="split-row">
 					<div v-if="scope.row.log_type == ActorLogType.Add">
 						<el-text>
 							{{ specific_actor_id }}
@@ -26,15 +26,15 @@
 					</div>
 					<div v-else-if="scope.row.log_type == ActorLogType.Group">
 						<el-text :style="{ 'color': getGroupColor(scope.row.group_id) }">
-							{{ getGroupName(scope.row.group_id) }}
+							{{ actorGroupStore.getName(scope.row.group_id) }}
 						</el-text>
 					</div>
 					<div v-else-if="scope.row.log_type == ActorLogType.Score" class="center-column">
 						<MyRate v-model="scope.row.show_score" style="background-color: #1a1a1a50;" disabled />
 					</div>
 					<div v-else-if="scope.row.log_type == ActorLogType.Tag" class="left-row wrap">
-						<el-tag v-for="tag_id in scope.row.tag_id_list" :style="getTagStyle(tag_id)" round>
-							{{ getTagName(tag_id) }}
+						<el-tag v-for="tag_id in scope.row.tag_id_list" :style="actorTagStore.getStyle(tag_id)" round>
+							{{ actorTagStore.getName(tag_id) }}
 						</el-tag>
 					</div>
 					<div v-else-if="scope.row.log_type == ActorLogType.Remark">
@@ -74,75 +74,62 @@
 	</el-table>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+// imports
+import { computed, onMounted, ref } from "vue";
 import { getActorLogs } from "../ctrls/ActorCtrl";
-import { mapActions } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import { ActorLogType } from "../data/Enums";
-import ActorLog from "../data/ActorLog";
+import { ActorLog } from "../data/ActorLog";
 import MyRate from "./MyRate.vue";
+// emits
+// stores/routers
+const actorTagStore = ActorTagStore()
+const actorGroupStore = ActorGroupStore()
+// props/models
+const props = defineProps({
+	specific_actor_id: {
+		type: Number,
+		required: true
+	}
+})
+// variables
+const actor_log_list = ref<ActorLog[]>([])
+const simplified_log_list = ref<ActorLog[]>([])
+const simplified_count = ref(0)
+const is_simplified = ref(true)
+// computed
+const show_log_list = computed(() => {
+	return is_simplified.value ? simplified_log_list.value : actor_log_list.value
+})
+// watch
+// methods
 
-export default {
-	name: "ActorLogs",
-	components: { MyRate },
-	// props from parent
-	props: {
-		specific_actor_id: Number
-	},
-	data() {
-		return {
-			actor_log_list: [] as ActorLog[],
-			simplified_log_list: [] as ActorLog[],
-			simplified_count: 0,
-			is_simplified: true,
-		}
-	},
-	computed: {
-		ActorLogType() {
-			return ActorLogType
-		},
-		show_log_list(): ActorLog[] {
-			return this.is_simplified ? this.simplified_log_list : this.actor_log_list
-		},
-	},
-	methods: {
-		...mapActions(ActorTagStore, {
-			getTagStyle: 'getStyle',
-			getTagName: 'getName',
-		}),
+function getGroupColor(group_id: number): string {
+	let group = actorGroupStore.get(group_id)
+	if (group) {
+		return group.group_color
+	}
+	return "#000000"
+}
 
-		...mapActions(ActorGroupStore, {
-			getGroupName: 'getName',
-			getActorGroup: 'get'
-		}),
-
-		getGroupColor(group_id: number): string {
-			let group = this.getActorGroup(group_id)
-			if (group) {
-				return group.group_color
-			}
-			return "#000000"
-		},
-
-		async getLogs() {
-			const [ok, new_list] = await getActorLogs(this.specific_actor_id)
-			if (ok) {
-				this.actor_log_list = new_list
-				this.simplified_log_list = ActorLog.simplifyLogs(new_list)
-				this.simplified_count = this.actor_log_list.length - this.simplified_log_list.length
-			}
-		},
-	},
-	mounted() {
-		console.log(`actor logs of ${this.specific_actor_id}`)
-		this.getLogs()
+async function getLogs() {
+	const [ok, new_list] = await getActorLogs(props.specific_actor_id)
+	if (ok) {
+		actor_log_list.value = new_list
+		simplified_log_list.value = ActorLog.simplifyLogs(new_list)
+		simplified_count.value = actor_log_list.value.length - simplified_log_list.value.length
 	}
 }
+// lifecycle
+onMounted(async () => {
+	// console.log(`actor logs of ${props.specific_actor_id}`)
+	await getLogs()
+})
 </script>
 
 <style scoped>
-
 .collapse-label {
 	text-decoration: line-through;
 }

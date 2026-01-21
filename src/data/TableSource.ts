@@ -1,6 +1,6 @@
 import { ITableItem } from "./Interfaces"
 
-export default class TableSource<T extends ITableItem> {
+export class TableSource<T extends ITableItem> {
 	public list: T[] = []
 	public total: T
 	private is_loaded: boolean = false
@@ -25,6 +25,12 @@ export default class TableSource<T extends ITableItem> {
 		this.list = list
 		this.total.sum(list)
 		this.is_loaded = true
+	}
+
+	unload() {
+		this.list = []
+		this.total.sum([])
+		this.is_loaded = false
 	}
 
 	getSummaries(): string[] {

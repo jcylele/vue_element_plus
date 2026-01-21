@@ -1,24 +1,42 @@
 <template>
 	<el-space direction="vertical" class="actor_card" alignment="stretch" style="gap:3px;" :key="actor.uuid"
-		:style="{ 'color': group_color }">
+		:style="group_color_style">
 		<!-- actor avatar -->
 		<div class="avatar">
-			<el-tooltip v-if="actor.has_remark || actor.has_video_info" placement="top" :offset="3" effect="light"
+			<el-tooltip v-if="actor.show_tooltip" placement="top" :offset="3" effect="light"
 				:popper-style="{ 'max-width': 'var(--me-remark-width)' }">
 				<template #content>
 					<div class="fill-column">
-						<el-text v-if="actor.remark" class="pop-remark remark-color multi-line-text">
-							{{ actor.remark }}
-						</el-text>
-						<el-text v-if="actor.comment" class="pop-remark comment-color multi-line-text">
-							{{ actor.comment }}
-						</el-text>
-						<el-text v-for="post in actor.commented_posts" class="pop-remark post-color multi-line-text">
-							* {{ post.comment }}
-						</el-text>
-						<el-text v-if="actor.str_video_infos" class="pop-remark multi-line-text">
-							{{ actor.str_video_infos }}
-						</el-text>
+						<div v-if="actor.in_fav_folder" class="left-row remark-color">
+							<svg-icon size="24px" name="star_filled" />
+							<span class="pop-remark">
+								{{ fav_fodlers_str }}
+							</span>
+						</div>
+						<div v-if="actor.remark" class="left-row top remark-color">
+							<svg-icon size="24px" name="remark" />
+							<span class="pop-remark multi-line-text">
+								{{ actor.remark }}
+							</span>
+						</div>
+						<div v-if="actor.comment" class="left-row top comment-color">
+							<svg-icon size="24px" name="remark" />
+							<span class="pop-remark  multi-line-text">
+								{{ actor.comment }}
+							</span>
+						</div>
+						<div v-for="post in actor.commented_posts" class="left-row top post-color">
+							<svg-icon size="24px" name="remark" />
+							<span class="pop-remark multi-line-text">
+								{{ post.comment }}
+							</span>
+						</div>
+						<div v-if="actor.show_video_infos" class="left-row">
+							<svg-icon size="24px" name="camera" />
+							<span class="pop-remark">
+								{{ actor.str_video_infos }}
+							</span>
+						</div>
 					</div>
 				</template>
 				<el-image class="avatar-img" :src="actor.icon_url" />
@@ -31,10 +49,10 @@
 
 			<div v-if="actor.is_linked" class="avatar-friend-container center-column" style="gap: 0"
 				@click="findLinkedActor">
-				<svg-icon size="40px" name="avatar" :style="{ 'color': group_color }" />
-				<div v-if="linked_group_ids.length > 1" class="center-row wrap" style="gap: 2px;max-width: 40px;">
+				<svg-icon size="40px" name="avatar" :style="group_color_style" />
+				<div v-if="linked_group_ids.length > 1" class="center-row wrap" style="gap: 0;width: 40px;">
 					<svg-icon v-for="group_id in linked_group_ids" size="10px" name="circle"
-						:style="{ 'color': getGroupColor(group_id) }" />
+						:style="getGroupColorStyle(group_id)" />
 				</div>
 			</div>
 
@@ -49,11 +67,10 @@
 					class="remark-icon" />
 				<!-- Stars -->
 				<el-popover placement="top" trigger="click" :offset="-2" :show-arrow="false"
-					:popper-style="popper_style.withColor(group_color)" @show="onShowScore">
+					:popper-style="group_color_popper_style" @show="onShowScore">
 					<template #reference>
 						<div class="hint-selectable">
-							<MyRate :model-value="actor.show_score" size="default" style="align-items: end;" disabled
-								class="logic-transparent" />
+							<MyRate :model-value="actor.show_score" size="default" disabled class="logic-transparent" />
 						</div>
 					</template>
 					<template #default>
@@ -68,19 +85,19 @@
 		<!-- downloading related icons -->
 		<div class="actor_name_line center-row">
 			<el-popover trigger="click" placement="top" v-model:visible="is_show_op"
-				:popper-style="popper_style.withColor(group_color)" :offset="6">
+				:popper-style="group_color_popper_style" :offset="6">
 				<template #reference>
-					<el-text class="actor_name_text hint-selectable" tag="a" :style="{ 'color': group_color }">
+					<el-text class="actor_name_text hint-selectable" tag="a" :style="group_color_style">
 						{{ actor.actor_name }}
 					</el-text>
 				</template>
 				<template #default>
 					<el-space direction="vertical" alignment="center">
-						<el-text class="actor_name_text" :style="{ 'color': group_color }">
+						<el-text class="actor_name_text" :style="group_color_style">
 							{{ actor.actor_name }}
 						</el-text>
 						<el-space direction="horizontal">
-							<el-button class="pop-button" type="primary" @click="showLogs">
+							<el-button class="pop-button" type="primary" @click="showDialog(EActorDialog.log)">
 								Show Logs
 							</el-button>
 							<el-button class="pop-button" type="primary" @click="gotoActorPage">
@@ -88,7 +105,8 @@
 							</el-button>
 						</el-space>
 						<el-space direction="horizontal" v-if="has_folder">
-							<el-button class="pop-button" type="warning" @click="resetPosts">
+							<el-button class="pop-button" type="warning" :disabled="!actor.has_last_post_id"
+								@click="resetPosts">
 								Reset Posts
 							</el-button>
 							<el-button class="pop-button" type="warning" @click="clearFolder">
@@ -111,36 +129,51 @@
 		<!-- actor post info -->
 		<el-space direction="vertical" v-if="actor.file_info" style="gap: 1px 0" fill>
 			<div class="center-row" style="gap: 0 3px">
-				<span class="post_count hint-selectable" @click="showFileInfo">
+				<span class="post_count hint-selectable" @click="showDialog(EActorDialog.post_info)">
 					{{ actor.post_desc }}
 				</span>
-				<span v-if="show_thumbnail_count" class="thumbnail_count">
+				<span v-if="group_abstract.is_initial" class="thumbnail_count">
 					{{ actor.thumbnail_desc }}
 				</span>
-				<svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px" />
 				<svg-icon v-if="is_video_all" name="file_checked" style="color: orange" size="24px" />
+				<svg-icon v-if="show_downloading" name="loading" style="color: orange" size="24px" />
+				<svg-icon v-if="is_downing" name="download" style="color: deepskyblue" size="24px" />
 			</div>
 
 			<!-- actor res info -->
-			<el-space v-for="res_file_info in actor.file_info.res_info" size="small" direction="horizontal">
-				<el-text v-for="i in res_file_info.col_count" class="res_info"
+			<div class="center-column hint-selectable" style="gap: 0;" @click="showDialog(EActorDialog.file_info)">
+				<div v-for="res_file_info in actor.file_info.res_info" class="center-row"
 					:style="{ 'color': res_file_info.res_state_color }">
-					{{ res_file_info.col_val(i) }}
-				</el-text>
-			</el-space>
+					<!-- <span v-for="i in res_file_info.col_count" class="res_info">
+						{{ res_file_info.col_val(i) }}
+					</span> -->
+					<span class="res_info" style="width: 45px;">
+						{{ res_file_info.str_state }}
+					</span>
+					<span class="res_info" style="width: 60px;">
+						{{ res_file_info.str_video_size }}
+					</span>
+					<span class="res_info" style="width: 40px;">
+						{{ res_file_info.str_img_count }}
+					</span>
+					<span class="res_info" style="width: 40px;">
+						{{ res_file_info.str_video_count }}
+					</span>
+				</div>
+			</div>
 		</el-space>
 		<el-text v-else style="font-size: 16px;font-style: italic">
 			loading file info
 		</el-text>
 
 		<!--actor remark + group + edit button -->
-		<div style="display: flex;flex-direction: row;align-items: stretch;gap: 0 5px">
+		<div class="center-row">
 			<!-- fav folder -->
 			<el-tooltip v-if="actor.in_fav_folder" placement="top-start" :offset="3" effect="light">
 				<template #content>
 					<div class="center-column" style="gap: 2px;">
 						<span v-for="folder_id in actor.folder_ids" class="pop-remark remark-color">
-							{{ getFolderName(folder_id) }}
+							{{ favFolderStore.getName(folder_id) }}
 						</span>
 					</div>
 				</template>
@@ -149,14 +182,14 @@
 			<svg-icon v-else name="star_empty" class="comment-color" size="32px" @click="showFolders" />
 			<!-- actor group -->
 			<el-select v-model="actor.actor_group_id" @change="setActorGroup" placement="right" style="flex-grow: 1">
-				<el-option v-for="group in group_list" :label="group.group_name" :value="group.group_id"
-					:style="{ 'color': group.group_color, 'text-decoration': 'underline' }">
+				<el-option v-for="group in actorGroupStore.sorted_list" :label="group.group_name"
+					:value="group.group_id" class="underline" :style="getGroupColorStyle(group.group_id)">
 					{{ group.group_name }}
 				</el-option>
 			</el-select>
 			<!-- click to edit tags -->
 			<svg-icon v-if="has_tag" size="32px" name="edit" @click="startEditTag" />
-			<el-popover v-else placement="right" trigger="click" :popper-style="popper_style.withColor(group_color)">
+			<el-popover v-else placement="right" trigger="click" :popper-style="group_color_popper_style">
 				<template #reference>
 					<svg-icon size="32px" name="edit" />
 				</template>
@@ -164,10 +197,10 @@
 					<el-text style="font-style: italic">
 						click to apply single tag to actor
 					</el-text>
-					<el-space v-for="tag_ids in tag_history" size="small" class="tag_history_row">
-						<el-tag v-for="tag_id in tag_ids" @click="onApplyTag(tag_id)" :style="getTagStyle(tag_id)"
-							effect="plain" round>
-							{{ getTagName(tag_id) }}
+					<el-space v-for="tag_ids in actorTagStore.tag_history" size="small" class="tag_history_row">
+						<el-tag v-for="tag_id in tag_ids" @click="onApplyTag(tag_id)"
+							:style="actorTagStore.getStyle(tag_id)" effect="plain" round>
+							{{ actorTagStore.getName(tag_id) }}
 						</el-tag>
 					</el-space>
 					<el-space direction="horizontal" size="small">
@@ -184,40 +217,50 @@
 
 		<!--actor tags-->
 		<el-space wrap style="margin-top: 5px">
-			<el-tag v-for="tag_id in actor.tag_ids" :style="getTagStyle(tag_id)" effect="plain" round>
-				{{ getTagName(tag_id) }}
+			<el-tag v-for="tag_id in actor.tag_ids" :style="actorTagStore.getStyle(tag_id)" effect="plain" round>
+				{{ actorTagStore.getName(tag_id) }}
 			</el-tag>
 		</el-space>
 	</el-space>
 	<!-- dialog: actor remark editing-->
 	<el-dialog v-model="card_dialog.is_show_remark" :title="actor.actor_name">
-		<RemarkEditor :actor="actor" @remark="onSubmitRemark" @comment="onSubmitComment" @posts="showPosts" />
+		<RemarkEditor v-if="card_dialog.is_show_remark" :actor="actor" @remark="onSubmitRemark"
+			@comment="onSubmitComment" @posts="showDialog(EActorDialog.post)" />
 	</el-dialog>
 	<!-- dialog: actor tags editing dialog-->
 	<el-dialog v-model="card_dialog.is_show_tags" :title="actor.actor_name">
-		<ActorTagChooser :actor="actor" @submit="onSubmitTag" @cancel="onCancelAddTag" />
+		<ActorTagChooser v-if="card_dialog.is_show_tags" :actor="actor" @submit="onSubmitTag"
+			@cancel="onCancelAddTag" />
 	</el-dialog>
 	<!-- dialog: actor posts -->
 	<el-dialog v-model="card_dialog.is_show_posts" title="Posts">
-		<Posts :actor="actor" @comment="onPostComment" />
+		<Posts v-if="card_dialog.is_show_posts" :actor="actor" @comment="onPostComment" />
 	</el-dialog>
 	<!-- dialog: actor logs -->
 	<el-dialog v-model="card_dialog.is_show_logs" :title="actor.actor_name">
-		<ActorLogs :specific_actor_id="actor.actor_id" />
+		<ActorLogs v-if="card_dialog.is_show_logs" :specific_actor_id="actor.actor_id" />
 	</el-dialog>
 	<!-- dialog: actor file info -->
 	<el-dialog v-model="card_dialog.is_show_file_info" :title="actor.actor_name">
-		<ActorFileInfoTabs :actor_id="actor.actor_id" :has_folder="has_folder" @download="toDownloadFromFileInfo"
-			@close="closeFileInfo" />
+		<ActorFileInfoTabs v-if="card_dialog.is_show_file_info" :actor="actor" @download="toDownloadFromFileInfo"
+			@file="refreshFileInfos" />
+	</el-dialog>
+	<!-- dialog: actor post info -->
+	<el-dialog v-model="card_dialog.is_show_post_info" :title="actor.actor_name">
+		<ActorPostInfoTabs v-if="card_dialog.is_show_post_info" :actor="actor"
+			@close="closeDialog(EActorDialog.post_info)" />
 	</el-dialog>
 	<!-- dialog: actor folders -->
 	<el-dialog v-model="card_dialog.is_show_folders" :title="actor.actor_name">
-		<FavFolderSelector :selected_folder_ids="actor.folder_ids" @select="onActorFolderChange" />
+		<FavFolderSelector v-if="card_dialog.is_show_folders" :selected_folder_ids="actor.folder_ids"
+			@select="onActorFolderChange" />
 	</el-dialog>
 </template>
 
-<script lang="ts">
-import ActorData from "../data/ActorData";
+<script setup lang="ts">
+// imports
+import { computed, onMounted, ref } from "vue";
+import { ActorData } from "../data/ActorData";
 import {
 	ChangeActorTag,
 	changeActorGroup,
@@ -231,7 +274,6 @@ import {
 	changeActorComment,
 	getActorVideoInfo
 } from "../ctrls/ActorCtrl";
-import { mapActions, mapState } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
 import SvgIcon from "./SvgIcon/index.vue";
 import ActorTagChooser from "./ActorTagChooser.vue";
@@ -240,11 +282,10 @@ import Posts from "./Posts.vue";
 import ActorLogs from "./ActorLogs.vue";
 import { ActorElement } from "../data/ArrayElement";
 import { ActorGroupStore } from "../store/ActorGroupStore";
-import ActorGroupData from "../data/ActorGroupData";
 import { Popper_Styles } from "../data/Consts";
 import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
 import { ActorFilterStore } from "../store/ActorFilterStore";
-import ActorFileDetail from "../data/FileInfo";
+import { ActorFileDetail } from "../data/FileInfo";
 import { ActorCardDialog, EActorDialog } from "../data/ActorCardDialog";
 import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
 import { FavFolderStore } from "../store/FavFolderStore";
@@ -253,323 +294,271 @@ import FavFolderSelector from "./FavFolderSelector.vue";
 import { ECardRefresh, EConfirmOp } from "../data/Enums";
 import MyRate from "./MyRate.vue";
 import { LogMessages } from "../data/Messages";
+import ActorPostInfoTabs from "./ActorPostInfoTabs.vue";
 
-
-export default {
-	name: "ActorCard",
-	components: { SvgIcon, ActorLogs, ActorTagChooser, RemarkEditor, Posts, ActorFileInfoTabs, FavFolderSelector, MyRate },
-	// props from parent
-	props: {
-		actor_data: ActorElement,
-		locked: Boolean,
-		show_select: Boolean
+// emits
+const emit = defineEmits(['refresh', 'download', 'friend', 'update'])
+// stores/routers
+const actorGroupStore = ActorGroupStore()
+const actorTagStore = ActorTagStore()
+const favFolderStore = FavFolderStore()
+const actorFilterStore = ActorFilterStore()
+// props/models
+const props = defineProps({
+	actor_data: {
+		type: ActorElement,
+		required: true
 	},
-	computed: {
-		...mapState(ActorGroupStore, { group_list: 'sorted_list' }),
-		...mapState(ActorTagStore, {
-			tag_history: 'tag_history',
-		}),
-		...mapState(FavFolderStore, {
-			fav_folder_list: 'sorted_list',
-		}),
-		actor(): ActorData {
-			return this.actor_data.data
-		},
-		has_tag(): boolean {
-			return this.actor_data.data.tag_ids.length > 0
-		},
-		popper_style(): any {
-			return Popper_Styles
-		},
-		group_color(): string {
-			let group = this.getActorGroup(this.actor_data.data.actor_group_id)
-			return group.group_color
-		},
-		show_thumbnail_count(): boolean {
-			const actor = this.actor_data.data
-			if (!actor.file_info) {
-				return false
-			}
-			if (actor.file_info.thumbnail_count == 0) {
-				return false
-			}
-			let group = this.getActorGroup(this.actor_data.data.actor_group_id)
-			return group.is_initial
-		},
-		is_downing(): boolean {
-			return this.is_actor_downing(this.actor_data.data.actor_id)
-		},
-		is_video_all(): boolean {
-			return this.has_folder && this.actor_data.data.is_video_all
-		},
-		has_folder(): boolean {
-			let group = this.getActorGroupData()
-			return group.has_folder
-		},
-		show_video_info(): boolean {
-			let group = this.getActorGroupData()
-			return group.show_video_info
-		},
+	locked: {
+		type: Boolean,
+		required: true
 	},
-	// declare emitted events to parent
-	emits: ['refresh', 'download', 'friend', 'update'],
-	data() {
-		return {
-			is_show_op: false,
-			card_dialog: new ActorCardDialog(),
-			linked_group_ids: [],
-			edit_score: 0,
-		}
-	},
-	mounted() {
-		// console.log(`mounted[${this.actor_data.id}]: ${this.actor.actor_name}`)
-		this.actor.sortTags(this.compareActorTagId)
-		this.getFileInfo()
-		this.getLinkedGroups()
-		this.getVideoInfos()
-	},
-	methods: {
-		...mapActions(ActorTagStore, {
-			compareActorTagId: 'compareTagId',
-			getTagStyle: 'getStyle',
-			getTagName: 'getName',
-			addTagRecord: 'addRecord',
-			clearTagHistory: 'clearHistory',
-		}),
+	show_select: {
+		type: Boolean,
+		required: true
+	}
+})
+// variables
+const is_show_op = ref(false)
+const card_dialog = ref(new ActorCardDialog())
+const linked_group_ids = ref<number[]>([])
+const edit_score = ref(0)
+// computed
+const actor = computed(() => props.actor_data.data)
+const actor_id = computed(() => actor.value.actor_id)
+const has_tag = computed(() => actor.value.tag_ids.length > 0)
+const group_abstract = computed(() => actor.value.group_abstract)
+const group_color_style = computed(() => ({ 'color': group_abstract.value.group_color }))
+const group_color_popper_style = computed(() => Popper_Styles.withColor(group_abstract.value.group_color))
+const has_folder = computed(() => group_abstract.value.has_folder)
+const is_video_all = computed(() => has_folder.value && actor.value.is_video_all)
+const is_downing = computed(() => actorFilterStore.is_downing(actor_id.value))
+const show_downloading = computed(() => !is_video_all.value && !is_downing.value && actor.value.has_downloading)
+const fav_fodlers_str = computed(() => actor.value.folder_ids.map(folder_id => favFolderStore.getName(folder_id)).join(', '))
+// watch
+// methods
 
-		...mapActions(ActorGroupStore, {
-			getActorGroup: 'get',
-		}),
-
-		...mapActions(ActorFilterStore, {
-			is_actor_downing: "is_downing",
-		}),
-
-		...mapActions(FavFolderStore, {
-			getFolderName: 'getName',
-		}),
-
-		async getVideoInfos() {
-			//TODO group增加一个bool项，显示视频信息， 只有Good组为True
-			if (!this.show_video_info) {
-				return
-			}
-			const [ok, video_infos] = await getActorVideoInfo(this.actor.actor_id)
-			if (ok) {
-				this.actor.video_infos = video_infos
-			}
-		},
-
-		getGroupColor(group_id: number): string {
-			let group = this.getActorGroup(group_id)
-			return group.group_color
-		},
-
-		getActorGroupData(): ActorGroupData {
-			let group_id = this.actor_data.data.actor_group_id
-			return this.getActorGroup(group_id)
-		},
-
-		onRecvActorMsg(actor: ActorData) {
-			actor.sortTags(this.compareActorTagId)
-			this.actor_data.data = actor
-			//
-			this.getFileInfo()
-			this.getLinkedGroups()
-		},
-
-		onShowScore() {
-			this.edit_score = this.actor.show_score
-		},
-
-		hideOp() {
-			this.is_show_op = false
-		},
-
-		gotoActorPage() {
-			this.hideOp()
-			console.log(this.actor.href)
-			window.open(this.actor.href, '_blank', 'noreferrer');
-		},
-		openFolder() {
-			this.hideOp()
-			openActorFolder(this.actor.actor_id)
-		},
-		async clearFolder() {
-			this.hideOp()
-			await confirmOp(EConfirmOp.ClearActorFolder, async () => {
-				const [ok, file_info] = await clearActorFolder(this.actor.actor_id)
-				if (ok) {
-					this.setFileInfo(file_info)
-					logInfo(LogMessages.ClearFolder())
-				}
-			})
-		},
-		async resetPosts() {
-			this.hideOp()
-			await confirmOp(EConfirmOp.ResetPosts, async () => {
-				const [ok, file_info] = await resetActorPosts(this.actor.actor_id)
-				if (ok) {
-					this.setFileInfo(file_info)
-					logInfo(LogMessages.ResetPosts())
-				}
-			})
-		},
-		async setActorGroup() {
-			const [ok, ar] = await changeActorGroup(this.actor.actor_id, this.actor.actor_group_id)
-			if (ok) {
-				this.onRecvActorMsg(ar)
-				logInfo(LogMessages.ActorChangeGroup(this.actor.actor_name))
-				this.$emit('refresh', this.actor_data.data.actor_id, ECardRefresh.Group)
-			}
-		},
-		startEditTag() {
-			this.showDialog(EActorDialog.tags)
-		},
-		clearRecentTags() {
-			this.clearTagHistory()
-		},
-		async onApplyTag(tag_id: number) {
-			await this.onSubmitTag([tag_id])
-		},
-		async onSubmitTag(new_tag_list: number[]) {
-			this.closeDialog(EActorDialog.tags)
-			if (new_tag_list.length > 0) {
-				this.addTagRecord(new_tag_list)
-			}
-			//request
-			const [ok, actor_map] = await ChangeActorTag(this.actor.actor_id, new_tag_list)
-			if (ok) {
-				this.$emit('update', actor_map)
-			}
-		},
-		async onCancelAddTag() {
-			this.closeDialog(EActorDialog.tags)
-		},
-
-		toDownloadFromOp() {
-			this.hideOp()
-			this.$emit('download', this.actor_data)
-		},
-
-		toDownloadFromFileInfo() {
-			this.closeDialog(EActorDialog.file_info)
-			this.$emit('download', this.actor_data)
-		},
-
-		showDialog(type: EActorDialog) {
-			this.hideOp()
-			this.card_dialog.showDialog(type)
-		},
-
-		closeDialog(type: EActorDialog) {
-			this.card_dialog.closeDialog(type)
-		},
-
-		showPosts() {
-			this.showDialog(EActorDialog.post)
-		},
-
-		showLogs() {
-			this.showDialog(EActorDialog.log)
-		},
-
-		showFileInfo() {
-			this.showDialog(EActorDialog.file_info)
-		},
-
-		closeFileInfo() {
-			this.closeDialog(EActorDialog.file_info)
-		},
-
-		async changeScore() {
-			const [ok, actor_map] = await changeActorScore(this.actor.actor_id, this.edit_score * 2)
-			if (ok) {
-				logInfo(LogMessages.ActorChangeScore())
-				this.$emit('update', actor_map)
-			}
-		},
-		async findLinkedActor() {
-			this.$emit('friend', this.actor_data)
-		},
-		onSelectCLick() {
-			this.actor_data.selected = !this.actor_data.selected
-		},
-		startEditRemark() {
-			this.showDialog(EActorDialog.remark)
-		},
-		async onSubmitRemark(new_remark: string) {
-			// this.closeDialog(EActorDialog.remark)
-			if (new_remark == this.actor.remark) {
-				return
-			}
-			const [ok, actor_map] = await changeActorRemark(this.actor.actor_id, new_remark)
-			if (ok) {
-				logInfo(LogMessages.ActorChangeRemark())
-				this.$emit('update', actor_map)
-			}
-		},
-		async onSubmitComment(new_comment: string) {
-			// this.closeDialog(EActorDialog.remark)
-			if (new_comment == this.actor.comment) {
-				return
-			}
-			const [ok, ar] = await changeActorComment(this.actor.actor_id, new_comment)
-			if (ok) {
-				this.onRecvActorMsg(ar)
-				logInfo(LogMessages.ActorChangeComment())
-				this.$emit('refresh', this.actor_data.data.actor_id, ECardRefresh.Comment)
-			}
-		},
-		onPostComment(actor_id: number, post_id: string, comment: string) {
-			if (actor_id == this.actor.actor_id) {
-				this.actor.refreshPostComment(post_id, comment)
-			} else {
-				// I'm too lazy to notify other actors
-			}
-		},
-		async getFileInfo() {
-			const [ok, file_info] = await getActorFileInfo(this.actor.actor_id)
-			if (ok) {
-				this.setFileInfo(file_info)
-			}
-		},
-		setFileInfo(file_info: ActorFileDetail) {
-			this.actor.file_info = file_info
-		},
-		async getLinkedGroups() {
-			if (!this.actor.is_linked) {
-				return
-			}
-			const [ok, gids] = await getLinkedActorGroupIds(this.actor.actor_id)
-			if (ok) {
-				this.linked_group_ids = gids
-			}
-		},
-
-		async showFolders() {
-			this.showDialog(EActorDialog.folders)
-		},
-
-		async onActorFolderChange(folder_id: number) {
-			this.closeDialog(EActorDialog.folders)
-			const folder_index = this.actor.folder_ids.indexOf(folder_id)
-			if (folder_index != -1) {
-				const [ok, _] = await delActorFromFolder(this.actor.actor_id, folder_id)
-				if (ok) {
-					this.actor.folder_ids.splice(folder_index, 1)
-					logInfo(LogMessages.DelActorFromFolder())
-				}
-			} else {
-				const [ok, _] = await addActorToFolder(this.actor.actor_id, folder_id)
-				if (ok) {
-					this.actor.folder_ids.push(folder_id)
-					logInfo(LogMessages.AddActorToFolder())
-				}
-			}
-		}
-	},
+function onActorRefreshed() {
+	//cache group abstract
+	let group_id = actor.value.actor_group_id
+	let group = actorGroupStore.get(group_id)
+	actor.value.group_abstract = group.abstract()
+	//sort tags
+	actor.value.sortTags(actorTagStore.compareTagId)
+	//get linked groups
+	getLinkedGroups()
+	//get file info
+	getFileInfo()
+	//get video infos
+	getVideoInfos()
 }
+
+function refreshFileInfos() {
+	getFileInfo()
+	getVideoInfos()
+}
+
+async function getVideoInfos() {
+	//TODO group增加一个bool项，显示视频信息， 只有Good组为True
+	if (!group_abstract.value.show_video_info) {
+		return
+	}
+	const [ok, video_infos] = await getActorVideoInfo(actor_id.value)
+	if (ok) {
+		actor.value.video_infos = video_infos
+	}
+}
+
+function getGroupColorStyle(group_id: number) {
+	let group = actorGroupStore.get(group_id)
+	return { 'color': group.group_color }
+}
+
+function onRecvActorMsg(actor: ActorData) {
+	props.actor_data.data = actor
+	onActorRefreshed()
+}
+
+function onShowScore() {
+	edit_score.value = actor.value.show_score
+}
+
+function hideOp() {
+	is_show_op.value = false
+}
+
+function gotoActorPage() {
+	hideOp()
+	window.open(actor.value.href, '_blank', 'noreferrer');
+}
+function openFolder() {
+	hideOp()
+	openActorFolder(actor_id.value)
+}
+async function clearFolder() {
+	hideOp()
+	await confirmOp(EConfirmOp.ClearActorFolder, async () => {
+		const [ok, file_info] = await clearActorFolder(actor_id.value)
+		if (ok) {
+			setFileInfo(file_info)
+			logInfo(LogMessages.ClearFolder())
+		}
+	})
+}
+async function resetPosts() {
+	hideOp()
+	await confirmOp(EConfirmOp.ResetPosts, async () => {
+		const [ok, file_info] = await resetActorPosts(actor_id.value)
+		if (ok) {
+			actor.value.has_last_post_id = false
+			setFileInfo(file_info)
+			logInfo(LogMessages.ResetPosts())
+		}
+	})
+}
+async function setActorGroup() {
+	const [ok, ar] = await changeActorGroup(actor_id.value, actor.value.actor_group_id)
+	if (ok) {
+		onRecvActorMsg(ar)
+		let group_name = actorGroupStore.getName(actor.value.actor_group_id)
+		logInfo(LogMessages.ActorChangeGroup(actor.value.actor_name, group_name))
+		emit('refresh', actor_id, ECardRefresh.Group)
+	}
+}
+function startEditTag() {
+	showDialog(EActorDialog.tags)
+}
+function clearRecentTags() {
+	actorTagStore.clearHistory()
+}
+async function onApplyTag(tag_id: number) {
+	await onSubmitTag([tag_id])
+}
+async function onSubmitTag(new_tag_list: number[]) {
+	closeDialog(EActorDialog.tags)
+	if (new_tag_list.length > 0) {
+		actorTagStore.addRecord(new_tag_list)
+	}
+	//request
+	const [ok, actor_map] = await ChangeActorTag(actor_id.value, new_tag_list)
+	if (ok) {
+		emit('update', actor_map)
+	}
+}
+async function onCancelAddTag() {
+	closeDialog(EActorDialog.tags)
+}
+
+function toDownloadFromOp() {
+	hideOp()
+	emit('download', props.actor_data)
+}
+
+function toDownloadFromFileInfo() {
+	closeDialog(EActorDialog.file_info)
+	emit('download', props.actor_data)
+}
+
+function showDialog(type: EActorDialog) {
+	hideOp()
+	card_dialog.value.showDialog(type)
+}
+
+function closeDialog(type: EActorDialog) {
+	card_dialog.value.closeDialog(type)
+}
+
+async function changeScore() {
+	const [ok, actor_map] = await changeActorScore(actor_id.value, edit_score.value * 2)
+	if (ok) {
+		logInfo(LogMessages.ActorChangeScore())
+		emit('update', actor_map)
+	}
+}
+async function findLinkedActor() {
+	emit('friend', props.actor_data)
+}
+function onSelectCLick() {
+	props.actor_data.selected = !props.actor_data.selected
+}
+function startEditRemark() {
+	showDialog(EActorDialog.remark)
+}
+async function onSubmitRemark(new_remark: string) {
+	// closeDialog(EActorDialog.remark)
+	if (new_remark == actor.value.remark) {
+		return
+	}
+	const [ok, actor_map] = await changeActorRemark(actor_id.value, new_remark)
+	if (ok) {
+		logInfo(LogMessages.ActorChangeRemark())
+		emit('update', actor_map)
+	}
+}
+async function onSubmitComment(new_comment: string) {
+	// closeDialog(EActorDialog.remark)
+	if (new_comment == actor.value.comment) {
+		return
+	}
+	const [ok, ar] = await changeActorComment(actor_id.value, new_comment)
+	if (ok) {
+		onRecvActorMsg(ar)
+		logInfo(LogMessages.ActorChangeComment())
+		emit('refresh', actor_id, ECardRefresh.Comment)
+	}
+}
+function onPostComment(a_id: number, post_id: string, comment: string) {
+	if (a_id == actor_id.value) {
+		actor.value.refreshPostComment(post_id, comment)
+	} else {
+		// I'm too lazy to notify other actors
+	}
+}
+async function getFileInfo() {
+	const [ok, file_info] = await getActorFileInfo(actor_id.value)
+	if (ok) {
+		setFileInfo(file_info)
+	}
+}
+function setFileInfo(file_info: ActorFileDetail) {
+	actor.value.file_info = file_info
+}
+async function getLinkedGroups() {
+	if (!actor.value.is_linked) {
+		return
+	}
+	const [ok, gids] = await getLinkedActorGroupIds(actor_id.value)
+	if (ok) {
+		linked_group_ids.value = gids as number[]
+	}
+}
+
+async function showFolders() {
+	showDialog(EActorDialog.folders)
+}
+
+async function onActorFolderChange(folder_id: number) {
+	closeDialog(EActorDialog.folders)
+	const folder_index = actor.value.folder_ids.indexOf(folder_id)
+	if (folder_index != -1) {
+		const [ok, _] = await delActorFromFolder(actor_id.value, folder_id)
+		if (ok) {
+			actor.value.folder_ids.splice(folder_index, 1)
+			logInfo(LogMessages.DelActorFromFolder())
+		}
+	} else {
+		const [ok, _] = await addActorToFolder(actor_id.value, folder_id)
+		if (ok) {
+			actor.value.folder_ids.push(folder_id)
+			logInfo(LogMessages.AddActorToFolder())
+		}
+	}
+}
+
+// lifecycle
+onMounted(() => {
+	onActorRefreshed()
+})
 </script>
 
 <style scoped>
@@ -579,7 +568,6 @@ export default {
 
 .actor_name_text {
 	font-size: var(--el-font-size-extra-large);
-	overflow-wrap: break-word;
 	text-align: center;
 }
 
@@ -711,7 +699,6 @@ export default {
 }
 
 .res_info {
-	width: 45px;
 	text-align: right;
 	text-wrap: nowrap;
 	font-size: 16px;

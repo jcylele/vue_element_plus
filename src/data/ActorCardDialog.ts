@@ -1,3 +1,6 @@
+/**
+ * EActorDialog is the type of dialog for ActorCard.vue
+ */
 export enum EActorDialog {
 	none = 'none',
 	remark = 'remark',
@@ -5,9 +8,13 @@ export enum EActorDialog {
 	post = 'post',
 	log = 'log',
 	file_info = 'file_info',
+	post_info = 'post_info',
 	folders = 'folders'
 }
 
+/**
+ * ActorCardDialog is a dialog for ActorCard.vue, it is used to show the dialog for ActorCard.vue
+ */
 export class ActorCardDialog {
 	private dialog_type: EActorDialog = EActorDialog.none
 
@@ -64,6 +71,16 @@ export class ActorCardDialog {
 	set is_show_file_info(val: boolean) {
 		if (!val) {
 			this.closeDialog(EActorDialog.file_info)
+		}
+	}
+
+	get is_show_post_info(): boolean {
+		return this.dialog_type == EActorDialog.post_info
+	}
+
+	set is_show_post_info(val: boolean) {
+		if (!val) {
+			this.closeDialog(EActorDialog.post_info)
 		}
 	}
 

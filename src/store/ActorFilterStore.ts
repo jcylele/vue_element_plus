@@ -1,101 +1,89 @@
-import {defineStore} from "pinia";
-import {ActorFilterData} from "../data/ActorFilterData";
-import {getActorIds} from "../ctrls/DownloadCtrl";
+import { computed, ref } from "vue";
+import { defineStore } from "pinia";
+import { ActorFilterData } from "../data/ActorFilterData";
+import { getActorIds } from "../ctrls/DownloadCtrl";
 
-interface ActorFilterState {
-    filter_history: ActorFilterData[],
-    page_info: PageInfo,
-    downing_actor_id_list: number[],
-    downing_actor_id_set: Set<number>,
-}
-
-interface PageInfo {
-    page_size: number,
-    page_index: number
-}
-
-const MAX_FILTER_HISTORY = 3
+const MAX_FILTER_HISTORY = 6
 
 /**
  * 缓存筛选器，避免其他页面返回时被重置
  */
-export const ActorFilterStore = defineStore('ActorFilterStore', {
-    state: (): ActorFilterState => ({
-        filter_history: [] as ActorFilterData[],
-        page_info: {
-            'page_size': 12,
-            'page_index': 1,
-        },
-        downing_actor_id_list: [],
-        downing_actor_id_set: new Set<number>(),
-    }),
-    getters: {
-        last_filter: (state: ActorFilterState) => {
-            if (state.filter_history.length === 0) {
-                return undefined
-            }
-            return state.filter_history[state.filter_history.length - 1]
-        },
-        filter_list: (state: ActorFilterState) => {
-            return state.filter_history
-        },
-        has_history: (state: ActorFilterState) => {
-            return state.filter_history.length > 0
-        },
-        page_size: (state: ActorFilterState) => {
-            return state.page_info.page_size
-        },
-        page_index: (state: ActorFilterState) => {
-            return state.page_info.page_index
-        },
+export const ActorFilterStore = defineStore('ActorFilterStore', () => {
+	const filter_history = ref<ActorFilterData[]>([])
+	const page_size = ref(12)
+	const page_index = ref(1)
+	const downing_actor_id_list = ref<number[]>([])
+	const downing_actor_id_set = ref(new Set<number>())
 
-        downing_actors: (state: ActorFilterState) => state.downing_actor_id_list,
-        has_downing_actors: (state: ActorFilterState) => state.downing_actor_id_list.length > 0
-    },
-    actions: {
-        saveFilter(filter: ActorFilterData) {
-			// remove old same filter(ignore sort_items)
-            for (const [index, f] of this.filter_history.entries()) {
-                if (f.equals(filter)) {
-                    this.filter_history.splice(index, 1)
-					break
-                }
-            }
-			// remove oldest filter
-            if (this.filter_history.length >= MAX_FILTER_HISTORY) {
-                this.filter_history.shift()
-            }
-            // break reference
-            this.filter_history.push(filter.clone())
+	const last_filter = computed(() => {
+		if (filter_history.value.length === 0) {
+			return undefined
+		}
+		return filter_history.value[filter_history.value.length - 1]
+	})
 
-            // log
-            // console.log(this.filter_history.map(f => f.str_desc_list).join(" || "))
-        },
-        selectFilter(uuid: number): ActorFilterData | undefined {
-            for (const [index, filter] of this.filter_history.entries()) {
-                if (filter.uuid === uuid) {
-                    this.filter_history.splice(index, 1)
-                    this.filter_history.push(filter)
-                    return filter
-                }
-            }
-            return undefined
-        },
-        setPageIndex(val: number) {
-            this.page_info.page_index = val
-        },
-        setPageSize(val: number) {
-            this.page_info.page_size = val
-        },
-        is_downing(actor_id: number) {
-            return this.downing_actor_id_set.has(actor_id)
-        },
-        async getDowningFromServer() {
-            const [ok, actor_ids] = await getActorIds()
-            if (ok) {
-                this.downing_actor_id_list = actor_ids
-                this.downing_actor_id_set = new Set<number>(actor_ids)
-            }
-        }
-    },
+	const has_history = computed(() => filter_history.value.length > 0)
+	const has_downing_actors = computed(() => downing_actor_id_list.value.length > 0)
+
+	function saveFilter(filter: ActorFilterData) {
+		// remove old same filter(ignore sort_items)
+		for (const [index, f] of filter_history.value.entries()) {
+			if (f.equals(filter)) {
+				filter_history.value.splice(index, 1)
+				break
+			}
+		}
+		// remove oldest filter
+		if (filter_history.value.length >= MAX_FILTER_HISTORY) {
+			filter_history.value.shift()
+		}
+		// break reference
+		filter_history.value.push(filter.clone())
+	}
+	function selectFilter(uuid: number): ActorFilterData | undefined {
+		for (const [index, filter] of filter_history.value.entries()) {
+			if (filter.uuid === uuid) {
+				filter_history.value.splice(index, 1)
+				filter_history.value.push(filter)
+				return filter as ActorFilterData
+			}
+		}
+		return undefined
+	}
+	function removeFilter(uuid: number) {
+		for (const [index, filter] of filter_history.value.entries()) {
+			if (filter.uuid === uuid) {
+				filter_history.value.splice(index, 1)
+				return true
+			}
+		}
+		return false
+	}
+	function is_downing(actor_id: number) {
+		return downing_actor_id_set.value.has(actor_id)
+	}
+	async function getDowningFromServer() {
+		const [ok, actor_ids] = await getActorIds()
+		if (ok) {
+			downing_actor_id_list.value = actor_ids
+			downing_actor_id_set.value = new Set<number>(actor_ids)
+		}
+	}
+
+	return {
+		filter_history,
+		downing_actor_id_list,
+		page_size,
+		page_index,
+
+		last_filter,
+		has_history,
+		has_downing_actors,
+
+		saveFilter,
+		selectFilter,
+		removeFilter,
+		is_downing,
+		getDowningFromServer,
+	}
 })

@@ -1,4 +1,4 @@
-import NoticeData from "../data/NoticeData";
+import { NoticeData } from "../data/NoticeData";
 import {fetchDelete, fetchGet} from "./FetchCtrl";
 import {NoticeType} from "../data/Enums";
 import { INoticeCount } from "../data/SchemasOthers";

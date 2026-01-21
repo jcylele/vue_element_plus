@@ -1,8 +1,9 @@
 html.dark {
-    --el-card-bg-color: #283028;
-    --el-fill-color-blank: #183018;
+	--el-card-bg-color: #283028;
+	--el-fill-color-blank: #183018;
+	--el-fill-color-light: #1818188a;
 
-    --me-header-bg-color: #0b4d0b;
-    --me-even-bg-color: #303f07;
-    --me-odd-bg-color: #073f30;
+	--me-header-bg-color: #0b4d0b;
+	--me-even-bg-color: #303f07;
+	--me-odd-bg-color: #073f30;
 }

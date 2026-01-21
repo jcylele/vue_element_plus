@@ -1,11 +1,11 @@
 import { ActorLogType } from "./Enums";
 import { Actor_Log_Type_Names } from "./Consts";
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { IActorLog } from "./Schemas";
 
 const COLLAPSIBLE_LOG_TYPE = new Set<ActorLogType>([ActorLogType.Score, ActorLogType.Tag, ActorLogType.Remark, ActorLogType.Comment, ActorLogType.ClearFolder])
 
-export default class ActorLog extends BaseData {
+export class ActorLog extends BaseData {
 	log_type: ActorLogType
 	log_param: string
 	log_time: string

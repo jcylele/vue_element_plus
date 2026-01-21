@@ -22,6 +22,7 @@ const TagScoresChart = () => import("./components/Chart/TagScoresChart.vue")
 const ScoreTagsChart = () => import("./components/Chart/ScoreTagsChart.vue")
 const TagRelativeChart = () => import("./components/Chart/TagRelativeChart.vue")
 const ActorGroupTimeChart = () => import("./components/Chart/ActorGroupTimeChart.vue")
+const ActorNameStatsChart = () => import("./components/Chart/ActorNameStatsChart.vue")
 
 
 import svgIcon from "./components/SvgIcon/index.vue";
@@ -53,6 +54,7 @@ const routes = [
 			{ path: 'tag_scores', component: TagScoresChart },
 			{ path: 'score_tags', component: ScoreTagsChart },
 			{ path: 'actor_group_time', component: ActorGroupTimeChart },
+			{ path: 'actor_name_stats', component: ActorNameStatsChart },
 		]
 	},
 	// 动态字段以冒号开始

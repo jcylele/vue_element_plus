@@ -6,6 +6,11 @@ export interface IUnifiedResponse<T> {
 	data: T | null
 }
 
+export interface ICommonCount {
+	name: string
+	count: number
+}
+
 export interface INoticeCount {
 	notice_type: number
 	count: number
@@ -29,12 +34,23 @@ export interface IDownloadLimit {
 	progress: IDownloadProgress
 }
 
+export interface IWorkerProcessStats {
+	worker_type: string
+	failed_count: number
+	process_count: number
+	total_process_time: number
+	last_process_time: string
+}
+
+
 export interface IDownloadTask {
 	uid: number
 	desc: string
 	download_limit: IDownloadLimit
-	worker_count: Map<string, number>
-	queue_count: Map<string, number>
+	worker_count: ICommonCount[]
+	queue_count: ICommonCount[]
+	actor_abstract: IActorAbstract | undefined
+	worker_process_stats: IWorkerProcessStats[]
 }
 
 export interface ITagCount {
@@ -67,14 +83,14 @@ export interface IResSizeCount {
 }
 
 export interface ISettingItem {
-    key: ECacheKey
-    value: string|number|boolean
+	key: ECacheKey
+	value: string | number | boolean
 }
 
 export interface IGroupTimeStats {
-    stat_date: string
-    actor_group_id: number
-    actor_count: number
+	stat_date: string
+	actor_group_id: number
+	actor_count: number
 }
 
 export interface IActorAbstract {
@@ -86,4 +102,23 @@ export interface IActorAbstract {
 export interface IPostFetchTimeStats {
 	stat_date: string
 	post_count: number
+	with_video_count: number
+}
+
+export interface IActorNameStatsData {
+	segment: string
+	count: number
+}
+
+export interface IActorNameStatsNode {
+	segment: string
+	count: number
+	rank: number
+	children: IActorNameStatsNode[]
+}
+
+
+export interface IMissingPost {
+	post_id: string
+	hash_url: string
 }

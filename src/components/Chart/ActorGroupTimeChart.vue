@@ -30,7 +30,8 @@ import { ActorGroupStore } from '../../store/ActorGroupStore';
 import { IGroupTimeStats } from '../../data/SchemasOthers';
 import { logError } from '../../ctrls/FetchCtrl';
 import { formatCategoryAxis, formatCommonTextStyle, formatGrid, formatLegend, formatTooltip, formatValueAxis } from '../../data/ChartUtil';
-import ActorGroupData from '../../data/ActorGroupData';
+import { ActorGroupData } from '../../data/ActorGroupData';
+import { format_date } from '../../data/DataUtil';
 
 // 注册 ECharts 组件
 echarts.use([
@@ -47,13 +48,6 @@ const date_range = ref<[Date, Date] | null>(null);
 const cur_group_ids = ref([]);
 const dom_chart = ref<HTMLElement | null>(null)
 const chart = ref<echarts.ECharts | null>(null)
-
-function formatDate(date: Date): string {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, '0');
-	const day = String(date.getDate()).padStart(2, '0');
-	return `${year}-${month}-${day}`;
-}
 
 function validateDateRange() {
 	if (!date_range.value) {
@@ -81,8 +75,8 @@ async function refreshData() {
 		return
 	}
 
-	const start_date = formatDate(new Date(date_range.value![0]))
-	const end_date = formatDate(new Date(date_range.value![1]))
+	const start_date = format_date(new Date(date_range.value![0]))
+	const end_date = format_date(new Date(date_range.value![1]))
 	const [ok, group_time_stats] = await getGroupTimeStats(cur_group_ids.value, start_date, end_date)
 	if (ok) {
 		refreshChart(group_time_stats)
@@ -97,6 +91,7 @@ function formatSeriesItem(group: ActorGroupData, data: number[]) {
 		emphasis: {
 			focus: 'series'
 		},
+		barMaxWidth: 50,
 		data: data,
 		itemStyle: { color: group.group_color }
 	}

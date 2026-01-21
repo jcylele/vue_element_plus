@@ -1,4 +1,4 @@
-import ActorGroupData from "../data/ActorGroupData";
+import { ActorGroupData } from "../data/ActorGroupData";
 import { getActorGroupList } from "../ctrls/ActorGroupCtrl";
 import createGroupStore from "./createGroupStore";
 

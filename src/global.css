@@ -1,6 +1,7 @@
 *,
 *::before,
 *::after {
+	/*** 元素的宽度不再受 padding 和 border 影响 ***/
 	box-sizing: border-box;
 }
 
@@ -27,7 +28,7 @@
 
 	--me-remark-color: hotpink;
 	--me-comment-color: pink;
-	--me-post-color: #409eff;
+	--me-post-color: #81D8D0;
 	--me-remark-width: 500px;
 	--me-common-gap: 8px;
 
@@ -97,6 +98,9 @@ th,
 	font-size: var(--el-font-size-base);
 }
 
+.el-radio {
+	margin-right: 16px;
+}
 
 .el-radio.el-radio--small .el-radio__label {
 	font-size: var(--el-font-size-small);
@@ -146,16 +150,12 @@ th,
 
 .el-form-item {
 	padding: 0 10px;
-	margin-bottom: 5px;
+	margin: 5px 0;
 }
 
 .el-checkbox {
-	--el-checkbox-font-size: 18px;
-}
-
-.el-scrollbar {
-	/*--el-scrollbar-bg-color: var(--el-fill-color-blank);*/
-	/*--el-scrollbar-hover-bg-color: var(--me-hover-color-blank);*/
+	--el-checkbox-font-size: var(--el-font-size-base);
+	margin-right: 0px;
 }
 
 .el-rate {
@@ -212,12 +212,14 @@ tr:nth-child(odd) {
 
 .el-form--inline .el-form-item {
 	background-color: transparent !important;
+	margin-right: 0px;
 }
 
 .el-form-item__content {
 	padding: 3px;
 	gap: 10px;
 	font-size: var(--el-font-size-base);
+	flex-wrap: nowrap;
 }
 
 span {
@@ -260,11 +262,18 @@ span {
 	padding: 5px;
 }
 
+.small-border {
+	border: 1px solid var(--el-border-color);
+	border-radius: 5px;
+	padding: 0;
+}
+
 .center-row,
 .left-row {
 	display: flex;
 	flex-direction: row;
-	flex-wrap: nowrap; /* 默认不换行 */
+	flex-wrap: nowrap;
+	/* 默认不换行 */
 	align-items: center;
 	/* 交叉轴(垂直)居中 */
 	gap: var(--me-common-gap);
@@ -281,12 +290,23 @@ span {
 	/* 主轴(水平)左对齐 */
 }
 
+.center-row.wrap,
 .left-row.wrap {
 	flex-wrap: wrap;
 }
 
 .left-row.stretch {
 	align-items: stretch;
+}
+
+.left-row.top,
+.center-row.top {
+	align-items: start;
+}
+
+.left-row.bottom,
+.center-row.bottom {
+	align-items: end;
 }
 
 .el-button+.el-button {
@@ -298,7 +318,8 @@ span {
 	justify-content: space-between;
 	align-items: center;
 
-	width: 100%;/* 占满父元素， 不然子元素还是会挤在一起 */
+	width: 100%;
+	/* 占满父元素， 不然子元素还是会挤在一起 */
 	gap: 60px;
 }
 
@@ -328,8 +349,16 @@ span {
 	align-items: stretch;
 }
 
-.underlined {
+.fill-column.fit-width {
+	width: fit-content;
+}
+
+.bottom-line {
 	border-bottom: solid 1px var(--el-border-color);
+}
+
+.underline {
+	text-decoration: underline;
 }
 
 .common-group-name {
@@ -360,24 +389,28 @@ span {
 	padding: 10px 10px;
 }
 
-.common-group-item.group-selectable {
+.group-selectable {
 	cursor: pointer;
 	transition: all 0.2s ease;
 }
 
-.common-group-item.group-selectable:hover {
+.group-selectable:hover {
 	color: var(--el-color-primary);
 	border-color: var(--el-color-primary);
 	background-color: var(--el-fill-color-light);
 }
 
-.common-group-item.group-selectable.group-selected {
+.group-selectable.group-selected {
 	border-color: var(--el-color-primary);
 	box-shadow: 0 0 5px rgba(255, 160, 80, 0.3);
 }
 
 .hint-selectable {
 	cursor: pointer;
+}
+
+.hint-selectable:hover {
+	background-color: var(--el-fill-color-light);
 }
 
 .svg-icon:hover {

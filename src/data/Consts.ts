@@ -1,9 +1,13 @@
+/**
+ * Consts is the constants for the application.
+ */
 import {
 	ActorLogType, BoolEnum,
 	DownloadType,
 	EActorGroupFlag,
 	ECacheKey,
 	EConfirmOp,
+	EFixFilter,
 	EOtherOp,
 	ESettingType,
 	EStartPage,
@@ -14,14 +18,17 @@ import {
 	SortType,
 	TaskType
 } from "./Enums";
-import { ActorGroupFlagConfig, CommonOption, ConfirmOp, NoticeColumn, NoticeTypeConfig, OtherOp, SettingItemConfig, SortGroup } from "./Interfaces";
+import { ActorGroupFlagConfig, CommonOption, ConfirmOp, FixOption, NoticeTypeConfig, OtherOp, SettingItemConfig, SortGroup } from "./Interfaces";
 
 export const ROOT_URL = "http://127.0.0.1:7878"
 export const BASE_URL = `${ROOT_URL}/api`
 
 export const MAX_SCORE = 12
+export const SHOW_MAX_SCORE = MAX_SCORE / 2
 
-export const Filter_Row_Names = ["Group", "Tag", "Score", "Name/Link", "Remark", "Comment", "Folder", "Progress"]
+
+// yu EFilterRow 顺序相同
+export const Filter_Row_Names = ["Group", "Name", "Folder", "Fix", "Link", "Remark", "Comment", "Progress", "Score", "Tag"]
 
 export const ResStateList: ResState[] = [ResState.Del, ResState.Init, ResState.Down]
 export const video_state_color = {
@@ -45,6 +52,7 @@ export const Post_Filter_Options: CommonOption[] = [
 ]
 
 export const Res_Type_Options: CommonOption[] = [
+	{ label: "None", value: ResType.None },
 	{ label: "Image", value: ResType.Image },
 	{ label: "Video", value: ResType.Video },
 ]
@@ -55,7 +63,8 @@ export const Sort_Groups: SortGroup[] = [
 	{
 		label: "Actor", options: [
 			{ label: "Score", value: SortType.Score, default_asc: false, full_label: "Score" },
-			{ label: "Group Time", value: SortType.GroupTime, default_asc: false, full_label: "Group Time" }
+			{ label: "Group Time", value: SortType.GroupTime, default_asc: false, full_label: "Group Time" },
+			{ label: "Favorite Count", value: SortType.FavoriteCount, default_asc: false, full_label: "Favorite Count" }
 		]
 	},
 	{
@@ -69,12 +78,6 @@ export const Sort_Groups: SortGroup[] = [
 			{ label: "Init", value: SortType.InitFileSize, default_asc: true, full_label: "Init File Size" },
 			{ label: "Downed", value: SortType.DownFileSize, default_asc: false, full_label: "Downed File Size" },
 			{ label: "Total", value: SortType.TotalFileSize, default_asc: true, full_label: "Total File Size" }
-		]
-	},
-	{
-		label: "Progress", options: [
-			{ label: "Post Time", value: SortType.LastPostFetchTime, default_asc: false, full_label: "Post Fetch Time" },
-			{ label: "Res Time", value: SortType.LastResDownloadTime, default_asc: false, full_label: "Res Download Time" }
 		]
 	}
 ]
@@ -98,6 +101,12 @@ export const Comment_Options: CommonOption[] = [
 	{ label: "No Comment", value: BoolEnum.FALSE },
 ]
 
+export const Link_Options: CommonOption[] = [
+	{ label: "All", value: BoolEnum.ALL },
+	{ label: "Linked", value: BoolEnum.TRUE },
+	{ label: "Unlinked", value: BoolEnum.FALSE },
+]
+
 
 export const Post_Completed_Options: CommonOption[] = [
 	{ label: "Posts All", value: BoolEnum.ALL },
@@ -117,6 +126,19 @@ export const Start_Page_Options: CommonOption[] = [
 	{ label: "Custom", value: EStartPage.Custom },
 ]
 
+export const Fix_Options: FixOption[][] = [
+	[
+		{ label: "Post Count Overflow", value: EFixFilter.Overflow, tooltip: "current post count > total post count, indicating missing posts" },
+		{ label: "Post Count Zero", value: EFixFilter.TotalZero, tooltip: "total post count == 0" },
+		{ label: "Link Not Checked", value: EFixFilter.LinkNotChecked, tooltip: "actor link page not fetched yet" },
+	],
+	[
+		{ label: "Icon Not Exists", value: EFixFilter.IconNotExists, tooltip: "find similar actor icons in Notices first" },
+		{ label: "Missing Posts", value: EFixFilter.MissingPosts, tooltip: "some posts are moved  to other actors" },
+		{ label: "No Favorite", value: EFixFilter.NoFavorite, tooltip: "actor has no favorite count" },
+	]
+]
+
 
 export const Star_Colors = {
 	0: '#A0B9C6',  // 灰蓝色
@@ -128,7 +150,7 @@ export const Star_Colors = {
 	6: '#BF00BF'    // 紫色
 }
 
-export const Tag_Colors = [
+export const Tag_Colors: string[] = [
 	"#787878",
 	"#EE007F",
 	"#EE707B",
@@ -141,27 +163,20 @@ export const Tag_Colors = [
 	"#0000EE",
 ]
 
-export const Notice_Type_Names: Record<NoticeType, string> = {
-	[NoticeType.All]: "All",
-	[NoticeType.UnlinkedActor]: "Unlinked Actor",
-	[NoticeType.InvalidPost]: "Invalid Post",
-	[NoticeType.SameActorName]: "Same Actor Name",
-	[NoticeType.HasLinkedAccount]: "Has Linked Account",
-	[NoticeType.SimilarActorName]: "Similar Actor Name",
-}
-
 export const Notice_Type_Values: NoticeType[] = [
 	NoticeType.InvalidPost,
 	NoticeType.UnlinkedActor,
-	NoticeType.SameActorName,
 	NoticeType.HasLinkedAccount,
-	NoticeType.SimilarActorName
+	NoticeType.SameActorName,
+	NoticeType.SimilarActorName,
+	NoticeType.SimilarIcon
 ]
 
-export const Notice_Type_Config_Default: NoticeTypeConfig = { tip: "", notice_columns: [] }
+export const Notice_Type_Config_Default: NoticeTypeConfig = { name: "", tip: "", notice_columns: [] }
 export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 {
 	[NoticeType.All]: {
+		name: "All",
 		tip: "search all notices(including deleted), must precisely match",
 		notice_columns: [{
 			col_name: "Type",
@@ -181,6 +196,7 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 		}]
 	},
 	[NoticeType.UnlinkedActor]: {
+		name: "Unlinked Actor",
 		tip: "unlinked actors share same post, should be linked",
 		notice_columns: [{
 			col_name: "Actor Name 1",
@@ -191,6 +207,7 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 		}]
 	},
 	[NoticeType.InvalidPost]: {
+		name: "Invalid Post",
 		tip: "invalid post id, skip",
 		notice_columns: [{
 			col_name: "Actor Name",
@@ -204,6 +221,7 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 		}]
 	},
 	[NoticeType.SameActorName]: {
+		name: "Same Actor Name",
 		tip: "same actor name on different platforms",
 		notice_columns: [{
 			col_name: "Actor Name",
@@ -211,6 +229,7 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 		}]
 	},
 	[NoticeType.HasLinkedAccount]: {
+		name: "Has Linked Account",
 		tip: "officially linked accounts",
 		notice_columns: [{
 			col_name: "Actor Name 1",
@@ -227,7 +246,29 @@ export const Notice_Type_Configs: Record<NoticeType, NoticeTypeConfig> =
 		}]
 	},
 	[NoticeType.SimilarActorName]: {
+		name: "Similar Actor Name",
+		btn_text: "Find Similar Actor Names",
+		api_path: "/api/others/similar_names",
 		tip: "similar actor names, indicating the same actor",
+		notice_columns: [{
+			col_name: "Actor Name 1",
+			prop_name: "notice_param0"
+		}, {
+			col_name: "Actor Name 2",
+			prop_name: "notice_param1"
+		}, {
+			col_name: "Actor Name 3",
+			prop_name: "notice_param2"
+		}, {
+			col_name: "Actor Name 4",
+			prop_name: "notice_param3"
+		}]
+	},
+	[NoticeType.SimilarIcon]: {
+		name: "Similar Actor Icon",
+		btn_text: "Find Similar Actor Icons",
+		api_path: "/api/others/similar_icons",
+		tip: "similar icons, indicating the same actor",
 		notice_columns: [{
 			col_name: "Actor Name 1",
 			prop_name: "notice_param0"
@@ -258,10 +299,13 @@ export const Actor_Log_Type_Names = {
 	[ActorLogType.Comment]: "Set Comment",
 }
 
+// "/api/others/similar_names": "",
+// "/api/others/similar_icons": "",
 export const Other_Ops: OtherOp[] = [
-	{ op: EOtherOp.Outdated, label: "Outdated Files", desc: "when actor is done, there may be downloading files of this actor", btn_text: "Remove Files" },
-	{ op: EOtherOp.Validate, label: "Validate File Info", desc: "correct incorrect file info in database", btn_text: "Validate" },
-	{ op: EOtherOp.Manual, label: "Reset Manual", desc: "reset manual flag for all actors", btn_text: "Reset Manual" },
+	{ op: EOtherOp.Outdated, label: "Outdated Files", desc: "when actor is done, there may be downloading files of this actor", btn_text: "Remove Files", api_path: "/api/others/remove_outdated" },
+	{ op: EOtherOp.MissingPosts, label: "Missing Posts", desc: "find missing posts of actors", btn_text: "Find Missing Posts", api_path: "/api/others/refresh_missing_posts" },
+	{ op: EOtherOp.Validate, label: "Validate File Info", desc: "correct incorrect file info in database", btn_text: "Validate", api_path: "/api/others/validate_all_file_info" },
+	{ op: EOtherOp.Manual, label: "Reset Manual", desc: "reset manual flag for all actors", btn_text: "Reset Manual", api_path: "/api/others/reset_manual" },
 	{ op: EOtherOp.Logs, label: "Log Folder", desc: "open log folder in explorer", btn_text: "Open Log Folder" },
 ]
 
@@ -277,12 +321,15 @@ export const Confirm_Ops: Record<EConfirmOp, ConfirmOp> =
 {
 	[EConfirmOp.ClearActorFolder]: { title: "Clear Actor Folder", content: "clear all files of actor, make sure you have watched them" },
 	[EConfirmOp.ResetPosts]: { title: "Reset Posts", content: "reset  last post id of actor, so to download old posts" },
-	[EConfirmOp.RemoveDownloading]: { title: "Remove Downloading", content: "remove all downloading files of actor" },
+	[EConfirmOp.RemoveDownloading]: { title: "Remove Downloading", content: "remove downloading files below {0}%" },
+	[EConfirmOp.RemoveDownloadingAll]: { title: "Remove Downloading", content: "remove all downloading files of actor" },
 	[EConfirmOp.ClearGroupFolder]: { title: "Clear Group Folder", content: "clear all files of actors in this group, be careful" },
 	[EConfirmOp.DelActorGroup]: { title: "Delete Actor Group", content: "will fail if there are actors within" },
 	[EConfirmOp.DelActorTag]: { title: "Delete Actor Tag", content: "should comment related actors first" },
 	[EConfirmOp.DelActorTagGroup]: { title: "Delete Actor Tag Group", content: "delete actor tag group" },
 	[EConfirmOp.DelActorFolder]: { title: "Delete Actor Folder", content: "delete actor folder" },
+	[EConfirmOp.RemoveActorVideos]: { title: "Remove Actor Videos", content: "remove actor's {0} videos, should be watched first" },
+	[EConfirmOp.DelAllNotice]: { title: "Delete All Notices", content: "delete all notices of this type" },
 }
 
 export const Task_Type_Descs: Record<TaskType, string> = {
@@ -317,6 +364,13 @@ export const Actor_Group_Flag_Configs: ActorGroupFlagConfig[] = [
 		desc: "show video durations in tooltip",
 		icon: "camera",
 	}
+]
+
+export const Single_File_Size_Options: CommonOption[] = [
+	{ label: "All", value: 0 },
+	{ label: "Info", value: 1 },
+	{ label: "Image", value: 4 },
+	{ label: "Video", value: 1024 },
 ]
 
 export const Popper_Styles = {

@@ -1,4 +1,4 @@
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { format_file_size } from "./DataUtil";
 import { ITableItem } from "./Interfaces";
 

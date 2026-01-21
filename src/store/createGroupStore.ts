@@ -2,7 +2,7 @@
 import { defineStore } from "pinia"
 import { computed, ref } from "vue"
 import { GroupEntity } from "../data/Interfaces"
-import SortedList from "../data/SortedList"
+import { SortedList } from "../data/SortedList"
 import { CommonPriority } from "../data/WebData"
 
 export default function createGroupStore<T extends GroupEntity>(

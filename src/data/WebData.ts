@@ -52,3 +52,9 @@ export class GroupTimeStatsForm {
 	end_date: string
 	group_ids: number[]
 }
+
+export class ActorNameStatsForm {
+	min_len: number
+	max_len: number
+	limit: number
+}

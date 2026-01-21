@@ -1,16 +1,18 @@
 <template>
-	<el-form label-width="150px" label-position="left">
-		<el-form-item label="Score Range">
-			<el-slider v-model="scores" :min="0" :max="max_score" range show-stops style="width: 360px;" />
-		</el-form-item>
-		<el-form-item label="Tag Count">
-			<el-input-number v-model="tag_count" :min="1" :max="30" />
-		</el-form-item>
-		<el-form-item label="Op">
-			<el-button type="primary" @click="refreshData">Refresh</el-button>
-		</el-form-item>
-	</el-form>
-	<div ref="dom_chart" style="width: 1280px;height: 480px"></div>
+	<div class="left-column">
+		<el-form label-width="150px" label-position="left">
+			<el-form-item label="Score Range">
+				<el-slider v-model="scores" :min="0" :max="max_score" range show-stops style="width: 360px;" />
+			</el-form-item>
+			<el-form-item label="Tag Count">
+				<el-input-number v-model="tag_count" :min="1" :max="30" />
+			</el-form-item>
+			<el-form-item label="Op">
+				<el-button type="primary" @click="refreshData">Refresh</el-button>
+			</el-form-item>
+		</el-form>
+		<div ref="dom_chart" style="width: 1280px;height: 480px"></div>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -28,7 +30,7 @@ import { ActorTagStore } from "../../store/ActorTagStore";
 import { MAX_SCORE } from "../../data/Consts";
 import { TagCount } from "../../data/Interfaces";
 import { logError } from "../../ctrls/FetchCtrl.js";
-import { formatCategoryAxis, formatCommonTextStyle, formatGrid, formatValueAxis } from "../../data/ChartUtil.js";
+import { formatBarLabel, formatCategoryAxis, formatCommonTextStyle, formatGrid, formatValueAxis } from "../../data/ChartUtil.js";
 import { ECssVarName } from "../../data/Enums.js";
 
 echarts.use([
@@ -76,14 +78,7 @@ function formatSeriesItem(data: any[]) {
 		barMaxWidth: 50,
 		colorBy: 'data', // bar color is data.itemStyle.color
 		data: data,
-		label: {
-			show: true,
-			position: 'right',
-			distance: 15,
-			align: 'left',
-			verticalAlign: 'middle',
-			fontSize: 18,
-		},
+		label: formatBarLabel(),
 	}
 }
 

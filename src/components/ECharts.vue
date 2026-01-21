@@ -14,6 +14,9 @@
 				<el-menu-item index="actor_group_time" class="el-aside-menu-item">
 					Actor Group Time
 				</el-menu-item>
+				<el-menu-item index="actor_name_stats" class="el-aside-menu-item">
+					Actor Name Stats
+				</el-menu-item>
 			</el-menu>
 		</el-aside>
 		<el-main>
@@ -22,37 +25,34 @@
 	</el-container>
 </template>
 
-<script lang="ts">
-
-import { mapActions } from "pinia";
+<script setup lang="ts">
+// imports
+import { onMounted } from "vue";
+import { useRouter } from "vue-router";
 import { SubMenuStore } from "../store/SubMenuStore";
 import { MainMenu } from "../data/Enums";
+// emits
+// stores/routers
+const subMenuStore = SubMenuStore()
+const router = useRouter()
+// props/models
+// variables
+// computed
+// watch
+// methods
+// lifecycle
 
-export default {
-	name: "ECharts",
-	components: [],
-	data() {
-		return {}
-	},
-	computed: {},
-	methods: {
-		...mapActions(SubMenuStore, {
-			setSubMenu: "set",
-			getSubMenu: "get",
-		}),
-		onMenuItemSelect(key: string) {
-			this.setSubMenu(MainMenu.Charts, key)
-			this.$router.push(`/echarts/${key}`)
-		},
-	},
-	mounted() {
-		let sub_menu = this.getSubMenu(MainMenu.Charts)
-		if (sub_menu) {
-			this.onMenuItemSelect(sub_menu)
-		}
-	}
+function onMenuItemSelect(key: string) {
+	subMenuStore.set(MainMenu.Charts, key)
+	router.push(`/echarts/${key}`)
 }
 
+onMounted(() => {
+	let sub_menu = subMenuStore.get(MainMenu.Charts)
+	if (sub_menu) {
+		onMenuItemSelect(sub_menu)
+	}
+})
 </script>
 
 <style scoped></style>

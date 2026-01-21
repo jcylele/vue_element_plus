@@ -1,6 +1,6 @@
 import { fetchPost } from "./FetchCtrl";
-import ActorGroupData from "../data/ActorGroupData";
-import ActorGroupCond from "../data/ActorGroupCond";
+import { ActorGroupData } from "../data/ActorGroupData";
+import { ActorGroupCond } from "../data/ActorGroupCond";
 import { CommonPriority } from "../data/WebData";
 import { BaseGroupCtrl } from "./BaseGroupCtrl";
 

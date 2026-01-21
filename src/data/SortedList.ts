@@ -1,6 +1,6 @@
 import { ISortItem } from "./Interfaces";
 
-export default class SortedList<T extends ISortItem> {
+export class SortedList<T extends ISortItem> {
 	private readonly list: T[]
 	private is_dirty: boolean
 	private dict: Map<number, T>

@@ -1,33 +1,46 @@
+/**
+ * containing the error codes and user messages.
+ */
 import { ErrorCode } from './Enums';
 
-export const ErrorMessages: { [key in ErrorCode]?: string } = {
-    [ErrorCode.Success]: 'operation succeed',
+/**
+ * ErrorMessages is the messages for the error codes.
+ */
+export const ErrorMessages: { [key in ErrorCode]: string } = {
+	[ErrorCode.Success]: 'operation succeed',
 
 	[ErrorCode.Unavailable]: 'function unavailable',
 
-    [ErrorCode.MainActorNotFound]: 'main actor not found',
-    [ErrorCode.ActorNotFound]: 'actor not found',
-    [ErrorCode.ActorGroupNotFound]: 'actor group not found',
-    [ErrorCode.TagNotFound]: 'tag not found',
-    [ErrorCode.TagGroupNotFound]: 'tag group not found',
-    [ErrorCode.FolderNotFound]: 'folder not found',
+	[ErrorCode.MainActorNotFound]: 'main actor not found',
+	[ErrorCode.ActorNotFound]: 'actor not found',
+	[ErrorCode.ActorGroupNotFound]: 'actor group not found',
+	[ErrorCode.TagNotFound]: 'tag not found',
+	[ErrorCode.TagGroupNotFound]: 'tag group not found',
+	[ErrorCode.FolderNotFound]: 'folder not found',
 
-    [ErrorCode.MultiLinkGroups]: 'multiple link groups',
-    [ErrorCode.NotAllLinkedActors]: 'not all actors are linked',
-    [ErrorCode.UnlinkedActor]: 'unlinked actor',
+	[ErrorCode.MultiLinkGroups]: 'multiple link groups',
+	[ErrorCode.NotAllLinkedActors]: 'not all actors are linked',
+	[ErrorCode.UnlinkedActor]: 'unlinked actor',
+	[ErrorCode.NoNewMainActor]: 'no new main actor',
 
-    [ErrorCode.GroupAlreadyIn]: 'already in group',
-    [ErrorCode.GroupCondFailed]: 'group condition failed',
-    [ErrorCode.GroupHasActors]: 'group has actors',
+	[ErrorCode.GroupAlreadyIn]: 'already in group',
+	[ErrorCode.GroupCondFailed]: 'group condition failed',
+	[ErrorCode.GroupHasActors]: 'group has actors',
 
-    [ErrorCode.TagInOtherGroup]: 'tag in other group',
-    [ErrorCode.TagNotInGroup]: 'tag not in group',
+	[ErrorCode.TagInOtherGroup]: 'tag in other group',
+	[ErrorCode.TagNotInGroup]: 'tag not in group',
+	[ErrorCode.TagInGroup]: 'tag already in group',
+
+	[ErrorCode.BatchFileInfoTooLarge]: 'too many actors in batch file info',
 };
 
+/**
+ * LogMessages is the messages for the log operations.
+ */
 export const LogMessages = {
-	
-	ActorChangeGroup(actor_name: string): string {
-		return `actor ${actor_name} change group succeed`
+
+	ActorChangeGroup(actor_name: string, group_name: string): string {
+		return `actor ${actor_name} changed to group ${group_name} succeed`
 	},
 	ActorChangeScore(): string {
 		return "change score succeed"
@@ -71,16 +84,10 @@ export const LogMessages = {
 	RemoveFiles(is_landscape: boolean): string {
 		return `remove ${is_landscape ? 'landscape' : 'portrait'} files succeed`
 	},
-	TaskFixPosts(): string {
-		return "fix posts task started"
-	},
-	TaskFixRes(): string {
-		return "fix res task started"
-	},
 	TaskStart(): string {
 		return "download task started"
 	},
-	TaskStop():string {
+	TaskStop(): string {
 		return "stop task succeed"
 	},
 	TaskStopAll(): string {
@@ -103,6 +110,9 @@ export const LogMessages = {
 	},
 	SimilarActorNames(): string {
 		return "find similar actor names finished"
+	},
+	SimilarActorIcons(): string {
+		return "find similar actor icons finished"
 	},
 	SetPostComment(): string {
 		return "set comment for post succeed"

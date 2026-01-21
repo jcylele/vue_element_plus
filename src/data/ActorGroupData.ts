@@ -1,15 +1,16 @@
-import { ActorGroupFlagConfig, GroupEntity } from "./Interfaces";
-import ActorGroupCond from "./ActorGroupCond";
+import { ActorGroupAbstract, ActorGroupFlagConfig, GroupEntity } from "./Interfaces";
+import { ActorGroupCond } from "./ActorGroupCond";
 import { ActorGroupForm } from "./WebData";
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { EActorGroupFlag } from "./Enums";
 import { Actor_Group_Flag_Configs } from "./Consts";
 
-export default class ActorGroupData extends BaseData implements GroupEntity {
+export class ActorGroupData extends BaseData implements GroupEntity {
 	group_id: number
 	group_name: string
 	group_desc: string
 	group_color: string
+	// 对应EActorGroupFlag枚举的位运算值
 	flags: number
 	group_priority: number
 
@@ -102,5 +103,14 @@ export default class ActorGroupData extends BaseData implements GroupEntity {
 		form.group_color = this.group_color
 		form.flags = this.flags
 		return form
+	}
+
+	abstract(): ActorGroupAbstract {
+		return {
+			group_color: this.group_color,
+			has_folder: this.has_folder,
+			is_initial: this.is_initial,
+			show_video_info: this.show_video_info
+		}
 	}
 }

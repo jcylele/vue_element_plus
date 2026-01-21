@@ -37,8 +37,7 @@ export enum SortType {
 	InitFileSize,
 	DownFileSize,
 	TotalFileSize,
-	LastPostFetchTime,
-	LastResDownloadTime
+	FavoriteCount
 }
 
 export enum NoticeType {
@@ -48,6 +47,7 @@ export enum NoticeType {
 	SameActorName = 3,
 	HasLinkedAccount = 4,
 	SimilarActorName = 5,
+	SimilarIcon = 6,
 }
 
 export enum ResState {
@@ -88,10 +88,12 @@ export enum GroupCondType {
 	MinScore = 0,   // param: score
 	MaxScore = 1,   // param: score
 	HasAnyTag = 2,  // param: bool
-	Linked = 3      // param: bool
+	Linked = 3,		// param: bool
+	HasRemark = 4 	// param: bool
 }
 
 export enum ResType {
+	None = 0,
 	Image = 1,
 	Video = 2,
 }
@@ -102,21 +104,36 @@ export enum BoolEnum {
 	FALSE = 3
 }
 
+export enum EFixFilter {
+	None = 0,
+	Overflow = 1,  // current post count > total post count
+	TotalZero = 1 << 1,  // total post count = 0
+	LinkNotChecked = 1 << 2,  // link not checked
+	IconNotExists = 1 << 3,  // icon not exists
+	MissingPosts = 1 << 4,  // actor has missing posts
+	NoFavorite = 1 << 5  // actor has no favorite count
+}
+
 export enum EStartPage {
 	ActorCount = -1,
 	FromStart = 0,
 	Custom = 1,
 }
 
+/**
+ * filter row, same as show order in ActorFilter.vue
+ */
 export enum EFilterRow {
 	Group = 0,
-	Tag = 1,
-	Score = 2,
-	Name = 3,
-	Remark = 4,
-	Comment = 5,
-	Folder = 6,
+	Name = 1,
+	Folder = 2,
+	Fix = 3,
+	Link = 4,
+	Remark = 5,
+	Comment = 6,
 	Progress = 7,
+	Score = 8,
+	Tag = 9,
 }
 
 export enum ECardRefresh {
@@ -140,7 +157,7 @@ export enum ErrorCode {
 	MultiLinkGroups = 201,
 	NotAllLinkedActors = 202,
 	UnlinkedActor = 203,
-
+	NoNewMainActor = 204,
 
 	GroupAlreadyIn = 301,
 	GroupCondFailed = 302,
@@ -148,6 +165,9 @@ export enum ErrorCode {
 
 	TagInOtherGroup = 401,
 	TagNotInGroup = 402,
+	TagInGroup = 403,
+
+	BatchFileInfoTooLarge = 501
 }
 
 export enum EOtherOp {
@@ -155,17 +175,21 @@ export enum EOtherOp {
 	Validate = 1,
 	Manual = 2,
 	Logs = 3,
+	MissingPosts = 4,
 }
 
 export enum EConfirmOp {
-	ClearActorFolder = 1,
-	ResetPosts = 2,
-	RemoveDownloading = 3,
-	ClearGroupFolder = 4,
-	DelActorGroup = 5,
-	DelActorTag = 6,
-	DelActorTagGroup = 7,
-	DelActorFolder = 8,
+	ClearActorFolder,
+	ResetPosts,
+	RemoveDownloading,
+	RemoveDownloadingAll,
+	ClearGroupFolder,
+	DelActorGroup,
+	DelActorTag,
+	DelActorTagGroup,
+	DelActorFolder,
+	RemoveActorVideos,
+	DelAllNotice,
 }
 
 export enum ECacheKey {

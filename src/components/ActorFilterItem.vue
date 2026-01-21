@@ -1,7 +1,7 @@
 <template>
 	<div class="desc-item">
 		<el-text class="desc-label">{{ item.label }}</el-text>
-		<el-text class="desc-value">{{ item.value }}</el-text>
+		<el-text class="desc-value" truncated>{{ item.value }}</el-text>
 	</div>
 </template>
 
@@ -47,6 +47,8 @@ const props = defineProps({
 	text-wrap: nowrap;
 	color: black;
 	background-color: antiquewhite;
+
 	padding: 4px 8px;
+	max-width: 160px;
 }
 </style>

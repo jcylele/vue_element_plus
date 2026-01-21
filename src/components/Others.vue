@@ -8,9 +8,14 @@
 						<span class="common-group-desc">
 							{{ op.desc }}
 						</span>
-						<el-button type="primary" size="default" @click="onOpClick(op.op)">
-							{{ op.btn_text }}
-						</el-button>
+						<div class="left-row bottom">
+							<el-button type="primary" size="default" @click="onOpClick(op.op)">
+								{{ op.btn_text }}
+							</el-button>
+							<span v-if="op.api_path" class="last-time-text">
+								Last Run: {{ getLastApiTime(op.api_path) }}
+							</span>
+						</div>
 					</div>
 				</div>
 			</el-tab-pane>
@@ -52,10 +57,10 @@
 
 <script setup lang="ts">
 // imports
-import { ref } from "vue";
-import { openLogs } from "../ctrls/OtherCtrl";
+import { onMounted, ref } from "vue";
+import { getLastRunTimes, openLogs, refreshMissingPosts, validateFileInfos } from "../ctrls/OtherCtrl";
 import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
-import { clearFolderOfGroup, validateFileInfos } from "../ctrls/ActorCtrl";
+import { clearFolderOfGroup } from "../ctrls/ActorCtrl";
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import { getGroupSizes } from "../ctrls/ChartCtrl";
 import { format_file_size, getCssVarValue } from "../data/DataUtil";
@@ -65,7 +70,7 @@ import { LogMessages } from "../data/Messages";
 import { Other_Ops } from "../data/Consts";
 import { cleanFiles, resetManual } from "../ctrls/OtherCtrl";
 import Settings from "./Settings.vue";
-import TableSource from "../data/TableSource";
+import { TableSource } from "../data/TableSource";
 import { GroupSizeData } from "../data/GroupSizeData";
 
 enum EOtherTab {
@@ -81,13 +86,21 @@ const actorGroupStore = ActorGroupStore()
 // variables
 const default_tab = ref(EOtherTab.Op)
 const group_size_table_source = ref<TableSource<GroupSizeData>>(new TableSource(GroupSizeData))
+const last_run_times = ref<Record<string, string>>({})
 // computed
 // watch
 // methods
 
 async function onTabChange(val: string) {
-	if (val === EOtherTab.ResSize) {
-		await fetchGroupSizes()
+	switch (val) {
+		case EOtherTab.ResSize:
+			await fetchGroupSizes()
+			break
+		case EOtherTab.Op:
+			await fetchLastRunTimes()
+			break
+		default:
+			break
 	}
 }
 
@@ -152,9 +165,9 @@ async function onOpClick(op: EOtherOp) {
 			break
 		case EOtherOp.Validate:
 			{
-				const [ok, count] = await validateFileInfos()
+				const [ok, _] = await validateFileInfos()
 				if (ok) {
-					logInfo(LogMessages.ValidateFileInfos(count))
+					logInfo(LogMessages.ValidateFileInfos(0))
 				}
 			}
 			break
@@ -171,10 +184,32 @@ async function onOpClick(op: EOtherOp) {
 				await openLogs()
 			}
 			break
+		case EOtherOp.MissingPosts:
+			{
+				await refreshMissingPosts()
+			}
+			break
 		default:
 			break
 	}
 }
+
+async function fetchLastRunTimes() {
+	const [ok, ret] = await getLastRunTimes()
+	if (ok) {
+		last_run_times.value = ret
+	}
+}
+
+function getLastApiTime(api_path: string) {
+	return last_run_times.value[api_path]
+}
+
+
+// lifecycle
+onMounted(async () => {
+	await onTabChange(default_tab.value)
+})
 </script>
 
 <style scoped>
@@ -186,6 +221,11 @@ async function onOpClick(op: EOtherOp) {
 
 .desc-text {
 	font-size: 24px;
+}
+
+.last-time-text {
+	font-size: 14px;
+	color: var(--el-text-color-regular);
 }
 
 .warn-text {

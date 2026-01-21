@@ -1,10 +1,19 @@
+/**
+ * DownloadForms is the forms for the download operations.
+ */
+
 import { PostFilter, ResType } from "./Enums";
 import { mb_size } from "./DataUtil";
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 
 export class ActorUrl {
 	actor_name: string
 	full_url: string
+
+	constructor() {
+		this.actor_name = ""
+		this.full_url = ""
+	}
 }
 
 export class BaseDownloadForm {
@@ -25,6 +34,11 @@ export class NewDownloadForm extends GroupDownloadForm {
 
 export class UrlDownloadForm extends GroupDownloadForm {
 	urls: ActorUrl[]
+}
+
+export class FixVideoForm {
+    actor_ids: number[]
+    end_date: string
 }
 
 export class DownloadLimitForm extends BaseData {

@@ -9,7 +9,8 @@
 					</div>
 				</el-menu-item>
 				<el-menu-item v-for="nt in notice_type_list" :index="nt.toString()" class="el-aside-menu-item">
-					<el-badge v-if="getNoticeCount(nt) > 0" :value="getNoticeCount(nt)" :max="999">
+					<el-badge v-if="badge_store.getNoticeCount(nt) > 0" :value="badge_store.getNoticeCount(nt)"
+						:max="999">
 						{{ getNoticeName(nt) }}
 					</el-badge>
 					<span v-else>{{ getNoticeName(nt) }}</span>
@@ -17,28 +18,31 @@
 			</el-menu>
 		</el-aside>
 		<el-main>
-			<el-space direction="vertical" v-if="is_search">
-				<el-space>
+			<div class="left-column" v-if="is_search">
+				<div class="center-row">
 					<el-input v-model="search_actor_name" placeholder="Search Actor Name" />
 					<el-button type="primary" @click="search">Search</el-button>
-				</el-space>
-				<el-text class="notice-type-tip">
+				</div>
+				<span class="notice-type-tip">
 					{{ notice_config!.tip }}
-				</el-text>
+				</span>
 				<el-table :data="notice_list" border>
 					<el-table-column v-for="col in notice_config!.notice_columns" :key="col.prop_name"
-						:prop="col.prop_name" :label="col.col_name" :width="200" />
+						:prop="col.prop_name" :label="col.col_name" />
 				</el-table>
-			</el-space>
-			<el-space v-else-if="notice_count == 0" direction="vertical" fill>
-				<el-text style="font-size: 24px">
+			</div>
+			<div class="left-column" v-else-if="notice_count == 0">
+				<span style="font-size: 24px">
 					No Notice Found
-				</el-text>
-				<el-button v-if="is_similar" type="primary" size="default" @click="findSimilar">
-					Find Similar Actor Names
+				</span>
+				<el-button v-if="notice_config!.btn_text" type="primary" size="default" @click="generateNotices()">
+					{{ notice_config!.btn_text }}
 				</el-button>
-			</el-space>
-			<el-space v-else direction="vertical" fill>
+				<span v-if="notice_config!.api_path" class="last-time-text">
+					Last Run: {{ getLastApiTime(notice_config!.api_path) }}
+				</span>
+			</div>
+			<div class="left-column" v-else>
 				<div class="split-row" style="min-width: 750px;">
 					<div class="center-row">
 						<el-pagination v-model:current-page="page_index" :page-size="page_size" :total="notice_count"
@@ -66,173 +70,200 @@
 						</template>
 					</el-table-column>
 				</el-table>
-
-			</el-space>
+			</div>
 		</el-main>
 	</el-container>
 </template>
 
-<script lang="ts">
-import { Notice_Type_Config_Default, Notice_Type_Configs, Notice_Type_Names, Notice_Type_Values } from "../data/Consts";
-import { EFilterRow, MainMenu, NoticeType } from "../data/Enums"
-import NoticeData from "../data/NoticeData";
-import { deleteNotice, delNoticesByType, getNotices, searchNotices } from "../ctrls/NoticeCtrl";
-import { mapActions } from "pinia";
-import { ActorFilterStore } from "../store/ActorFilterStore";
-import { SubMenuStore } from "../store/SubMenuStore";
-import { ActorFilterData } from "../data/ActorFilterData";
-import { BadgeStore } from "../store/BadgeStore";
-import { findSimilarActorNames } from "../ctrls/OtherCtrl";
-import { logInfo } from "../ctrls/FetchCtrl";
+<script setup lang="ts">
+// imports
+import { ref, computed, onMounted } from "vue";
+import { useRouter } from "vue-router";
 import SvgIcon from "./SvgIcon/index.vue";
 import { LogMessages } from "../data/Messages";
+import { EConfirmOp, MainMenu, NoticeType } from "../data/Enums"
+import { Notice_Type_Config_Default, Notice_Type_Configs, Notice_Type_Values } from "../data/Consts";
+import { NoticeData } from "../data/NoticeData";
+import { ActorFilterData } from "../data/ActorFilterData";
+import { ActorFilterStore } from "../store/ActorFilterStore";
+import { SubMenuStore } from "../store/SubMenuStore";
+import { BadgeStore } from "../store/BadgeStore";
+import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
+import { findSimilarActorIcons, findSimilarActorNames, getLastRunTimes } from "../ctrls/OtherCtrl";
+import { deleteNotice, delNoticesByType, getNotices, searchNotices } from "../ctrls/NoticeCtrl";
 
-export default {
-	name: "Notices",
-	components: { SvgIcon },
+// emits
+// stores/routers
+const router = useRouter()
+const actor_filter_store = ActorFilterStore()
+const sub_menu_store = SubMenuStore()
+const badge_store = BadgeStore()
+// props/models
+// variables
 
-	data() {
-		return {
-			cur_notice_type: 0,
-			notice_config: Notice_Type_Config_Default,
-			notice_list: [] as NoticeData[],
-			notice_count: 0,
-			page_index: 1,
-			page_size: 50,
-			search_actor_name: "",
-		}
-	},
+const cur_notice_type = ref(0)
+const notice_config = ref(Notice_Type_Config_Default)
+const notice_list = ref([] as NoticeData[])
+const notice_count = ref(0)
+const page_index = ref(1)
+const page_size = ref(50)
+const search_actor_name = ref("")
+const last_run_times = ref<Record<string, string>>({})
+// computed
+const notice_type_list = computed(() => {
+	return Notice_Type_Values
+})
+const can_search_actor_name = computed(() => {
+	return cur_notice_type.value != NoticeType.InvalidPost
+})
+const is_search = computed(() => {
+	return cur_notice_type.value == NoticeType.All
+})
 
-	computed: {
-		notice_type_list() {
-			return Notice_Type_Values
-		},
-		can_search_actor_name(): boolean {
-			return this.cur_notice_type != NoticeType.InvalidPost
-		},
-		is_similar(): boolean {
-			return this.cur_notice_type == NoticeType.SimilarActorName
-		},
-		is_search(): boolean {
-			return this.cur_notice_type == NoticeType.All
-		}
-	},
+// methods	
 
-	methods: {
-		...mapActions(ActorFilterStore, {
-			saveFilterCondition: "saveFilter",
-		}),
-		...mapActions(SubMenuStore, {
-			setSubMenu: "set",
-			getSubMenu: "get",
-		}),
-		...mapActions(BadgeStore, {
-			getNoticeCount: "getNoticeCount",
-			setNoticeCount: "setNoticeCount",
-			fetchAllNoticeCount: "fetchAllNoticeCount"
-		}),
+async function onNoticeTypeChange(index: string) {
+	sub_menu_store.set(MainMenu.Notices, index)
 
-		async onNoticeTypeChange(index: string) {
-			this.setSubMenu(MainMenu.Notices, index)
-
-			this.cur_notice_type = parseInt(index)
-			this.notice_config = Notice_Type_Configs[this.cur_notice_type]
-			if (this.cur_notice_type == NoticeType.All) {
-				this.notice_count = 0
-				this.notice_list = []
-				this.search_actor_name = ""
-			} else {
-				this.notice_count = this.getNoticeCount(this.cur_notice_type)
-				this.page_index = 1
-				await this.onPageChange()
-			}
-		},
-
-		async delNotice(notice_id: number) {
-			const [ok, _] = await deleteNotice(notice_id)
-			if (ok) {
-				const index = this.notice_list.findIndex((item) => item.notice_id === notice_id)
-				if (index !== -1) {
-					this.notice_list.splice(index, 1)
-					this.notice_count -= 1
-					this.setNoticeCount(this.cur_notice_type, this.notice_count)
-				}
-			}
-		},
-
-		async deleteAll() {
-			const [ok, _] = await delNoticesByType(this.cur_notice_type)
-			if (ok) {
-				this.notice_count = 0
-				this.notice_list = []
-				this.setNoticeCount(this.cur_notice_type, 0)
-			}
-		},
-
-		formatActorName(notice: NoticeData): string {
-			switch (this.cur_notice_type) {
-				case NoticeType.SameActorName:
-					return `${notice.notice_param0}`
-				case NoticeType.UnlinkedActor:
-					return `${notice.notice_param0}||${notice.notice_param1}`
-				case NoticeType.HasLinkedAccount:
-				case NoticeType.SimilarActorName:
-					return [notice.notice_param0, notice.notice_param1, notice.notice_param2, notice.notice_param3]
-						.filter(param => param != null && param != "")
-						.join("||")
-				default:
-					return ""
-			}
-		},
-
-		toActors(notice: NoticeData) {
-			const actor_name = this.formatActorName(notice)
-			const filter_condition = new ActorFilterData()
-			filter_condition.setNameLink(actor_name)
-			this.saveFilterCondition(filter_condition)
-			this.$router.push("/actors")
-		},
-
-		async onPageChange() {
-			const [ok, new_list] = await getNotices(this.cur_notice_type, this.page_size, (this.page_index - 1) * this.page_size)
-			if (ok) {
-				this.notice_list = new_list
-			}
-		},
-
-		async findSimilar() {
-			const [ok, _] = await findSimilarActorNames()
-			if (ok) {
-				await this.fetchAllNoticeCount()
-				logInfo(LogMessages.SimilarActorNames())
-				await this.onNoticeTypeChange(this.cur_notice_type.toString())
-			}
-		},
-
-		async search() {
-			const [ok, new_list] = await searchNotices(this.search_actor_name)
-			if (ok) {
-				this.notice_list = new_list
-				this.notice_count = new_list.length
-			}
-		},
-
-		getNoticeName(nt: NoticeType) {
-			return Notice_Type_Names[nt]
-		}
+	cur_notice_type.value = parseInt(index)
+	notice_config.value = Notice_Type_Configs[cur_notice_type.value]
+	if (cur_notice_type.value == NoticeType.All) {
+		notice_count.value = 0
+		notice_list.value = []
+		search_actor_name.value = ""
+	} else {
+		notice_count.value = badge_store.getNoticeCount(cur_notice_type.value)
+		page_index.value = 1
+		await onPageChange()
 	}
-	,
-	async mounted() {
-		let sub_menu = this.getSubMenu(MainMenu.Notices)
-		if (sub_menu) {
-			await this.onNoticeTypeChange(sub_menu)
+}
+
+async function delNotice(notice_id: number) {
+	const [ok, _] = await deleteNotice(notice_id)
+	if (ok) {
+		const index = notice_list.value.findIndex((item) => item.notice_id === notice_id)
+		if (index !== -1) {
+			notice_list.value.splice(index, 1)
+			notice_count.value -= 1
+			badge_store.setNoticeCount(cur_notice_type.value, notice_count.value)
 		}
 	}
 }
+
+async function deleteAll() {
+	await confirmOp(EConfirmOp.DelAllNotice, async () => {
+		const [ok, _] = await delNoticesByType(cur_notice_type.value)
+		if (ok) {
+			notice_count.value = 0
+			notice_list.value = []
+			badge_store.setNoticeCount(cur_notice_type.value, 0)
+		}
+	})
+}
+
+function formatActorName(notice: NoticeData): string {
+	switch (cur_notice_type.value) {
+		case NoticeType.SameActorName:
+			return `${notice.notice_param0}`
+		case NoticeType.UnlinkedActor:
+			return `${notice.notice_param0}||${notice.notice_param1}`
+		case NoticeType.HasLinkedAccount:
+		case NoticeType.SimilarActorName:
+		case NoticeType.SimilarIcon:
+			return [notice.notice_param0, notice.notice_param1, notice.notice_param2, notice.notice_param3]
+				.filter(param => param != null && param != "")
+				.join("||")
+		default:
+			return ""
+	}
+}
+
+function toActors(notice: NoticeData) {
+	const actor_name = formatActorName(notice)
+	const filter_condition = new ActorFilterData()
+	filter_condition.setName(actor_name)
+	actor_filter_store.saveFilter(filter_condition)
+	router.push("/actors")
+}
+
+async function onPageChange() {
+	const [ok, new_list] = await getNotices(cur_notice_type.value, page_size.value, (page_index.value - 1) * page_size.value)
+	if (ok) {
+		notice_list.value = new_list
+	}
+}
+
+async function generateNotices() {
+	switch (cur_notice_type.value) {
+		case NoticeType.SimilarActorName:
+			await findSimilarNames()
+			break
+		case NoticeType.SimilarIcon:
+			await findSimilarIcons()
+			break
+		default:
+			break
+	}
+}
+
+async function findSimilarNames() {
+	const [ok, _] = await findSimilarActorNames()
+	if (ok) {
+		await badge_store.fetchAllNoticeCount()
+		logInfo(LogMessages.SimilarActorNames())
+		await onNoticeTypeChange(cur_notice_type.value.toString())
+	}
+}
+
+async function findSimilarIcons() {
+	const [ok, _] = await findSimilarActorIcons()
+	if (ok) {
+		await badge_store.fetchAllNoticeCount()
+		logInfo(LogMessages.SimilarActorIcons())
+		await onNoticeTypeChange(cur_notice_type.value.toString())
+	}
+}
+
+async function search() {
+	const [ok, new_list] = await searchNotices(search_actor_name.value)
+	if (ok) {
+		notice_list.value = new_list
+		notice_count.value = new_list.length
+	}
+}
+
+function getNoticeName(nt: NoticeType): string {
+	return Notice_Type_Configs[nt].name
+}
+
+function getLastApiTime(api_path: string) {
+	return last_run_times.value[api_path]
+}
+
+async function fetchLastRunTimes() {
+	const [ok, ret] = await getLastRunTimes()
+	if (ok) {
+		last_run_times.value = ret
+	}
+}
+
+// lifecycle
+onMounted(async () => {
+	let sub_menu = sub_menu_store.get(MainMenu.Notices)
+	if (sub_menu) {
+		await onNoticeTypeChange(sub_menu)
+	}
+	await fetchLastRunTimes()
+})
 </script>
 <style scoped>
 .notice-type-tip {
 	font-style: italic;
 	color: var(--el-text-color-secondary);
+}
+
+.last-time-text {
+	font-size: 14px;
+	color: var(--el-text-color-regular);
 }
 </style>

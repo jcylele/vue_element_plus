@@ -1,33 +1,25 @@
-import { BoolEnum, EFilterRow, EStoreType, SortType } from "./Enums";
+import { BoolEnum, EFilterRow, EFixFilter, EStoreType, SortType } from "./Enums";
 import { Default_Sort_Option, Filter_Row_Names, MAX_SCORE, Sort_Groups } from "./Consts";
 import { SortOption } from "./Interfaces";
-import BaseData from "./BaseData";
+import { BaseCloneable } from "./BaseData";
 import { FilterItem } from "./WebData";
 
-abstract class BaseCloneable extends BaseData {
-	abstract clone(): this;
-
-	abstract copy(source: this): void;
-
-	abstract reset(): void;
-
-	isListEqual(l1: any[], l2: any[], equalFunc?: (a: any, b: any) => boolean): boolean {
-		if (l1.length !== l2.length) {
-			return false
-		}
-		for (const [index, val] of l1.entries()) {
-			if (equalFunc == undefined) {
-				if (val !== l2[index]) {
-					return false
-				}
-			} else {
-				if (!equalFunc(val, l2[index])) {
-					return false
-				}
+function isListEqual(l1: any[], l2: any[], equalFunc?: (a: any, b: any) => boolean): boolean {
+	if (l1.length !== l2.length) {
+		return false
+	}
+	for (const [index, val] of l1.entries()) {
+		if (equalFunc == undefined) {
+			if (val !== l2[index]) {
+				return false
+			}
+		} else {
+			if (!equalFunc(val, l2[index])) {
+				return false
 			}
 		}
-		return true
 	}
+	return true
 }
 
 class SortItem extends BaseCloneable {
@@ -37,29 +29,19 @@ class SortItem extends BaseCloneable {
 
 	constructor() {
 		super()
-		this.init()
+		this.reset()
 	}
 
-	private init(): void {  // 私有方法
+	reset(): void {
 		this.sort_type = SortType.Default
 		this.sort_option = Default_Sort_Option
 		this.sort_asc = Default_Sort_Option.default_asc
-	}
-
-	clone(): this {
-		const item = new SortItem()
-		item.copy(this)
-		return item as this
 	}
 
 	copy(item: SortItem) {
 		this.sort_type = item.sort_type
 		this.sort_option = this.findSortOption(item.sort_type)
 		this.sort_asc = item.sort_asc
-	}
-
-	reset(): void {
-		this.init()
 	}
 
 	get show_sort_type() {
@@ -102,12 +84,9 @@ class SortItem extends BaseCloneable {
 
 
 export class TagFilter extends BaseCloneable {
-	private no_tag: boolean
+	no_tag: boolean
 	tag_arr: number[][]
 	titles: string[] = ["All", "No", "Any"]
-	// must_have: number[]
-	// any_of: number[][]
-	// must_not_have: number[]
 
 	get show_no_tag() {
 		return this.no_tag
@@ -120,15 +99,10 @@ export class TagFilter extends BaseCloneable {
 
 	constructor() {
 		super()
-		this.init()
+		this.reset()
 	}
 
-	private init(): void {
-		this.no_tag = false
-		this.init_arr(this.no_tag)
-	}
-
-	private init_arr(no_tag: boolean) {
+	init_arr(no_tag: boolean) {
 		if (no_tag) {
 			this.tag_arr = []
 		} else {
@@ -136,19 +110,14 @@ export class TagFilter extends BaseCloneable {
 		}
 	}
 
-	clone(): this {
-		const filter = new TagFilter()
-		filter.copy(this)
-		return filter as this
+	reset(): void {
+		this.no_tag = false
+		this.init_arr(this.no_tag)
 	}
 
 	copy(filter: TagFilter) {
 		this.no_tag = filter.no_tag
 		this.tag_arr = filter.tag_arr.map(list => list.slice())
-	}
-
-	reset(): void {
-		this.init()
 	}
 
 	addLine() {
@@ -200,21 +169,71 @@ export class TagFilter extends BaseCloneable {
 		if (this.no_tag != tag_filter.no_tag) {
 			return false
 		}
-		if (!this.isListEqual(this.tag_arr, tag_filter.tag_arr, this.isListEqual)) {
+		if (!isListEqual(this.tag_arr, tag_filter.tag_arr, isListEqual)) {
 			return false
 		}
 		return true
 	}
 }
 
+export class LinkFilter extends BaseCloneable {
+	linked: BoolEnum
+	min_link_count: number
+	contain_group_id: number
+
+	constructor() {
+		super()
+		this.reset()
+	}
+
+	reset(): void {
+		this.linked = BoolEnum.ALL
+		this.min_link_count = 0
+		this.contain_group_id = 0
+	}
+
+	copy(source: this): void {
+		this.linked = source.linked
+		this.min_link_count = source.min_link_count
+		this.contain_group_id = source.contain_group_id
+	}
+
+	equals(other: this): boolean {
+		return this.linked == other.linked &&
+			this.min_link_count == other.min_link_count &&
+			this.contain_group_id == other.contain_group_id
+	}
+
+	formatFilterItem(getNameFunc: (store_type: EStoreType, group_id: number) => string): FilterItem | undefined {
+		if (this.linked == BoolEnum.ALL) {
+			return undefined
+		}
+		const desc_list: string[] = []
+		if (this.linked == BoolEnum.FALSE) {
+			desc_list.push("X")
+		} else {
+			if (this.min_link_count > 0) {
+				desc_list.push(`>= ${this.min_link_count}`)
+			}
+			if (this.contain_group_id > 0) {
+				desc_list.push(getNameFunc(EStoreType.ActorGroup, this.contain_group_id))
+			}
+			if (desc_list.length == 0) {
+				return new FilterItem("Link", "O")
+			}
+		}
+		return new FilterItem("Link", desc_list.join(", "))
+	}
+}
+
 export class ActorFilterData extends BaseCloneable {
 	show_rows: boolean[]
 	name: string
-	linked: boolean
 	group_id_list: number[]
 	folder_id: number
 	all_group_list: number[]
 	tag_filter: TagFilter
+	link_filter: LinkFilter
 	min_score: number
 	max_score: number
 
@@ -230,13 +249,11 @@ export class ActorFilterData extends BaseCloneable {
 	}
 	res_completed: BoolEnum
 
+	fix_filter: EFixFilter
+
 	sort_items: SortItem[]
 
 	desc_list: FilterItem[]
-
-	get str_desc_list() {
-		return this.desc_list.map(item => item.toString()).join(", ")
-	}
 
 	onRowHide(row: number) {
 		switch (row) {
@@ -246,11 +263,14 @@ export class ActorFilterData extends BaseCloneable {
 			case EFilterRow.Tag:
 				this.resetTags()
 				break
+			case EFilterRow.Link:
+				this.resetLink()
+				break
 			case EFilterRow.Score:
 				this.resetScores()
 				break
 			case EFilterRow.Name:
-				this.resetNameLink()
+				this.resetName()
 				break
 			case EFilterRow.Remark:
 				this.resetRemark()
@@ -263,6 +283,9 @@ export class ActorFilterData extends BaseCloneable {
 				break
 			case EFilterRow.Progress:
 				this.resetProgress()
+				break
+			case EFilterRow.Fix:
+				this.resetFix()
 				break
 		}
 	}
@@ -293,7 +316,6 @@ export class ActorFilterData extends BaseCloneable {
 				rows.push(index)
 			}
 		}
-		// console.log("getShowRows", this.uuid,this.show_rows, rows)
 		return rows
 	}
 
@@ -308,36 +330,94 @@ export class ActorFilterData extends BaseCloneable {
 		}
 	}
 
+	// region group
+
 	get show_group() {
 		return this.show_rows[EFilterRow.Group]
 	}
 
-	get show_tag() {
-		return this.show_rows[EFilterRow.Tag]
+	setAllGroupList(list: number[]) {
+		this.all_group_list = list
 	}
 
-	get show_score() {
-		return this.show_rows[EFilterRow.Score]
+	resetGroup() {
+		this.checkAllGroup(true)
 	}
 
-	get show_name() {
-		return this.show_rows[EFilterRow.Name]
+	checkAllGroup(val: boolean) {
+		if (val) {
+			this.group_id_list = this.all_group_list.slice()
+		} else {
+			this.group_id_list = []
+		}
 	}
+	//endregion group
 
-	get show_remark() {
-		return this.show_rows[EFilterRow.Remark]
-	}
-
-	get show_comment() {
-		return this.show_rows[EFilterRow.Comment]
-	}
-
+	// region folder
 	get show_folder() {
 		return this.show_rows[EFilterRow.Folder]
 	}
 
-	get show_progress() {
-		return this.show_rows[EFilterRow.Progress]
+	setFolder(folder_id: number) {
+		this.folder_id = folder_id
+		this.setRowVisible(EFilterRow.Folder, true)
+	}
+
+	resetFolder() {
+		this.folder_id = 0
+	}
+
+	get in_folder(): boolean {
+		return this.folder_id >= 0
+	}
+
+	set in_folder(val: boolean) {
+		if (val) {
+			this.folder_id = Math.abs(this.folder_id)
+		} else {
+			this.folder_id = -Math.abs(this.folder_id)
+		}
+	}
+
+	get real_folder_id(): number {
+		return Math.abs(this.folder_id)
+	}
+
+	set real_folder_id(val: number) {
+		if (this.folder_id >= 0) {
+			this.folder_id = val
+		} else {
+			this.folder_id = -val
+		}
+	}
+
+	// endregion folder
+
+	// region tags
+	get show_tag() {
+		return this.show_rows[EFilterRow.Tag]
+	}
+	resetTags() {
+		this.tag_filter = new TagFilter()
+	}
+
+	// endregion tags
+
+	//region link
+
+	get show_link() {
+		return this.show_rows[EFilterRow.Link]
+	}
+	resetLink() {
+		this.link_filter = new LinkFilter()
+	}
+
+	//endregion link
+
+	// region score
+
+	get show_score() {
+		return this.show_rows[EFilterRow.Score]
 	}
 
 	get show_min_score() {
@@ -354,6 +434,95 @@ export class ActorFilterData extends BaseCloneable {
 
 	set show_max_score(val: number) {
 		this.max_score = val * 2
+	}
+
+	resetScores() {
+		this.min_score = 0
+		this.max_score = MAX_SCORE
+	}
+	// endregion score
+
+	// region fix filter
+
+	get show_fix() {
+		return this.show_rows[EFilterRow.Fix]
+	}
+
+	resetFix() {
+		this.fix_filter = EFixFilter.None
+	}
+
+	getFixFlag(flag: EFixFilter): boolean {
+		return (this.fix_filter & flag) !== 0
+	}
+
+	setFixFlag(flag: EFixFilter, value: boolean): void {
+		if (value) {
+			this.fix_filter |= flag
+		} else {
+			this.fix_filter &= ~flag
+		}
+	}
+
+	get post_count_overflow(): boolean {
+		return this.getFixFlag(EFixFilter.Overflow)
+	}
+	set post_count_overflow(value: boolean) {
+		this.setFixFlag(EFixFilter.Overflow, value)
+	}
+
+	get post_count_total_zero(): boolean {
+		return this.getFixFlag(EFixFilter.TotalZero)
+	}
+	set post_count_total_zero(value: boolean) {
+		this.setFixFlag(EFixFilter.TotalZero, value)
+	}
+
+	get link_not_checked(): boolean {
+		return this.getFixFlag(EFixFilter.LinkNotChecked)
+	}
+
+	set link_not_checked(value: boolean) {
+		this.setFixFlag(EFixFilter.LinkNotChecked, value)
+	}
+
+	get icon_not_exists(): boolean {
+		return this.getFixFlag(EFixFilter.IconNotExists)
+	}
+	set icon_not_exists(value: boolean) {
+		this.setFixFlag(EFixFilter.IconNotExists, value)
+	}
+
+	get missing_posts(): boolean {
+		return this.getFixFlag(EFixFilter.MissingPosts)
+	}
+	set missing_posts(value: boolean) {
+		this.setFixFlag(EFixFilter.MissingPosts, value)
+	}
+
+	get no_favorite(): boolean {
+		return this.getFixFlag(EFixFilter.NoFavorite)
+	}
+	set no_favorite(value: boolean) {
+		this.setFixFlag(EFixFilter.NoFavorite, value)
+	}
+
+	// endregion post count
+
+	// region progress
+	get show_progress() {
+		return this.show_rows[EFilterRow.Progress]
+	}
+	resetProgress() {
+		this.post_completed = BoolEnum.ALL
+		this.res_completed = BoolEnum.ALL
+	}
+
+	// endregion progress
+
+	// region sort
+	resetSort() {
+		this.sort_items = []
 	}
 
 	addSortItem() {
@@ -381,100 +550,32 @@ export class ActorFilterData extends BaseCloneable {
 		}
 		this.sort_items = filtered
 	}
+	// endregion sort
 
-	constructor() {
-		super()
-
-		this.init()
+	// region name link
+	get show_name() {
+		return this.show_rows[EFilterRow.Name]
 	}
 
-	private init(): void {
-		this.show_rows = new Array(Filter_Row_Names.length).fill(false)
-		this.all_group_list = []
-		this.desc_list = []
-		this.resetGroup()
-		this.resetTags()
-		this.resetScores()
-		this.resetNameLink()
-		this.resetRemark()
-		this.resetComment()
-		this.resetFolder()
-		this.resetProgress()
-		this.resetSort()
-	}
-
-	reset() {
-		this.init()
-	}
-
-	clone(): this {
-		const data = new ActorFilterData()
-		data.copy(this)
-		return data as this
-	}
-
-	copy(data: ActorFilterData) {
-		this.show_rows = data.show_rows.slice()
-		this.name = data.name
-		this.linked = data.linked
-		this.group_id_list = data.group_id_list.slice()
-		this.folder_id = data.folder_id
-		this.tag_filter = data.tag_filter.clone()
-		this.min_score = data.min_score
-		this.max_score = data.max_score
-		this.remark_str = data.remark_str
-		this.has_remark = data.has_remark
-		this.comment_str = data.comment_str
-		this.has_comment = data.has_comment
-		this.post_completed = data.post_completed
-		this.res_completed = data.res_completed
-
-		this.sort_items = data.sort_items.map(item => item.clone())
-		// desc_list is immutable in some sense, so we don't need to clone it
-		this.desc_list = data.desc_list
-	}
-
-	setAllGroupList(list: number[]) {
-		this.all_group_list = list
-	}
-
-	resetGroup() {
-		this.checkAllGroup(true)
-	}
-
-
-	checkAllGroup(val: boolean) {
-		if (val) {
-			this.group_id_list = this.all_group_list.slice()
-		} else {
-			this.group_id_list = []
-		}
-	}
-
-	resetTags() {
-		this.tag_filter = new TagFilter()
-	}
-
-	resetScores() {
-		this.min_score = 0
-		this.max_score = MAX_SCORE
-	}
-
-	resetNameLink() {
+	resetName() {
 		this.name = ""
-		this.linked = false
 	}
 
-	setNameLink(name: string = "", linked: boolean = false) {
+	setName(name: string = "") {
 		this.name = name
-		this.linked = linked
 		this.setRowVisible(EFilterRow.Name, true)
 	}
 
-	resetSort() {
-		this.sort_items = []
+	// endregion name link
+
+	// region remark comment
+	get show_remark() {
+		return this.show_rows[EFilterRow.Remark]
 	}
 
+	get show_comment() {
+		return this.show_rows[EFilterRow.Comment]
+	}
 	resetRemark() {
 		this.remark_str = ""
 		this.has_remark = BoolEnum.ALL
@@ -485,27 +586,41 @@ export class ActorFilterData extends BaseCloneable {
 		this.has_comment = BoolEnum.ALL
 	}
 
-	resetFolder() {
-		this.folder_id = 0
+	// endregion remark comment
+	constructor() {
+		super()
+		this.reset()
 	}
 
-	resetProgress() {
-		this.post_completed = BoolEnum.ALL
-		this.res_completed = BoolEnum.ALL
+	reset(): void {
+		this.show_rows = new Array(Filter_Row_Names.length).fill(false)
+		this.all_group_list = []
+		this.desc_list = []
+		this.resetGroup()
+		this.resetTags()
+		this.resetLink()
+		this.resetScores()
+		this.resetName()
+		this.resetRemark()
+		this.resetComment()
+		this.resetFolder()
+		this.resetProgress()
+		this.resetFix()
+		this.resetSort()
 	}
 
 	/**
-	 * compare with another ActorFilterData, ignore sort_items
-	 * @param data ActorFilterData
-	 * @returns boolean
-	 */
+ * compare with another ActorFilterData, ignore sort_items
+ * @param data ActorFilterData
+ * @returns boolean
+ */
 	equals(data: ActorFilterData): boolean {
-		return this.isListEqual(this.show_rows, data.show_rows) &&
+		return isListEqual(this.show_rows, data.show_rows) &&
 			this.name === data.name &&
-			this.linked === data.linked &&
-			this.isListEqual(this.group_id_list, data.group_id_list) &&
+			isListEqual(this.group_id_list, data.group_id_list) &&
 			this.folder_id === data.folder_id &&
 			this.tag_filter.equals(data.tag_filter) &&
+			this.link_filter.equals(data.link_filter) &&
 			this.min_score === data.min_score &&
 			this.max_score === data.max_score &&
 			this.remark_str === data.remark_str &&
@@ -513,7 +628,30 @@ export class ActorFilterData extends BaseCloneable {
 			this.comment_str === data.comment_str &&
 			this.has_comment === data.has_comment &&
 			this.post_completed === data.post_completed &&
-			this.res_completed === data.res_completed
+			this.res_completed === data.res_completed &&
+			this.fix_filter === data.fix_filter
+	}
+
+	copy(data: ActorFilterData) {
+		this.show_rows = data.show_rows.slice()
+		this.name = data.name
+		this.group_id_list = data.group_id_list.slice()
+		this.folder_id = data.folder_id
+		this.tag_filter = data.tag_filter.clone()
+		this.link_filter = data.link_filter.clone()
+		this.min_score = data.min_score
+		this.max_score = data.max_score
+		this.remark_str = data.remark_str
+		this.has_remark = data.has_remark
+		this.comment_str = data.comment_str
+		this.has_comment = data.has_comment
+		this.post_completed = data.post_completed
+		this.res_completed = data.res_completed
+		this.fix_filter = data.fix_filter
+
+		this.sort_items = data.sort_items.map(item => item.clone())
+		// desc_list is immutable in some sense, so we don't need to clone it
+		this.desc_list = data.desc_list
 	}
 
 	formatFilterItems(getNameFunc: (store_type: EStoreType, group_id: number) => string, show_group: boolean): FilterItem[] {
@@ -530,23 +668,24 @@ export class ActorFilterData extends BaseCloneable {
 			desc_list.push(tag_item)
 		}
 
+		// link
+		const link_item = this.link_filter.formatFilterItem(getNameFunc)
+		if (link_item) {
+			desc_list.push(link_item)
+		}
+
 		// score
 		if (this.min_score > 0 && this.max_score < MAX_SCORE) {
-			desc_list.push(new FilterItem("Score", `${this.min_score} - ${this.max_score}`))
+			desc_list.push(new FilterItem("Score", `${this.show_min_score} - ${this.show_max_score}`))
 		} else if (this.min_score > 0) {
-			desc_list.push(new FilterItem("score", `>= ${this.min_score}`))
+			desc_list.push(new FilterItem("Score", `>= ${this.show_min_score}`))
 		} else if (this.max_score < MAX_SCORE) {
-			desc_list.push(new FilterItem("Score", `<= ${this.max_score}`))
+			desc_list.push(new FilterItem("Score", `<= ${this.show_max_score}`))
 		}
 
 		// name
 		if (this.name.length > 0) {
 			desc_list.push(new FilterItem("Name", this.name))
-		}
-
-		// linked
-		if (this.linked) {
-			desc_list.push(new FilterItem("Linked", "Yes"))
 		}
 
 		// remark
@@ -571,11 +710,11 @@ export class ActorFilterData extends BaseCloneable {
 
 		// folder
 		if (this.folder_id > 0) {
-			desc_list.push(new FilterItem("Folder", getNameFunc(EStoreType.ActorFavFolder, this.folder_id)))
-		}
-
-		if (desc_list.length == 0) {
-			desc_list.push(new FilterItem("All", "actors"))
+			const folder_name = getNameFunc(EStoreType.ActorFavFolder, this.folder_id)
+			desc_list.push(new FilterItem("Folder", `In ${folder_name}`))
+		} else if (this.folder_id < 0) {
+			const folder_name = getNameFunc(EStoreType.ActorFavFolder, -this.folder_id)
+			desc_list.push(new FilterItem("Folder", `Not in ${folder_name}`))
 		}
 
 		// progress
@@ -593,6 +732,32 @@ export class ActorFilterData extends BaseCloneable {
 			case BoolEnum.FALSE:
 				desc_list.push(new FilterItem("Post", "Not Completed"))
 				break
+		}
+
+		// post count
+		if (this.fix_filter != EFixFilter.None) {
+			if (this.fix_filter & EFixFilter.Overflow) {
+				desc_list.push(new FilterItem("Post", "Overflow"))
+			}
+			if (this.fix_filter & EFixFilter.TotalZero) {
+				desc_list.push(new FilterItem("Post", "Total Zero"))
+			}
+			if (this.fix_filter & EFixFilter.LinkNotChecked) {
+				desc_list.push(new FilterItem("Link", "Not Checked"))
+			}
+			if (this.fix_filter & EFixFilter.IconNotExists) {
+				desc_list.push(new FilterItem("Icon", "Not Exists"))
+			}
+			if (this.fix_filter & EFixFilter.MissingPosts) {
+				desc_list.push(new FilterItem("Post", "Missing"))
+			}
+			if (this.fix_filter & EFixFilter.NoFavorite) {
+				desc_list.push(new FilterItem("Favorite", "X"))
+			}
+		}
+
+		if (desc_list.length == 0) {
+			desc_list.push(new FilterItem("All", "actors"))
 		}
 
 		return desc_list

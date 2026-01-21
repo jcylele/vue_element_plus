@@ -1,7 +1,7 @@
 import { fetchGet, fetchPost, SingleResult } from "./FetchCtrl";
 import DownloadingVideoStats from "../data/DownloadingVideoStats";
-import { IGroupTimeStats, ITagCount } from "../data/SchemasOthers";
-import { GroupTimeStatsForm } from "../data/WebData";
+import { IActorNameStatsNode, IActorWithMissingPosts, IGroupTimeStats, ITagCount } from "../data/SchemasOthers";
+import { ActorNameStatsForm, GroupTimeStatsForm } from "../data/WebData";
 
 const baseUrl = "/chart"
 
@@ -37,4 +37,22 @@ export async function getGroupTimeStats(group_ids: number[], start_date: string,
 	form.start_date = start_date
 	form.end_date = end_date
 	return await fetchPost<IGroupTimeStats>(url, form, undefined, true)
+}
+
+export async function getActorNameStats(is_prefix: boolean, min_length: number, max_length: number, top_count: number) {
+	const url = is_prefix ? `${baseUrl}/actor_name_prefix_stats` : `${baseUrl}/actor_name_postfix_stats`;
+	const form = new ActorNameStatsForm()
+	form.min_len = min_length
+	form.max_len = max_length
+	form.limit = top_count
+	return await fetchPost<IActorNameStatsNode>(url, form, undefined, false)
+}
+
+export async function getActorNameSubstringStats(min_length: number, max_length: number, top_count: number) {
+	const url = `${baseUrl}/actor_name_substring_stats`;
+	const form = new ActorNameStatsForm()
+	form.min_len = min_length;
+	form.max_len = max_length;
+	form.limit = top_count;
+	return await fetchPost(url, form, undefined, false)
 }

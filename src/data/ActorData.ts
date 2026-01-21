@@ -1,12 +1,13 @@
 import { PostData } from "./PostData";
-import ActorFileDetail from "./FileInfo";
+import { ActorFileDetail } from "./FileInfo";
 import { ActorVideoInfo } from "./ActorVideoInfo";
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { ROOT_URL } from "./Consts";
 import { IActor } from "./Schemas";
+import { ActorGroupAbstract } from "./Interfaces";
 
 
-export default class ActorData extends BaseData {
+export class ActorData extends BaseData {
 	actor_id: number
 	actor_name: string
 	actor_platform: string
@@ -15,6 +16,7 @@ export default class ActorData extends BaseData {
 	icon: string
 	href: string
 	is_linked: boolean
+	has_last_post_id: boolean
 	comment: string
 	remark: string
 	commented_posts: PostData[]
@@ -22,6 +24,19 @@ export default class ActorData extends BaseData {
 	file_info: ActorFileDetail
 	video_infos: ActorVideoInfo[]
 	folder_ids: number[]
+	group_abstract: ActorGroupAbstract
+
+	get show_tooltip(): boolean {
+		return this.in_fav_folder
+			|| this.has_remark
+			|| this.show_video_infos
+	}
+
+	get has_remark(): boolean {
+		return (this.remark !== "")
+			|| (this.comment !== "")
+			|| this.commented_posts.length > 0
+	}
 
 	get icon_url() {
 		if (this.icon?.startsWith('http')) {
@@ -56,6 +71,10 @@ export default class ActorData extends BaseData {
 		return this.file_info && this.file_info.is_completed
 	}
 
+	get has_downloading() {
+		return this.file_info && this.file_info.has_downloading
+	}
+
 	get post_desc() {
 		if (this.file_info.unfinished_post_count > 0) {
 			return `[${this.file_info.finished_post_count}(+${this.file_info.unfinished_post_count})/${this.file_info.total_post_count}]`
@@ -76,14 +95,12 @@ export default class ActorData extends BaseData {
 		this.score = val * 2
 	}
 
-	get has_remark() {
-		return (this.remark !== "")
-			|| (this.comment !== "")
-			|| this.commented_posts.length > 0
-	}
-
 	get has_video_info() {
 		return this.video_infos.length > 0
+	}
+
+	get show_video_infos(): boolean {
+		return this.has_video_info && this.group_abstract.show_video_info
 	}
 
 	get str_video_infos(): string {
@@ -108,6 +125,12 @@ export default class ActorData extends BaseData {
 		this.tag_ids ??= []
 		this.commented_posts = []
 		this.video_infos = []
+		this.group_abstract = {
+			group_color: '',
+			has_folder: false,
+			is_initial: false,
+			show_video_info: false
+		}
 
 		if (!json_data) {
 			return

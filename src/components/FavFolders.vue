@@ -1,8 +1,8 @@
 <template>
-	<el-space direction="vertical" alignment="start" fill>
-		<el-space direction="horizontal" alignment="start">
+	<div class="fill-column fit-width">
+		<div class="left-row">
 			<el-button type="primary" @click="toAddFolder">Add New Folder</el-button>
-		</el-space>
+		</div>
 		<div v-for="folder in fav_folder_store.sorted_list" class="common-group-item"
 			@click="toActors(folder.folder_id)">
 			<div class="split-row" style="border-bottom: solid 1px #e0e0e080;">
@@ -22,7 +22,7 @@
 				{{ folder.folder_desc }}
 			</p>
 		</div>
-	</el-space>
+	</div>
 	<el-dialog v-model="is_editing" :title="add_edit_title" style="min-width: 600px;">
 		<el-form label-width="100px">
 			<el-form-item label="Name">
@@ -115,8 +115,7 @@ function toEditFolder(folder: FolderData) {
 
 function toActors(folder_id: number) {
 	const filter_condition = new ActorFilterData()
-	filter_condition.folder_id = folder_id
-	filter_condition.setRowVisible(EFilterRow.Folder, true)
+	filter_condition.setFolder(folder_id)
 	actor_filter_store.saveFilter(filter_condition)
 	router.push("/actors")
 }

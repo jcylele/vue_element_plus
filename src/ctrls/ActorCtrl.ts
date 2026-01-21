@@ -1,13 +1,13 @@
-import ActorData from "../data/ActorData";
+import { ActorData } from "../data/ActorData";
 import { fetchDelete, fetchGet, fetchPatch, fetchPost, fetchPostStr, logErrorCode, logInfo } from "./FetchCtrl";
 import { ActorFilterData } from "../data/ActorFilterData";
-import ResSizeCount from "../data/ResSizeCount";
+import { ResSizeCount } from "../data/ResSizeCount";
 import { ActorVideoInfo } from "../data/ActorVideoInfo";
 import { ResFileInfo } from "../data/ResFileInfo";
-import { ICommentCount, IPostFetchTimeStats, IUnifiedResponse } from "../data/SchemasOthers";
+import { ICommentCount, IPostFetchTimeStats, IUnifiedResponse, IMissingPost } from "../data/SchemasOthers";
 import { ErrorCode } from "../data/Enums";
-import ActorFileDetail from "../data/FileInfo";
-import ActorLog from "../data/ActorLog";
+import { ActorFileDetail } from "../data/FileInfo";
+import { ActorLog } from "../data/ActorLog";
 import { LogMessages } from "../data/Messages";
 
 const baseUrl = "/actor"
@@ -38,7 +38,12 @@ export async function getActorCount(filter_condition: ActorFilterData) {
 }
 
 export async function getActorCountInGroups() {
-	const url = `${baseUrl}/group_count`
+	const url = `${baseUrl}/actor_count_in_groups`
+	return await fetchGet(url)
+}
+
+export async function getActorCountInFolders() {
+	const url = `${baseUrl}/actor_count_in_folders`
 	return await fetchGet(url)
 }
 
@@ -71,23 +76,23 @@ export async function unlinkSameActors(actor_ids: number[]) {
 }
 
 
-export async function batchChangeActorGroup(actor_ids: number[], group_id: number) {
+export async function batchChangeActorGroup(actor_ids: number[], group_id: number, group_name: string) {
 	const url = `${baseUrl}/batch/group`;
 	let form = new BatchActorGroup()
 	form.group_id = group_id
 	form.actor_ids = actor_ids
-	const [ok, response_list] = await fetchPost<IUnifiedResponse<ActorData>>(url, form, undefined, true)
+	const [ok, response_list] = await fetchPost(url, form, undefined, true)
 	if (!ok) {
 		return [false, undefined]
 	}
 
 	const actor_map = new Map<number, ActorData>()
 	for (const response of response_list) {
-		const actor = response.data!
+		const actor = new ActorData(response.data!)
 		if (response.error_code !== ErrorCode.Success) {
 			logErrorCode(response.error_code)
 		} else {
-			logInfo(LogMessages.ActorChangeGroup(actor.actor_name))
+			logInfo(LogMessages.ActorChangeGroup(actor.actor_name, group_name))
 		}
 		actor_map.set(actor.actor_id, actor)
 	}
@@ -167,8 +172,8 @@ export async function getActorDownloadingFiles(actor_id: number) {
 	return await fetchGet<ResFileInfo>(url, ResFileInfo, true)
 }
 
-export async function removeDownloadingFiles(actor_id: number) {
-	const url = `${baseUrl}/${actor_id}/remove_downloading_files`;
+export async function removeDownloadingFiles(actor_id: number, percent: number) {
+	const url = `${baseUrl}/remove_downloading_files?actor_id=${actor_id}&percent=${percent}`;
 	return await fetchDelete(url)
 }
 
@@ -209,14 +214,19 @@ export async function getPostFetchTimeStats(actor_id: number) {
 	return await fetchGet<IPostFetchTimeStats>(url, undefined, true)
 }
 
+export async function getPostFetchDates(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/post_fetch_dates`
+	return await fetchGet<string>(url, undefined, true)
+}
+
+export async function getMissingPosts(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/missing_posts`
+	return await fetchGet<IMissingPost>(url, undefined, true)
+}
+
 export async function getComments() {
 	const url = `${baseUrl}/comments`
 	return await fetchGet<ICommentCount>(url, undefined, true)
-}
-
-export async function validateFileInfos() {
-	const url = `${baseUrl}/validate_all_file_info`
-	return await fetchGet<number>(url, undefined, false)
 }
 
 export async function clearFolderOfGroup(group_id: number) {

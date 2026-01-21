@@ -1,4 +1,4 @@
-import BaseData from "./BaseData"
+import { BaseData } from "./BaseData"
 import { format_duration, format_file_size_gb } from "./DataUtil"
 
 export class ActorVideoInfo extends BaseData {

@@ -1,10 +1,10 @@
 <template>
-	<el-space direction="vertical" fill>
-		<el-space direction="horizontal" alignment="start">
+	<div class="fill-column fit-width">
+		<div class="left-row">
 			<el-button type="primary" @click="toAddGroup">Add New Group</el-button>
-		</el-space>
+		</div>
 		<div v-for="group in actor_group_store.sorted_list" class="common-group-item">
-			<div class="split-row underlined">
+			<div class="split-row bottom-line">
 				<div class="center-row">
 					<span class="common-group-name" :style="{ color: group.group_color }">
 						{{ group.group_name }}
@@ -22,14 +22,14 @@
 			<p class="common-group-desc">
 				{{ group.group_desc }}
 			</p>
-			<el-space direction="horizontal" size="large" alignment="center" wrap>
+			<div class="center-row wrap">
 				<svg-icon size="24px" name="edit" @click="startEditCondition(group)" />
 				<el-tag v-for="cond in group.cond_list" type="info" effect="plain">
 					{{ cond.desc }}
 				</el-tag>
-			</el-space>
+			</div>
 		</div>
-	</el-space>
+	</div>
 	<el-dialog v-model="is_editing" :title="add_edit_title" style="min-width: 600px;">
 		<el-form label-width="auto">
 			<el-form-item label="Name">
@@ -48,10 +48,10 @@
 			</el-form-item>
 			<el-form-item label="Op">
 				<div class="split-row" style="padding: 10px">
-					<el-space direction="horizontal" size="large" alignment="center">
+					<div class="center-row">
 						<el-button type="primary" @click="saveGroup">Save</el-button>
 						<el-button type="warning" @click="stopEdit">Cancel</el-button>
-					</el-space>
+					</div>
 					<div v-if="!is_add_group">
 						<el-button type="danger" @click="delGroup">Delete</el-button>
 					</div>
@@ -67,12 +67,12 @@
 <script lang="ts" setup>
 // imports
 import { ActorGroupStore } from "../store/ActorGroupStore";
-import ActorGroupData from "../data/ActorGroupData";
+import { ActorGroupData } from "../data/ActorGroupData";
 import { addActorGroup, delActorGroup, setGroupCondition, updateActorGroup, updatePriorities } from "../ctrls/ActorGroupCtrl";
 import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
 import SvgIcon from "./SvgIcon/index.vue";
 import GroupCondEditor from "./GroupCondEditor.vue";
-import ActorGroupCond from "../data/ActorGroupCond";
+import { ActorGroupCond } from "../data/ActorGroupCond";
 import { computed, onMounted, ref } from "vue";
 import { swapGroup } from "../ctrls/BaseGroupCtrl";
 import { LogMessages } from "../data/Messages";

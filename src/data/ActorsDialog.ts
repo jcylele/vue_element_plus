@@ -1,4 +1,4 @@
-import ActorData from "./ActorData"
+import { ActorData } from "./ActorData"
 
 export enum EActorsDialog {
 	none = 'none',
@@ -22,7 +22,7 @@ export class ActorsDialog {
 		}
 	}
 
-	showDialog(type: EActorsDialog, actor_ids: number[]|undefined, actors: ActorData[]|undefined) {
+	showDialog(type: EActorsDialog, actor_ids: number[] | undefined = undefined, actors: ActorData[] | undefined = undefined) {
 		this.dialog_type = type
 		this.selected_actor_ids = actor_ids ?? []
 		this.selected_actors = actors ?? []

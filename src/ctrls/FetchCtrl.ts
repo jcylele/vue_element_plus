@@ -28,10 +28,13 @@ export function logErrorCode(code: ErrorCode) {
 	ElMessage({ message: ErrorMessages[code], type: "error" })
 }
 
-export async function confirmOp(op: EConfirmOp, yes: () => Promise<void>) {
+export async function confirmOp(op: EConfirmOp, yes: () => Promise<void>, ...args: any[]) {
 	const op_config = Confirm_Ops[op]
+	const content = args.length > 0 
+		? op_config.content.replace(/\{(\d+)\}/g, (_, i) => String(args[parseInt(i)] ?? `{${i}}`))
+		: op_config.content
 	try {
-		await ElMessageBox.confirm(op_config.content, op_config.title, {
+		await ElMessageBox.confirm(content, op_config.title, {
 			confirmButtonText: "Confirm",
 			cancelButtonText: "Cancel",
 			type: "warning",

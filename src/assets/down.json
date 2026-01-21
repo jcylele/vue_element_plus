@@ -1,82 +1,122 @@
 [
-  {
-    "name": "All Images",
-    "post_filter": 0,
-    "res_type": 1,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 0,
-    "show_single_file_size": 1,
-    "show_total_file_size": 0
-  },
-  {
-    "name": "Normal Images",
-    "post_filter": 1,
-    "res_type": 1,
-    "actor_count": 50,
-    "post_count": 100,
-    "file_count": 10,
-    "show_single_file_size": 4,
-    "show_total_file_size": 64
-  },
-  {
-    "name": "Current Images",
-    "post_filter": 2,
-    "res_type": 1,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 50,
-    "show_single_file_size": 4,
-    "show_total_file_size": 64
-  },
-  {
-    "name": "Completed Images",
-    "post_filter": 3,
-    "res_type": 1,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 50,
-    "show_single_file_size": 4,
-    "show_total_file_size": 64
-  },
-  {
-    "name": "All Videos",
-    "post_filter": 0,
-    "res_type": 2,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 0,
-    "show_single_file_size": 1,
-    "show_total_file_size": 0
-  },
-  {
-    "name": "Normal Videos",
-    "post_filter": 1,
-    "res_type": 2,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 0,
-    "show_single_file_size": 1024,
-    "show_total_file_size": 1024
-  },
-  {
-    "name": "Current Videos",
-    "post_filter": 2,
-    "res_type": 2,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 0,
-    "show_single_file_size": 1024,
-    "show_total_file_size": 1024
-  },
-  {
-    "name": "Completed Videos",
-    "post_filter": 3,
-    "res_type": 2,
-    "actor_count": 0,
-    "post_count": 0,
-    "file_count": 0,
-    "show_single_file_size": 1024,
-    "show_total_file_size": 1024
-  }
+	{
+		"name": "All None Res",
+		"post_filter": 0,
+		"res_type": 0,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 0,
+		"show_single_file_size": 0,
+		"show_total_file_size": 0
+	},
+	{
+		"name": "Normal None Res",
+		"post_filter": 1,
+		"res_type": 0,
+		"actor_count": 0,
+		"post_count": 50,
+		"file_count": 0,
+		"show_single_file_size": 0,
+		"show_total_file_size": 0
+	},
+	{
+		"name": "Current None Res",
+		"post_filter": 2,
+		"res_type": 0,
+		"actor_count": 0,
+		"post_count": 50,
+		"file_count": 0,
+		"show_single_file_size": 0,
+		"show_total_file_size": 0
+	},
+	{
+		"name": "Completed None Res",
+		"post_filter": 3,
+		"res_type": 0,
+		"actor_count": 0,
+		"post_count": 50,
+		"file_count": 0,
+		"show_single_file_size": 0,
+		"show_total_file_size": 0
+	},
+	{
+		"name": "All Images",
+		"post_filter": 0,
+		"res_type": 1,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 0,
+		"show_single_file_size": 1,
+		"show_total_file_size": 0
+	},
+	{
+		"name": "Normal Images",
+		"post_filter": 1,
+		"res_type": 1,
+		"actor_count": 50,
+		"post_count": 100,
+		"file_count": 10,
+		"show_single_file_size": 4,
+		"show_total_file_size": 64
+	},
+	{
+		"name": "Current Images",
+		"post_filter": 2,
+		"res_type": 1,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 50,
+		"show_single_file_size": 4,
+		"show_total_file_size": 64
+	},
+	{
+		"name": "Completed Images",
+		"post_filter": 3,
+		"res_type": 1,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 50,
+		"show_single_file_size": 4,
+		"show_total_file_size": 64
+	},
+	{
+		"name": "All Videos",
+		"post_filter": 0,
+		"res_type": 2,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 0,
+		"show_single_file_size": 1,
+		"show_total_file_size": 0
+	},
+	{
+		"name": "Normal Videos",
+		"post_filter": 1,
+		"res_type": 2,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 0,
+		"show_single_file_size": 1024,
+		"show_total_file_size": 1024
+	},
+	{
+		"name": "Current Videos",
+		"post_filter": 2,
+		"res_type": 2,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 0,
+		"show_single_file_size": 1024,
+		"show_total_file_size": 1024
+	},
+	{
+		"name": "Completed Videos",
+		"post_filter": 3,
+		"res_type": 2,
+		"actor_count": 0,
+		"post_count": 0,
+		"file_count": 0,
+		"show_single_file_size": 1024,
+		"show_total_file_size": 1024
+	}
 ]

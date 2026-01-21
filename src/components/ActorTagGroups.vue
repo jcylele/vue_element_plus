@@ -1,10 +1,26 @@
 <template>
-	<el-space direction="vertical" alignment="start" fill>
-		<el-space direction="horizontal" alignment="start">
+	<div class="fill-column fit-width">
+		<div class="left-row">
 			<el-button type="primary" @click="toAddGroup">Add New Group</el-button>
-		</el-space>
+		</div>
+		<div class="common-group-item">
+			<div class="split-row bottom-line">
+				<span class="common-group-name">
+					Ungrouped
+				</span>
+			</div>
+			<p class="common-group-desc">
+				tags not in any group
+			</p>
+			<div class="left-row wrap">
+				<el-tag v-for="tag_id in upgrouped_tag_ids" :key="tag_id" :style="actor_tag_store.getStyle(tag_id)"
+					round size="large">
+					{{ actor_tag_store.getName(tag_id) }}
+				</el-tag>
+			</div>
+		</div>
 		<div v-for="group in actor_tag_group_store.sorted_list" class="common-group-item">
-			<div class="split-row underlined">
+			<div class="split-row bottom-line">
 				<span class="common-group-name">
 					{{ group.group_name }}
 				</span>
@@ -17,7 +33,7 @@
 			<p class="common-group-desc">
 				{{ group.group_desc }}
 			</p>
-			<el-space direction="horizontal" size="large" alignment="center" wrap>
+			<div class="left-row wrap">
 				<el-tag v-for="tag_id in group.tag_ids" :key="tag_id" :style="actor_tag_store.getStyle(tag_id)" round
 					size="large" @close="delTagFromGroup(group.group_id, tag_id)" closable>
 					{{ actor_tag_store.getName(tag_id) }}
@@ -25,12 +41,12 @@
 				<el-tag v-if="to_add_group_id != group.group_id" size="large" effect="plain" type="success"
 					@click="toAddTag(group.group_id)" round>+</el-tag>
 				<el-select v-else filterable placeholder="Add Tag" @change="addTagToGroup" style="width: 120px;">
-					<el-option v-for="tag in actor_tag_store.sorted_list" :key="tag.tag_id" :label="tag.tag_name"
-						:value="tag.tag_id" :disabled="tag.tag_group_id != 0" />
+					<el-option v-for="tag_id in upgrouped_tag_ids" :key="tag_id"
+						:label="actor_tag_store.getName(tag_id)" :value="tag_id" />
 				</el-select>
-			</el-space>
+			</div>
 		</div>
-	</el-space>
+	</div>
 	<el-dialog v-model="is_editing" :title="add_edit_title" style="min-width: 600px;">
 		<el-form label-width="100px">
 			<el-form-item label="Name">
@@ -74,10 +90,11 @@ const actor_tag_store = ActorTagStore()
 const edit_group = ref(new ActorTagGroupData()) as Ref<ActorTagGroupData>
 const is_editing = ref(false)
 const to_add_group_id = ref(0)
+
 // computed
 const is_add_group = computed(() => edit_group.value.group_id == 0)
 const add_edit_title = computed(() => is_add_group.value ? "Add New Tag Group" : "Edit Tag Group")
-
+const upgrouped_tag_ids = computed(() => actor_tag_store.getTagIdsInGroup(0))
 // watch
 // methods
 

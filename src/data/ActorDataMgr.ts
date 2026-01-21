@@ -1,11 +1,11 @@
 import { getActor } from "../ctrls/ActorCtrl"
-import ActorData from "./ActorData"
+import { ActorData } from "./ActorData"
 import { ActorElement } from "./ArrayElement"
 
 /**
  * ActorDataMgr is manager for ActorData in Actors.vue
  */
-export default class ActorDataMgr {
+export class ActorDataMgr {
 	locked_actor_list: ActorElement[] = []
 	actor_list: ActorElement[] = []
 	actor_ids: number[] = []

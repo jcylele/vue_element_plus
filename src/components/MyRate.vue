@@ -1,5 +1,5 @@
 <template>
-	<el-rate v-model="model" :colors="star_colors" :max="6" allow-half v-bind="$attrs" />
+	<el-rate v-model="model" :colors="Star_Colors" :max="6" allow-half v-bind="$attrs" />
 </template>
 
 <script setup lang="ts">
@@ -23,8 +23,6 @@ const model = computed({
 		emits("update:modelValue", value);
 	},
 })
-
-const star_colors = computed(() => Star_Colors)
 
 
 </script>

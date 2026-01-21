@@ -1,32 +1,33 @@
 <template>
 	<div class="fill-column link-root">
-		<div v-for="actor in actors" class="left-row" style="gap: 0;">
-			<el-text class="col-name bold-text">{{ actor.actor_name }}</el-text>
+		<div v-for="actor in actors" class="actor-row left-row  top">
+			<span class="col-name bold-text">{{ actor.actor_name }}</span>
 			<MyRate class="col-score" v-model="actor.show_score" disabled />
 			<div class="col-tags left-row wrap">
 				<el-tag v-for="tag_id in actor.tag_ids" class="hint-selectable" :key="tag_id"
-					:style="actorTagStore.getStyle(tag_id)" effect="plain" @click="addTag(tag_id)" round>
+					:style="actorTagStore.getStyle(tag_id)" effect="plain" round>
 					{{ actorTagStore.getName(tag_id) }}
 				</el-tag>
 			</div>
 		</div>
-		<el-text class="desc-text">
-			click above tags to add, below tags to remove
-		</el-text>
-		<div class="result-row left-row" style="gap: 0;">
-			<el-text class="col-name">
-				Edit Link Result
-			</el-text>
-			<div class="col-result left-column">
-				<MyRate v-model="show_score" />
-				<div class="left-row wrap">
+
+		<div class="fill-column result-row">
+			<div class="actor-row left-row top">
+				<span class="col-name bold-text">Edit Link Result</span>
+				<MyRate class="col-score" v-model="show_score" />
+				<div class="col-tags left-row wrap">
 					<el-tag v-for="tag_id in tag_list" :key="tag_id" :style="actorTagStore.getStyle(tag_id)"
 						effect="plain" @close="removeTag(tag_id)" closable round>
 						{{ actorTagStore.getName(tag_id) }}
 					</el-tag>
+					<el-select filterable placeholder="Add Tag" @change="addTag" style="width: 120px;">
+						<el-option v-for="tag in actorTagStore.sorted_list" :key="tag.tag_id" :label="tag.tag_name"
+							:value="tag.tag_id" />
+					</el-select>
 				</div>
-				<el-input v-model="remark" placeholder="set shared remark for actors" type="textarea" autosize class="remark-input" />
 			</div>
+			<el-input v-model="remark" class="remark-input" placeholder="set shared remark for actors" type="textarea"
+				autosize />
 		</div>
 		<div class="center-row">
 			<el-button type="primary" @click="onSubmit">
@@ -41,9 +42,9 @@
 
 <script setup lang="ts">
 // imports
-import ActorData from "../data/ActorData";
+import { ActorData } from "../data/ActorData";
 import { computed, onMounted, Ref, ref, watch } from "vue";
-import { ActorTagStore } from "../store/ActorTagStore";	
+import { ActorTagStore } from "../store/ActorTagStore";
 import MyRate from "./MyRate.vue";
 // emits
 const emit = defineEmits(['submit', 'cancel'])
@@ -131,6 +132,11 @@ onMounted(() => {
 })
 </script>
 <style scoped>
+.actor-row {
+	gap: 0;
+	padding: 5px 0;
+}
+
 .link-root {
 	--result-width: var(--me-remark-width);
 	--name-width: 170px;
@@ -144,6 +150,8 @@ onMounted(() => {
 
 .result-row {
 	background-color: var(--el-card-bg-color);
+	padding: 10px 0;
+
 }
 
 .col-name {
@@ -157,10 +165,6 @@ onMounted(() => {
 
 .col-tags {
 	width: var(--tags-width);
-}
-
-.col-result	{
-	width: var(--result-width);
 }
 
 .remark-input {

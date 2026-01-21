@@ -1,4 +1,4 @@
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { GroupEntity } from "./Interfaces";
 import { CommonGroupForm } from "./WebData";
 

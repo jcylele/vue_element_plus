@@ -1,6 +1,6 @@
 import { ISortItem } from "./Interfaces";
 import { Star_Colors } from "./Consts";
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { EditingData } from "./EditingData";
 import { IActorTagData } from "./SchemasOthers";
 

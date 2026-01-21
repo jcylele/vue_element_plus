@@ -1,24 +1,25 @@
 <template>
-	<el-space direction="vertical" size="small" alignment="start" fill>
+	<div class="left-column">
 		<ActorFilter ref="actorFilterRef" :filter_condition="editing_filter_condition" @submit="onFilterSubmit" />
 		<el-divider style="margin: 1px; width: 100%;" />
 		<!-- filter desc -->
 		<div>
-			<el-space v-if="is_filter_normal" direction="horizontal" size="large" wrap>
-				<ActorFilterItem :item="desc" v-for="desc in page_filter_condition.desc_list" />
-				<el-button type="primary" @click="refreshPage" plain>
-					Refresh
-				</el-button>
-			</el-space>
-			<el-space v-else direction="horizontal" size="large" wrap>
+			<div class="left-row wrap" v-if="!is_filter_normal">
 				<ActorFilterItem :item="filter_item" />
 				<el-button type="primary" @click="onFilterBack" plain>
 					Back to list
 				</el-button>
-			</el-space>
+			</div>
+			<div class="left-row wrap" v-else-if="can_refresh">
+				<ActorFilterItem :item="desc" v-for="desc in page_filter_condition.desc_list" />
+				<el-button type="primary" @click="refreshPage" plain>
+					Refresh
+				</el-button>
+			</div>
+
 		</div>
 		<!-- tools bar -->
-		<el-space direction="horizontal" size="large">
+		<div class="left-row">
 			<el-pagination v-if="is_filter_normal" v-model:current-page="page_index" :total="actor_count"
 				:page-size="page_size" :page-sizes="[6, 8, 10, 12, 14]" :pager-count="5"
 				@current-change="onActorPageChange" @size-change="handleSizeChange"
@@ -32,7 +33,7 @@
 
 				<template #default>
 					<div class="fill-column">
-						<el-button :disabled="!has_downing_actors" type="primary" size="large"
+						<el-button :disabled="!actorFilterStore.has_downing_actors" type="primary" size="large"
 							@click="filterDownloadingActors">
 							Actors
 						</el-button>
@@ -45,50 +46,87 @@
 
 			<el-checkbox v-model="is_show_batch_op" label="Batch Ops" @change="onBatchOpChange" size="large" border />
 			<el-switch v-if="is_show_batch_op" v-model="is_batch_select_all" @change="batchSelectAll" active-text="All"
-				inactive-text="None" width="60px" size="large" />
-		</el-space>
+				inactive-text="None" width="60px" size="large" class="common-border" />
+		</div>
 		<!-- batch tool bar -->
 		<el-space direction="horizontal" v-if="is_show_batch_op" spacer="|" class="common-border">
-			<el-space direction="horizontal" size="small">
-				<el-button type="danger" class="batch-op-button" @click="lockActors(false)">
-					Unlock
-				</el-button>
-				<el-button type="primary" class="batch-op-button" @click="lockActors(true)">
-					Lock
-				</el-button>
-			</el-space>
-
-			<el-space direction="horizontal" size="small">
-				<el-button type="danger" class="batch-op-button" @click="unlinkActors">
-					Unlink
-				</el-button>
-				<el-button type="primary" class="batch-op-button" @click="onLinkClick">
-					Link
-				</el-button>
-			</el-space>
 
 			<!-- set actor group -->
-			<el-select placeholder="Set Group" style="width: 150px" @change="batchSetGroup">
-				<el-option v-for="group in group_list" :label="group.show_content" :value="group.group_id"
-					:style="{ 'color': group.group_color, }" />
+			<el-select placeholder="Set Group" class="batch-op-button" @change="batchSetGroup">
+				<el-option v-for="group in actorGroupStore.sorted_list" :label="group.show_content"
+					:value="group.group_id" :style="{ 'color': group.group_color, }" />
 			</el-select>
-			<!-- download -->
-			<el-button @click="batchShowDownload" plain style="width: 150px;">
-				Download
-			</el-button>
-			<!-- folder -->
-			<el-space direction="horizontal" size="small">
-				<el-text style="font-weight: bold;">
-					Folder
-				</el-text>
-				<el-button type="primary" class="batch-op-button" @click="batchShowFolderAdd">
-					Add
-				</el-button>
-				<el-button type="danger" class="batch-op-button" @click="batchShowFolderRemove">
-					Remove
-				</el-button>
-			</el-space>
 
+			<!-- folder -->
+			<div class="center-row" @mouseenter="onHoverChange(HoverType.folder)"
+				@mouseleave="onHoverChange(HoverType.none)">
+				<div class="center-row" v-if="hover_type == HoverType.folder">
+					<el-button type="danger" class="batch-inner-button" @click="batchShowFolderRemove">
+						Remove
+					</el-button>
+					<el-button type="primary" class="batch-inner-button" @click="batchShowFolderAdd">
+						Add
+					</el-button>
+				</div>
+				<el-button v-else class="batch-op-button" plain>
+					Folder
+				</el-button>
+			</div>
+
+			<!-- lock/unlock -->
+			<div class="center-row" @mouseenter="onHoverChange(HoverType.lock)"
+				@mouseleave="onHoverChange(HoverType.none)">
+				<div class="center-row" v-if="hover_type == HoverType.lock">
+					<el-button type="danger" class="batch-inner-button" @click="lockActors(false)">
+						Unlock
+					</el-button>
+					<el-button type="primary" class="batch-inner-button" @click="lockActors(true)">
+						Lock
+					</el-button>
+				</div>
+				<el-button v-else class="batch-op-button" plain>
+					Lock/Unlock
+				</el-button>
+			</div>
+
+			<!-- link/unlink -->
+			<div class="center-row" @mouseenter="onHoverChange(HoverType.link)"
+				@mouseleave="onHoverChange(HoverType.none)">
+				<div class="center-row" v-if="hover_type == HoverType.link">
+					<el-button type="danger" class="batch-inner-button" @click="unlinkActors">
+						Unlink
+					</el-button>
+					<el-button type="primary" class="batch-inner-button" @click="onLinkClick">
+						Link
+					</el-button>
+				</div>
+				<el-button v-else class="batch-op-button" plain>
+					Link/Unlink
+				</el-button>
+			</div>
+
+			<!-- download -->
+			<el-popover placement="bottom" trigger="hover">
+				<template #reference>
+					<el-button class="batch-op-button" plain>
+						Task
+					</el-button>
+				</template>
+
+				<template #default>
+					<div class="fill-column">
+						<el-button type="primary" size="large" @click="batchShowDownload">
+							Download
+						</el-button>
+						<el-button type="warning" size="large" @click="toFixPosts">
+							Scan All Posts
+						</el-button>
+						<el-button type="warning" size="large" @click="toFixRes">
+							Fix Video Urls
+						</el-button>
+					</div>
+				</template>
+			</el-popover>
 		</el-space>
 		<!-- a big card per actor -->
 		<div class="card_row left-row wrap stretch">
@@ -101,25 +139,25 @@
 				:show_select="is_show_batch_op" :key="actor_data.uuid" :locked="false" @refresh="onActorChange"
 				@friend="onActorFriendClick" @download="singleShowDownload" @update="refreshActors" />
 		</div>
-	</el-space>
+	</div>
 	<!-- download  dialog -->
 	<el-dialog v-model="actors_dialog.is_show_download" :title="actors_dialog.title">
-		<el-space direction="vertical">
+		<div class="center-column">
 			<DownloadLimit :download_limit="download_limit" />
-			<el-space direction="horizontal" alignment="center">
+			<div class="center-row">
 				<el-button type="primary" @click="onSubmitDownload">
 					Download
 				</el-button>
 				<el-button type="warning" @click="onDownloadClose">
 					Cancel
 				</el-button>
-			</el-space>
-		</el-space>
+			</div>
+		</div>
 	</el-dialog>
 	<!-- link preview dialog -->
 	<el-dialog v-model="actors_dialog.is_show_link" :title="actors_dialog.title">
-		<ActorLinkPreview :actors="actors_dialog.selected_actors" @submit="onLinkPreviewSubmit"
-			@cancel="onLinkPreviewClose" />
+		<ActorLinkPreview v-if="actors_dialog.is_show_link" :actors="actors_dialog.selected_actors"
+			@submit="onLinkPreviewSubmit" @cancel="onLinkPreviewClose" />
 	</el-dialog>
 	<!-- folder add dialog -->
 	<el-dialog v-model="actors_dialog.is_show_folder_add" :title="actors_dialog.title">
@@ -131,32 +169,32 @@
 	</el-dialog>
 	<!-- downloading file stats dialog -->
 	<el-dialog v-model="actors_dialog.is_show_downloading" :title="actors_dialog.title">
-		<DownloadingStats @search="onActorSearch" />
+		<DownloadingStats v-if="actors_dialog.is_show_downloading" @search="onActorSearch" />
 	</el-dialog>
 </template>
 
-<script lang="ts">
+<script setup lang="ts">
+// imports
+import { computed, onMounted, ref } from "vue";
 import { ActorFilterData } from "../data/ActorFilterData";
 import ActorFilter from "./ActorFilter.vue";
 import ActorCard from "./ActorCard.vue";
 import { ActorElement } from "../data/ArrayElement";
 import {
-	batchChangeActorGroup, 
+	batchChangeActorGroup,
 	getActorCount,
 	getActorIds,
 	getLinkedActorIds,
 	linkSameActors, unlinkSameActors
 } from "../ctrls/ActorCtrl";
-import { mapActions, mapState } from "pinia";
 import { ActorTagStore } from "../store/ActorTagStore";
 import { ActorFilterStore } from "../store/ActorFilterStore";
 import { DownloadLimitForm } from "../data/DownloadForms";
-import { downloadByActorIds } from "../ctrls/DownloadCtrl";
+import { downloadByActorIds, fixPosts, fixRes } from "../ctrls/DownloadCtrl";
 import DownloadLimit from "./DownloadLimit.vue";
 import { ActorGroupStore } from "../store/ActorGroupStore";
 import { logInfo, logWarn } from "../ctrls/FetchCtrl";
-import SvgIcon from "./SvgIcon/index.vue";
-import ActorData from "../data/ActorData";
+import { ActorData } from "../data/ActorData";
 import { BadgeStore } from "../store/BadgeStore";
 import ActorLinkPreview from "./ActorLinkPreview.vue";
 import ActorFilterItem from "./ActorFilterItem.vue";
@@ -168,7 +206,8 @@ import FavFolderSelector from "./FavFolderSelector.vue";
 import DownloadingStats from "./DownloadingStats.vue";
 import { batchAddActorToFolder, batchDelActorFromFolder } from "../ctrls/FolderCtrl";
 import { LogMessages } from "../data/Messages";
-import ActorDataMgr from "../data/ActorDataMgr";
+import { ActorDataMgr } from "../data/ActorDataMgr";
+import { format_date } from "../data/DataUtil";
 
 enum FilterType {
 	Normal = "Normal",
@@ -176,368 +215,365 @@ enum FilterType {
 	Download = "Downloading"
 }
 
-export default {
-	components: { ActorLinkPreview, SvgIcon, ActorCard, ActorFilter, DownloadLimit, ActorFilterItem, FavFolderSelector, DownloadingStats },
-	data() {
-		return {
-			actorFilterRef: undefined,
-			editing_filter_condition: new ActorFilterData(),
-			page_filter_condition: new ActorFilterData(),
-			filter_type: FilterType.Normal,
-			filter_item: new FilterItem("", ""),
-			actor_data_mgr: new ActorDataMgr(),
-			page_size: 12,
-			page_index: 1,
-			actor_count: 0,
-			active_parts: ['filter'],
-			download_limit: undefined as DownloadLimitForm | undefined,
-			is_show_batch_op: false,
-			is_batch_select_all: false,
-			actors_dialog: new ActorsDialog(),
-		}
-	},
-	computed: {
-		...mapState(ActorFilterStore, {
-			last_filter_condition: 'last_filter',
-			cached_page_size: "page_size",
-			cached_page_index: "page_index",
-			downing_actor_ids: "downing_actors",
-			has_downing_actors: "has_downing_actors"
-		}),
-		...mapState(ActorGroupStore, {
-			group_list: 'sorted_list',
-			group_count: 'count'
-		}),
-		is_filter_normal() {
-			return this.filter_type == FilterType.Normal
-		},
-		filter_type_name() {
-			return this.filter_type
-		},
-	},
-	methods: {
-		...mapActions(ActorTagStore, {
-			getTagsFromServer: 'getFromServer',
-			getTagName: 'getName',
-		}),
-		...mapActions(ActorFilterStore, {
-			savePageIndex: "setPageIndex",
-			savePageSize: "setPageSize",
-			getDowningFromServer: "getDowningFromServer",
-			is_actor_downing: "is_downing",
-			saveFilterCondition: "saveFilter",
-		}),
-		...mapActions(BadgeStore, {
-			fetchTaskCount: 'fetchTaskCount',
-		}),
-		...mapActions(ActorGroupStore, {
-			getGroupsFromServer: 'getFromServer',
-			getGroupName: 'getName',
-		}),
-		...mapActions(FavFolderStore, { getFolderName: 'getName' }),
+enum HoverType {
+	none = "none",
+	link = "link",
+	folder = "folder",
+	lock = "lock",
+}
 
-		getNameFunc(store_type: EStoreType, group_id: number): string {
-			switch (store_type) {
-				case EStoreType.ActorGroup:
-					return this.getGroupName(group_id)
-				case EStoreType.ActorTag:
-					return this.getTagName(group_id)
-				case EStoreType.ActorFavFolder:
-					return this.getFolderName(group_id)
-				default:
-					throw new Error(`Unknown store type: ${store_type}`)
-			}
-		},
-
-		formatFilterItems(page_filter: ActorFilterData): FilterItem[] {
-			const show_group = page_filter.group_id_list.length > 0 && page_filter.group_id_list.length < this.group_count
-			return page_filter.formatFilterItems(this.getNameFunc, show_group)
-		},
-
-		async handleSizeChange(val: number) {
-			this.page_size = val
-			this.savePageSize(val)
-			this.page_index = 1
-			await this.onActorPageChange()
-		},
-
-		async onActorPageChange() {
-			this.savePageIndex(this.page_index)
-			const [ok, actor_ids] = await getActorIds(this.page_filter_condition, this.page_size, (this.page_index - 1) * this.page_size)
-			if (ok) {
-				this.refreshActorIds(actor_ids)
-				await this.getDowningFromServer()
-			} else {
-				this.refreshActorIds()
-			}
-		},
-		async onFilterSubmit() {
-			// extra actions to filter
-			this.editing_filter_condition.simplifySortItems()
-			// create desc_list before saving to store
-			this.editing_filter_condition.desc_list = this.formatFilterItems(this.editing_filter_condition)
-			this.saveFilterCondition(this.editing_filter_condition)
-			this.page_filter_condition.copy(this.editing_filter_condition)
-
-			// on filter changed
-			await this.onPageFilterChange(true)
-		},
-		async onPageFilterChange(clear: boolean = false) {
-			if (clear) {
-				this.refreshActorIds()
-				this.actor_count = 0
-				this.page_index = 1
-			}
-			const [ok, actor_count] = await getActorCount(this.page_filter_condition)
-			if (ok) {
-				this.actor_count = actor_count
-				if (!clear) {
-					this.page_index = this.getCachedPageIndex()
-				}
-				await this.onActorPageChange()
-			}
-		},
-		getCachedPageIndex(): number {
-			let cached_page_index = this.cached_page_index
-
-			let max_page_count = Math.ceil(this.actor_count / this.page_size)
-			if (cached_page_index > max_page_count) {
-				cached_page_index = max_page_count
-			}
-
-			if (cached_page_index < 1) {
-				cached_page_index = 1
-			}
-
-			return cached_page_index
-		},
-		async refreshPage() {
-			await this.onPageFilterChange()
-		},
-		async onFilterBack() {
-			await this.onPageFilterChange()
-		},
-		onActorChange(actor_id: number, refresh: ECardRefresh) {
-			if (refresh == ECardRefresh.Group) {
-				this.$refs.actorFilterRef.refreshGroupCount()
-			}
-		},
-		async onActorFriendClick(actor_data: ActorElement) {
-			const [ok, actor_ids] = await getLinkedActorIds(actor_data.data.actor_id)
-			if (ok) {
-				this.refreshActorIds(actor_ids, FilterType.Link)
-			} else {
-				this.refreshActorIds()
-			}
-		},
-
-		async filterDownloadingActors() {
-			await this.getDowningFromServer()
-			this.refreshActorIds(this.downing_actor_ids, FilterType.Download)
-		},
-
-		showDownloadingFileStats() {
-			this.actors_dialog.showDialog(EActorsDialog.downloading)
-		},
-
-		async onActorSearch(actor_name: string) {
-			this.actors_dialog.closeDialog(EActorsDialog.downloading)
-
-			this.editing_filter_condition.reset()
-			this.editing_filter_condition.setNameLink(`${actor_name}||`)
-			await this.onFilterSubmit()
-		},
-
-		// region batch, select, lock
-		getSelectedActors() {
-			return this.actor_data_mgr.getSelected().map(actor => actor.data)
-		},
-		getSelectedActorIds() {
-			return this.actor_data_mgr.getSelected().map(actor => actor.data.actor_id)
-		},
-		onBatchOpChange(val: boolean) {
-			if (!val) {
-				this.is_batch_select_all = false
-				this.batchSelectAll(false)
-			}
-		},
-		batchSelectAll(val: boolean) {
-			this.actor_data_mgr.batchSelectAll(val)
-		},
-
-		async batchSetGroup(group_id: number) {
-			let actor_ids = this.getSelectedActorIds()
-			if (actor_ids.length == 0) {
-				logWarn(LogMessages.NoActorSelected())
-				return
-			}
-			let [ok, actor_map] = await batchChangeActorGroup(actor_ids, group_id)
-			if (ok) {
-				this.refreshActors(actor_map)
-			}
-		},
-
-		lockActors(lock: boolean) {
-			this.actor_data_mgr.lockActors(lock)
-		},
-
-		// endregion
-
-		// region link
-
-		onLinkClick() {
-			const link_actor_list = this.getSelectedActors()
-			if (link_actor_list.length < 2) {
-				logWarn(LogMessages.NotEnoughActorsToLink())
-				return
-			}
-			this.actors_dialog.showDialog(EActorsDialog.link, undefined, link_actor_list)
-		},
-
-		onLinkPreviewClose() {
-			this.actors_dialog.closeDialog(EActorsDialog.link)
-		},
-
-		async onLinkPreviewSubmit(score: number, remark: string, tag_list: number[]) {
-			const actor_ids = this.actors_dialog.selected_actors.map(actor => actor.actor_id)
-			const [ok, actor_map] = await linkSameActors(actor_ids, score, remark, tag_list)
-			if (ok) {
-				logInfo(LogMessages.LinkActors(actor_ids.length))
-				this.actors_dialog.closeDialog(EActorsDialog.link)
-				this.refreshActors(actor_map)
-			}
-		},
-
-		async unlinkActors() {
-			let actor_ids = this.getSelectedActorIds()
-			if (actor_ids.length == 0) {
-				logWarn(LogMessages.NoActorSelected())
-				return
-			}
-
-			const [ok, actor_map] = await unlinkSameActors(actor_ids)
-			if (ok) {
-				logInfo(LogMessages.UnlinkActors(actor_ids.length))
-				this.refreshActors(actor_map)
-			}
-		},
-
-		// endregion
-
-		// region download
-
-		showDownloadLimit(actor_ids: number[]) {
-			if (this.download_limit == null) {
-				this.download_limit = new DownloadLimitForm()
-			}
-			this.actors_dialog.showDialog(EActorsDialog.download, actor_ids, undefined)
-		},
-
-		singleShowDownload(actor_data: ActorElement) {
-			this.showDownloadLimit([actor_data.data.actor_id])
-		},
-
-		batchShowDownload() {
-			let actor_ids = this.getSelectedActorIds()
-			if (actor_ids.length == 0) {
-				logWarn(LogMessages.NoActorSelected())
-				return
-			}
-			this.showDownloadLimit(actor_ids)
-		},
-
-		async onSubmitDownload() {
-			let [ok, _] = await downloadByActorIds(this.download_limit, this.actors_dialog.selected_actor_ids)
-			this.onDownloadClose()
-			if (ok) {
-				await this.fetchTaskCount()
-				await this.getDowningFromServer()
-				logInfo(LogMessages.TaskStart())
-			}
-		},
-
-		onDownloadClose() {
-			this.actors_dialog.closeDialog(EActorsDialog.download)
-		},
-
-		// endregion
-
-		//region folder
-
-		batchShowFolderAdd() {
-			let actor_ids = this.getSelectedActorIds()
-			if (actor_ids.length == 0) {
-				logWarn(LogMessages.NoActorSelected())
-				return
-			}
-			this.actors_dialog.showDialog(EActorsDialog.folder_add, actor_ids, undefined)
-		},
-		batchShowFolderRemove() {
-			let actor_ids = this.getSelectedActorIds()
-			if (actor_ids.length == 0) {
-				logWarn(LogMessages.NoActorSelected())
-				return
-			}
-			this.actors_dialog.showDialog(EActorsDialog.folder_remove, actor_ids, undefined)
-		},
-
-		async onFolderAddSubmit(folder_id: number) {
-			const [ok, _] = await batchAddActorToFolder(folder_id, this.actors_dialog.selected_actor_ids)
-			if (ok) {
-				this.updateActors(this.actors_dialog.selected_actor_ids, actor => actor.addToFolder(folder_id))
-				this.actors_dialog.closeDialog(EActorsDialog.folder_add)
-			}
-		},
-
-		async onFolderRemoveSubmit(folder_id: number) {
-			const [ok, _] = await batchDelActorFromFolder(folder_id, this.actors_dialog.selected_actor_ids)
-			if (ok) {
-				this.updateActors(this.actors_dialog.selected_actor_ids, actor => actor.removeFromFolder(folder_id))
-				this.actors_dialog.closeDialog(EActorsDialog.folder_remove)
-			}
-		},
-
-		//endregion
-
-		refreshActors(actor_map: Map<number, ActorData>) {
-			this.actor_data_mgr.refreshActors(actor_map)
-		},
-
-		updateActors(actor_ids: number[], update: (actor: ActorData) => void) {
-			this.actor_data_mgr.updateActors(actor_ids, update)
-		},
-
-		refreshActorIds(actor_ids: number[] | undefined = undefined, filter: FilterType = FilterType.Normal) {
-			this.filter_type = filter
-			this.is_batch_select_all = false
-
-			this.actor_data_mgr.refreshActorIds(actor_ids)
-
-			this.filter_item.label = filter
-			this.filter_item.value = `${this.actor_data_mgr.actor_id_count} actors`
-		},
-
-		restoreFilter() {
-			const last_filter = this.last_filter_condition
-			if (last_filter) {
-				if (last_filter.desc_list.length == 0) {
-					last_filter.desc_list = this.formatFilterItems(last_filter)
-				}
-				this.editing_filter_condition.copy(last_filter)
-			}
-		}
-	},
-	watch: {},
-	async mounted() {
-		this.restoreFilter()
-		this.page_size = this.cached_page_size
-		this.page_index = this.cached_page_index
-
-		await this.getTagsFromServer()
-		await this.getGroupsFromServer()
-		await this.getDowningFromServer()
+// emits
+// stores/routers
+const actorTagStore = ActorTagStore()
+const actorFilterStore = ActorFilterStore()
+const actorGroupStore = ActorGroupStore()
+const favFolderStore = FavFolderStore()
+const badgeStore = BadgeStore()
+// props/models
+// variables
+const actorFilterRef = ref<InstanceType<typeof ActorFilter> | null>(null)
+const editing_filter_condition = ref<ActorFilterData>(new ActorFilterData())
+const page_filter_condition = ref<ActorFilterData>(new ActorFilterData())
+const filter_type = ref(FilterType.Normal)
+const filter_item = ref(new FilterItem("", ""))
+const actor_data_mgr = ref(new ActorDataMgr())
+const page_size = ref(12)
+const page_index = ref(1)
+const actor_count = ref(0)
+const download_limit = ref<DownloadLimitForm>(new DownloadLimitForm())
+const is_show_batch_op = ref(false)
+const is_batch_select_all = ref(false)
+const actors_dialog = ref(new ActorsDialog())
+const hover_type = ref(HoverType.none)
+// computed
+const is_filter_normal = computed(() => filter_type.value == FilterType.Normal)
+const can_refresh = computed(() => page_filter_condition.value.desc_list.length > 0)
+// methods
+function onHoverChange(type: HoverType) {
+	hover_type.value = type
+}
+function getNameFunc(store_type: EStoreType, group_id: number): string {
+	switch (store_type) {
+		case EStoreType.ActorGroup:
+			return actorGroupStore.getName(group_id)
+		case EStoreType.ActorTag:
+			return actorTagStore.getName(group_id)
+		case EStoreType.ActorFavFolder:
+			return favFolderStore.getName(group_id)
+		default:
+			throw new Error(`Unknown store type: ${store_type}`)
 	}
 }
+
+function formatFilterItems(page_filter: ActorFilterData): FilterItem[] {
+	const show_group = page_filter.group_id_list.length > 0 && page_filter.group_id_list.length < actorGroupStore.count
+	return page_filter.formatFilterItems(getNameFunc, show_group)
+}
+
+async function handleSizeChange(val: number) {
+	page_size.value = val
+	actorFilterStore.page_size = val
+	page_index.value = 1
+	await onActorPageChange()
+}
+
+async function onActorPageChange() {
+	actorFilterStore.page_index = page_index.value
+	const [ok, actor_ids] = await getActorIds(page_filter_condition.value, page_size.value, (page_index.value - 1) * page_size.value)
+	if (ok) {
+		refreshActorIds(actor_ids)
+		await refreshDownloadingInfos()
+	} else {
+		refreshActorIds()
+	}
+}
+async function onFilterSubmit() {
+	// extra actions to filter
+	editing_filter_condition.value.simplifySortItems()
+	// create desc_list before saving to store
+	editing_filter_condition.value.desc_list = formatFilterItems(editing_filter_condition.value)
+	actorFilterStore.saveFilter(editing_filter_condition.value)
+	page_filter_condition.value.copy(editing_filter_condition.value)
+
+	// on filter changed
+	await onPageFilterChange(true)
+}
+async function onPageFilterChange(clear: boolean = false) {
+	if (clear) {
+		refreshActorIds()
+		actor_count.value = 0
+		page_index.value = 1
+	}
+	const [ok, count] = await getActorCount(page_filter_condition.value)
+	if (ok) {
+		actor_count.value = count
+		if (!clear) {
+			page_index.value = getCachedPageIndex()
+		}
+		await onActorPageChange()
+	}
+}
+function getCachedPageIndex(): number {
+	let cached_page_index = actorFilterStore.page_index
+
+	let max_page_count = Math.ceil(actor_count.value / page_size.value)
+	if (cached_page_index > max_page_count) {
+		cached_page_index = max_page_count
+	}
+
+	if (cached_page_index < 1) {
+		cached_page_index = 1
+	}
+
+	return cached_page_index
+}
+async function refreshPage() {
+	await onPageFilterChange()
+}
+async function onFilterBack() {
+	await onPageFilterChange()
+}
+function onActorChange(actor_id: number, refresh: ECardRefresh) {
+	if (refresh == ECardRefresh.Group) {
+		actorFilterRef.value?.refreshGroupCount()
+	}
+}
+async function onActorFriendClick(actor_data: ActorElement) {
+	const [ok, actor_ids] = await getLinkedActorIds(actor_data.data.actor_id)
+	if (ok) {
+		refreshActorIds(actor_ids as number[], FilterType.Link)
+	} else {
+		refreshActorIds()
+	}
+}
+
+async function filterDownloadingActors() {
+	await refreshDownloadingInfos()
+	refreshActorIds(actorFilterStore.downing_actor_id_list, FilterType.Download)
+}
+
+function showDownloadingFileStats() {
+	actors_dialog.value.showDialog(EActorsDialog.downloading)
+}
+
+async function onActorSearch(actor_name: string) {
+	actors_dialog.value.closeDialog(EActorsDialog.downloading)
+
+	const filter_condition = new ActorFilterData()
+	filter_condition.setName(`${actor_name}||`)
+	// 只能赋值，不要修改内部属性
+	editing_filter_condition.value = filter_condition
+	await onFilterSubmit()
+}
+
+// region batch, select, lock
+function getSelectedActors() {
+	return actor_data_mgr.value.getSelected().map(actor => actor.data)
+}
+function getSelectedActorIds() {
+	return actor_data_mgr.value.getSelected().map(actor => actor.data.actor_id)
+}
+function onBatchOpChange(val: boolean) {
+	if (!val) {
+		is_batch_select_all.value = false
+		batchSelectAll(false)
+	}
+}
+function batchSelectAll(val: boolean) {
+	actor_data_mgr.value.batchSelectAll(val)
+}
+
+async function batchSetGroup(group_id: number) {
+	let actor_ids = getSelectedActorIds()
+	if (actor_ids.length == 0) {
+		logWarn(LogMessages.NoActorSelected())
+		return
+	}
+	let group_name = actorGroupStore.getName(group_id)
+	let [ok, actor_map] = await batchChangeActorGroup(actor_ids, group_id, group_name)
+	if (ok) {
+		refreshActors(actor_map as Map<number, ActorData>)
+		onActorChange(0, ECardRefresh.Group)
+	}
+}
+
+function lockActors(lock: boolean) {
+	actor_data_mgr.value.lockActors(lock)
+}
+
+// endregion
+
+// region link
+
+function onLinkClick() {
+	const link_actor_list = getSelectedActors()
+	if (link_actor_list.length < 2) {
+		logWarn(LogMessages.NotEnoughActorsToLink())
+		return
+	}
+	actors_dialog.value.showDialog(EActorsDialog.link, undefined, link_actor_list)
+}
+
+function onLinkPreviewClose() {
+	actors_dialog.value.closeDialog(EActorsDialog.link)
+}
+
+async function onLinkPreviewSubmit(score: number, remark: string, tag_list: number[]) {
+	const actor_ids = actors_dialog.value.selected_actors.map(actor => actor.actor_id)
+	const [ok, actor_map] = await linkSameActors(actor_ids, score, remark, tag_list)
+	if (ok) {
+		logInfo(LogMessages.LinkActors(actor_ids.length))
+		actors_dialog.value.closeDialog(EActorsDialog.link)
+		refreshActors(actor_map as Map<number, ActorData>)
+	}
+}
+
+async function unlinkActors() {
+	let actor_ids = getSelectedActorIds()
+	if (actor_ids.length == 0) {
+		logWarn(LogMessages.NoActorSelected())
+		return
+	}
+
+	const [ok, actor_map] = await unlinkSameActors(actor_ids)
+	if (ok) {
+		logInfo(LogMessages.UnlinkActors(actor_ids.length))
+		refreshActors(actor_map as Map<number, ActorData>)
+	}
+}
+
+// endregion
+
+// region download
+
+function showDownloadLimit(actor_ids: number[]) {
+	actors_dialog.value.showDialog(EActorsDialog.download, actor_ids, undefined)
+}
+
+function singleShowDownload(actor_data: ActorElement) {
+	showDownloadLimit([actor_data.data.actor_id])
+}
+
+function batchShowDownload() {
+	let actor_ids = getSelectedActorIds()
+	if (actor_ids.length == 0) {
+		logWarn(LogMessages.NoActorSelected())
+		return
+	}
+	showDownloadLimit(actor_ids)
+}
+
+async function onSubmitDownload() {
+	let [ok, _] = await downloadByActorIds(download_limit.value, actors_dialog.value.selected_actor_ids)
+	onDownloadClose()
+	if (ok) {
+		await refreshDownloadingInfos(true)
+	}
+}
+
+async function toFixPosts() {
+	let actor_ids = getSelectedActorIds()
+	const [ok, _] = await fixPosts(actor_ids)
+	if (ok) {
+		await refreshDownloadingInfos(true)
+	}
+}
+
+async function toFixRes() {
+	let actor_ids = getSelectedActorIds()
+	const [ok, _] = await fixRes(actor_ids, format_date(new Date()))
+	if (ok) {
+		await refreshDownloadingInfos(true)
+	}
+}
+
+
+async function refreshDownloadingInfos(show_msg: boolean = false) {
+	await badgeStore.fetchTaskCount()
+	await actorFilterStore.getDowningFromServer()
+	if (show_msg) {
+		logInfo(LogMessages.TaskStart())
+	}
+}
+
+function onDownloadClose() {
+	actors_dialog.value.closeDialog(EActorsDialog.download)
+}
+
+// endregion
+
+//region folder
+
+function batchShowFolderAdd() {
+	let actor_ids = getSelectedActorIds()
+	if (actor_ids.length == 0) {
+		logWarn(LogMessages.NoActorSelected())
+		return
+	}
+	actors_dialog.value.showDialog(EActorsDialog.folder_add, actor_ids, undefined)
+}
+function batchShowFolderRemove() {
+	let actor_ids = getSelectedActorIds()
+	if (actor_ids.length == 0) {
+		logWarn(LogMessages.NoActorSelected())
+		return
+	}
+	actors_dialog.value.showDialog(EActorsDialog.folder_remove, actor_ids, undefined)
+}
+
+async function onFolderAddSubmit(folder_id: number) {
+	const [ok, _] = await batchAddActorToFolder(folder_id, actors_dialog.value.selected_actor_ids)
+	if (ok) {
+		updateActors(actors_dialog.value.selected_actor_ids, actor => actor.addToFolder(folder_id))
+		actors_dialog.value.closeDialog(EActorsDialog.folder_add)
+	}
+}
+
+async function onFolderRemoveSubmit(folder_id: number) {
+	const [ok, _] = await batchDelActorFromFolder(folder_id, actors_dialog.value.selected_actor_ids)
+	if (ok) {
+		updateActors(actors_dialog.value.selected_actor_ids, actor => actor.removeFromFolder(folder_id))
+		actors_dialog.value.closeDialog(EActorsDialog.folder_remove)
+	}
+}
+
+//endregion
+
+function refreshActors(actor_map: Map<number, ActorData>) {
+	actor_data_mgr.value.refreshActors(actor_map)
+}
+
+function updateActors(actor_ids: number[], update: (actor: ActorData) => void) {
+	actor_data_mgr.value.updateActors(actor_ids, update)
+}
+
+function refreshActorIds(actor_ids: number[] | undefined = undefined, filter: FilterType = FilterType.Normal) {
+	filter_type.value = filter
+	is_batch_select_all.value = false
+
+	actor_data_mgr.value.refreshActorIds(actor_ids)
+
+	filter_item.value.label = filter
+	filter_item.value.value = `${actor_data_mgr.value.actor_id_count} actors`
+}
+
+function restoreFilter() {
+	const last_filter = actorFilterStore.last_filter
+	if (last_filter) {
+		editing_filter_condition.value = last_filter.clone()
+	}
+}
+
+// lifecycle
+onMounted(async () => {
+	restoreFilter()
+	page_size.value = actorFilterStore.page_size
+	page_index.value = actorFilterStore.page_index
+
+	await actorTagStore.getFromServer()
+	await actorGroupStore.getFromServer()
+	await refreshDownloadingInfos()
+})
 
 </script>
 
@@ -564,6 +600,10 @@ export default {
 }
 
 .batch-op-button {
-	width: 100px;
+	width: 168px;
+}
+
+.batch-inner-button {
+	width: 80px;
 }
 </style>

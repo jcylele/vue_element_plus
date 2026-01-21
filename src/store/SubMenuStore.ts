@@ -1,24 +1,17 @@
-import {defineStore} from "pinia";
-import {MainMenu} from "../data/Enums";
+import { ref } from "vue";
+import { defineStore } from "pinia";
+import { MainMenu } from "../data/Enums";
 
+export const SubMenuStore = defineStore('SubMenuStore', () => {
+	const sub_menu_map = ref(new Map<MainMenu, string>())
 
-export const SubMenuStore = defineStore('SubMenuStore', {
-    state: () => ({
-        sub_menu_map: new Map<MainMenu, string>
-    }),
-    getters: {},
-    actions: {
-        set(main_menu: MainMenu, sub_menu: string) {
-            if (!this.sub_menu_map) {
-                this.sub_menu_map = new Map<MainMenu, string>()
-            }
-            this.sub_menu_map.set(main_menu, sub_menu)
-        },
-        get(main_menu: MainMenu): string {
-            if (!this.sub_menu_map) {
-                return null
-            }
-            return this.sub_menu_map.get(main_menu)
-        },
-    },
+	function set(main_menu: MainMenu, sub_menu: string) {
+		sub_menu_map.value.set(main_menu, sub_menu)
+	}
+
+	function get(main_menu: MainMenu): string {
+		return sub_menu_map.value.get(main_menu) || ''
+	}
+
+	return { set, get }
 })

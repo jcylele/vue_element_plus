@@ -1,5 +1,5 @@
 <template>
-	<div ref="dom_chart" style="width: 720px;height: 360px"></div>
+	<div ref="dom_chart" style="width: 720px;height: 300px"></div>
 </template>
 
 <script setup lang="ts">
@@ -12,7 +12,7 @@ import {
 } from "echarts/components";
 import { CanvasRenderer } from 'echarts/renderers'
 
-import { ref, markRaw, onMounted, onUnmounted } from "vue";
+import { ref, markRaw, onMounted, onUnmounted, nextTick } from "vue";
 import { IPostFetchTimeStats } from "../../data/SchemasOthers";
 import { formatCategoryAxis, formatGrid, formatLegend, formatTooltip, formatValueAxis } from "../../data/ChartUtil";
 import { getPostFetchTimeStats } from "../../ctrls/ActorCtrl";
@@ -39,13 +39,14 @@ const props = defineProps({
 async function refreshData() {
 	const [ok, post_fetch_time_stats] = await getPostFetchTimeStats(props.actor_id)
 	if (ok) {
-		console.log(post_fetch_time_stats)
+		// console.log(post_fetch_time_stats)
 		refreshChart(post_fetch_time_stats)
 	}
 }
 
-function formatSeriesItem(data: number[]) {
+function formatSeriesItem(name: string, data: number[]) {
 	return {
+		name: name,
 		type: 'bar',
 		barWidth: "80%",
 		barMaxWidth: 50,
@@ -64,24 +65,28 @@ function refreshChart(post_fetch_time_stats: IPostFetchTimeStats[]) {
 	}
 
 	const category_data = post_fetch_time_stats.map(stat => stat.stat_date)
-	const series_data: number[] = post_fetch_time_stats.map(stat => stat.post_count)
+	const with_video_series_item = formatSeriesItem('With Video', post_fetch_time_stats.map(stat => stat.with_video_count))
+	const no_video_series_item = formatSeriesItem('No Video', post_fetch_time_stats.map(stat => stat.post_count - stat.with_video_count))
 
 	const option = {
 		grid: formatGrid(true),
+		legend: formatLegend(),
 		tooltip: formatTooltip(),
 		xAxis: formatCategoryAxis(category_data, true),
 		yAxis: formatValueAxis(),
-		series: [formatSeriesItem(series_data)]
+		series: [no_video_series_item, with_video_series_item]
 	}
 
 	chart.value.setOption(option)
 }
 
 onMounted(() => {
-	if (dom_chart.value) {
-		chart.value = markRaw(echarts.init(dom_chart.value))
-	}
-	refreshData()
+	nextTick(() => {
+		if (dom_chart.value) {
+			chart.value = markRaw(echarts.init(dom_chart.value))
+		}
+		refreshData()
+	})
 })
 
 onUnmounted(() => {

@@ -1,7 +1,7 @@
 <template>
-	<el-space direction="vertical" alignment="start" fill>
+	<div class="fill-column">
 		<el-text tag="p" style="font-style: italic;">click to add/remove actor to/from folder</el-text>
-		<div v-for="folder in fav_folder_store.sorted_list" class="common-group-item group-selectable"
+		<div v-for="folder in fav_folder_store.sorted_list" class="common-group-item group-selectable small"
 			:class="{ 'group-selected': isSelected(folder.folder_id) }" @click="selectFolder(folder.folder_id)">
 			<span class="common-group-name">
 				{{ folder.folder_name }}
@@ -11,7 +11,7 @@
 				{{ folder.folder_desc }}
 			</p>
 		</div>
-	</el-space>
+	</div>
 </template>
 
 <script setup lang="ts">
@@ -42,4 +42,11 @@ function isSelected(folder_id: number) {
 // lifecycle
 </script>
 
-<style scoped></style>
+
+
+<style scoped>
+.common-group-item.small {
+	padding: 5px 5px;
+	gap: 3px;
+}
+</style>

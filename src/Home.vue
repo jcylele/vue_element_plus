@@ -2,7 +2,7 @@
 	<div class="root_div">
 		<el-container>
 			<el-header class="top_menu">
-				<el-space direction="horizontal" size="large">
+				<div class="left-row">
 					<el-menu mode="horizontal" :default-active="route.path" @select="onMenuItemSelect"
 						:ellipsis="false">
 						<el-menu-item index="/actors">Actors</el-menu-item>
@@ -37,8 +37,7 @@
 
 					<el-switch v-model="isDark" size="large" width="80px" active-text="Dark" inactive-text="Light"
 						inline-prompt />
-
-				</el-space>
+				</div>
 			</el-header>
 			<el-main style="margin-top: 50px">
 				<router-view></router-view>

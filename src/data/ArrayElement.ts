@@ -1,32 +1,28 @@
-import ActorData from "./ActorData";
+import { ActorData } from "./ActorData";
+import { BaseData } from "./BaseData";
 
-export class ActorElement {
-    private actor: ActorData
-    selected: boolean
+class ArrayElement<T extends BaseData> {
+	private _data: T
+	selected: boolean
 
-    constructor(actor: ActorData) {
-        this.data = actor
-        this.selected = false
-    }
+	constructor(data: T) {
+		this._data = data
+		this.selected = false
+	}
 
-    set data(actor: ActorData) {
-        this.actor = actor
-    }
+	get data() {
+		return this._data
+	}
 
-    get data() {
-        return this.actor
-    }
+	set data(data: T) {
+		this._data = data
+	}
 
-    get uuid() {
-        return this.actor.uuid
-    }
+	get uuid() {
+		return this._data.uuid
+	}
 }
 
+export class ActorElement extends ArrayElement<ActorData> {
 
-export function ToActorElements(actor_list: ActorData[]): ActorElement[] {
-    const ret: ActorElement[] = []
-    for (const actor of actor_list) {
-        ret.push(new ActorElement(actor))
-    }
-    return ret
 }

@@ -1,7 +1,7 @@
-import BaseData from "./BaseData";
+import { BaseData } from "./BaseData";
 import { GroupCondType } from "./Enums";
 
-export default class ActorGroupCond extends BaseData {
+export class ActorGroupCond extends BaseData {
     in_use: boolean
     cond_type: GroupCondType
     cond_param: number
@@ -37,6 +37,7 @@ export default class ActorGroupCond extends BaseData {
     public get is_switch(): boolean {
         return this.cond_type == GroupCondType.HasAnyTag
             || this.cond_type == GroupCondType.Linked
+			|| this.cond_type == GroupCondType.HasRemark
     }
 
     public get score_prefix() {
@@ -54,6 +55,8 @@ export default class ActorGroupCond extends BaseData {
                 return "No Tag"
             case GroupCondType.Linked:
                 return "Not Linked"
+			case GroupCondType.HasRemark:
+				return "No Remark"
         }
     }
 
@@ -63,6 +66,8 @@ export default class ActorGroupCond extends BaseData {
                 return "Has Tag"
             case GroupCondType.Linked:
                 return "Linked"
+			case GroupCondType.HasRemark:
+				return "Has Remark"
         }
     }
 
@@ -76,6 +81,8 @@ export default class ActorGroupCond extends BaseData {
                 return this.cond_param == 0 ? "no tag" : "has tag"
             case GroupCondType.Linked:
                 return this.cond_param == 0 ? "not linked" : "linked"
+			case GroupCondType.HasRemark:
+				return this.cond_param == 0 ? "no remark" : "has remark"
         }
     }
 }

@@ -1,10 +1,10 @@
 <template>
-	<el-space direction="vertical" alignment="flex-start">
-		<el-button type="primary" @click="is_choosing_tags = true">
+	<div class="left-column">
+		<el-button type="primary" size="large" @click="toChooseTag">
 			Choose Tags
 		</el-button>
 		<div ref="dom_chart" style="width: 1280px;height: 480px"></div>
-	</el-space>
+	</div>
 	<el-dialog v-model="is_choosing_tags" :title="actor.actor_name">
 		<ActorTagChooser :actor="actor" @submit="onSubmitTag" @cancel="onCancelTag" />
 	</el-dialog>
@@ -24,7 +24,7 @@ import { ref, markRaw, onMounted, onUnmounted } from "vue";
 import { ActorTagStore } from "../../store/ActorTagStore";
 import { getScoresByTag } from "../../ctrls/ChartCtrl";
 import { MAX_SCORE, Star_Colors } from "../../data/Consts";
-import ActorData from "../../data/ActorData";
+import { ActorData } from "../../data/ActorData";
 import ActorTagChooser from "../ActorTagChooser.vue";
 import { formatCategoryAxis, formatCommonTextStyle, formatGrid, formatLegend, formatTooltip, formatValueAxis } from '../../data/ChartUtil';
 import { logError } from '../../ctrls/FetchCtrl';
@@ -62,6 +62,10 @@ function formatSeriesItem(tag_name: string, data: number[]) {
 		},
 		data: data
 	}
+}
+
+function toChooseTag(){
+	is_choosing_tags.value = true
 }
 
 async function onSubmitTag(new_tag_list: number[]) {
