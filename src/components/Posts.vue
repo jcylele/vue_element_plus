@@ -36,8 +36,7 @@
 			<el-collapse-item v-for="actor_info in actor_post_list" :title="actor_info.actor_name"
 				:name="actor_info.actor_id">
 				<div class="left-column">
-					<div v-for="post_info in actor_post_dict.get(actor_info.actor_id)" class="left-column"
-						style="gap: 0;">
+					<div v-for="post_info in actor_post_dict.get(actor_info.actor_id)" class="left-column no-gap">
 						<div class="left-row">
 							<span class="post-id">
 								{{ post_info.data.post_id }}

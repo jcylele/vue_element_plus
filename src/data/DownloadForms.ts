@@ -2,9 +2,13 @@
  * DownloadForms is the forms for the download operations.
  */
 
-import { PostFilter, ResType } from "./Enums";
-import { mb_size } from "./DataUtil";
 import { BaseData } from "./BaseData";
+import { mb_size } from "./DataUtil";
+import { PostFilter, ResType } from "./Enums";
+
+export class BaseBatchActor {
+    actor_ids: number[]
+}
 
 export class ActorUrl {
 	actor_name: string
@@ -20,7 +24,7 @@ export class BaseDownloadForm {
 	download_limit: DownloadLimitForm
 }
 
-export class ActorIdDownloadForm extends BaseDownloadForm {
+export class SpecificDownloadForm extends BaseDownloadForm {
 	actor_ids: number[]
 }
 
@@ -36,8 +40,7 @@ export class UrlDownloadForm extends GroupDownloadForm {
 	urls: ActorUrl[]
 }
 
-export class FixVideoForm {
-    actor_ids: number[]
+export class FixVideoForm extends BaseBatchActor {
     end_date: string
 }
 

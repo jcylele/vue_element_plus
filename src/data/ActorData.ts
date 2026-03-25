@@ -1,10 +1,10 @@
-import { PostData } from "./PostData";
-import { ActorFileDetail } from "./FileInfo";
 import { ActorVideoInfo } from "./ActorVideoInfo";
 import { BaseData } from "./BaseData";
 import { ROOT_URL } from "./Consts";
-import { IActor } from "./Schemas";
+import { ActorFileDetail } from "./FileInfo";
 import { ActorGroupAbstract } from "./Interfaces";
+import { PostData } from "./PostData";
+import { IActor } from "./Schemas";
 
 
 export class ActorData extends BaseData {
@@ -104,18 +104,20 @@ export class ActorData extends BaseData {
 	}
 
 	get str_video_infos(): string {
-		let landscape_duration = 0
-		let portrait_duration = 0
+		let l_str = ""
+		let p_str = ""
 		for (const info of this.video_infos) {
 			if (info.is_landscape) {
-				landscape_duration += info.duration
+				if (info.file_count > 0) {
+					l_str = `${Math.floor(info.duration / 60)}M`
+				}
 			} else {
-				portrait_duration += info.duration
+				if (info.file_count > 0) {
+					p_str = `${Math.floor(info.duration / 60)}M`
+				}
 			}
 		}
-		landscape_duration = Math.floor(landscape_duration / 60)
-		portrait_duration = Math.floor(portrait_duration / 60)
-		return `${landscape_duration}m | ${portrait_duration}m`
+		return `${l_str} | ${p_str}`
 	}
 
 	constructor(json_data?: IActor) {

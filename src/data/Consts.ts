@@ -64,6 +64,7 @@ export const Sort_Groups: SortGroup[] = [
 		label: "Actor", options: [
 			{ label: "Score", value: SortType.Score, default_asc: false, full_label: "Score" },
 			{ label: "Group Time", value: SortType.GroupTime, default_asc: false, full_label: "Group Time" },
+			{ label: "Log Time", value: SortType.LogTime, default_asc: false, full_label: "Log Time" },
 			{ label: "Favorite Count", value: SortType.FavoriteCount, default_asc: false, full_label: "Favorite Count" }
 		]
 	},
@@ -320,7 +321,8 @@ export const Setting_Item_Configs: SettingItemConfig[] = [
 export const Confirm_Ops: Record<EConfirmOp, ConfirmOp> =
 {
 	[EConfirmOp.ClearActorFolder]: { title: "Clear Actor Folder", content: "clear all files of actor, make sure you have watched them" },
-	[EConfirmOp.ResetPosts]: { title: "Reset Posts", content: "reset  last post id of actor, so to download old posts" },
+	[EConfirmOp.ResetResStates]: { title: "Reset Res States", content: "reset all deleted reses to initial state" },
+	[EConfirmOp.ResetLastPostId]: { title: "Reset Last Post Id", content: "reset last post id of actor, so to download older posts" },
 	[EConfirmOp.RemoveDownloading]: { title: "Remove Downloading", content: "remove downloading files below {0}%" },
 	[EConfirmOp.RemoveDownloadingAll]: { title: "Remove Downloading", content: "remove all downloading files of actor" },
 	[EConfirmOp.ClearGroupFolder]: { title: "Clear Group Folder", content: "clear all files of actors in this group, be careful" },
@@ -336,12 +338,13 @@ export const Task_Type_Descs: Record<TaskType, string> = {
 	[TaskType.Default]: "Default",
 	[TaskType.Specific]: "Specific Actor",
 	[TaskType.Resume]: "Resume Actor",
+	[TaskType.FixPost]: "Fix Posts of Actor",
+	[TaskType.FixRes]: "Fix Res of Actor",
+	[TaskType.Thumbnail]: "Thumbnail of Actor",
 	[TaskType.MaxSingleActor]: "Max Single Actor",
 	[TaskType.New]: "New Actors",
 	[TaskType.Url]: "Specific Urls",
 	[TaskType.Group]: "Actors in Group",
-	[TaskType.FixPost]: "Fix Posts of Actor",
-	[TaskType.FixRes]: "Fix Res of Actor",
 	[TaskType.Manual]: "Manual",
 }
 

@@ -3,37 +3,36 @@
 		:style="group_color_style">
 		<!-- actor avatar -->
 		<div class="avatar">
-			<el-tooltip v-if="actor.show_tooltip" placement="top" :offset="3" effect="light"
-				:popper-style="{ 'max-width': 'var(--me-remark-width)' }">
+			<el-tooltip v-if="actor.show_tooltip" placement="top" :offset="3" effect="light">
 				<template #content>
 					<div class="fill-column">
 						<div v-if="actor.in_fav_folder" class="left-row remark-color">
 							<svg-icon size="24px" name="star_filled" />
-							<span class="pop-remark">
+							<span class="pop-text">
 								{{ fav_fodlers_str }}
 							</span>
 						</div>
 						<div v-if="actor.remark" class="left-row top remark-color">
 							<svg-icon size="24px" name="remark" />
-							<span class="pop-remark multi-line-text">
+							<span class="pop-text pop-remark multi-line-text">
 								{{ actor.remark }}
 							</span>
 						</div>
 						<div v-if="actor.comment" class="left-row top comment-color">
 							<svg-icon size="24px" name="remark" />
-							<span class="pop-remark  multi-line-text">
+							<span class="pop-text  multi-line-text">
 								{{ actor.comment }}
 							</span>
 						</div>
 						<div v-for="post in actor.commented_posts" class="left-row top post-color">
 							<svg-icon size="24px" name="remark" />
-							<span class="pop-remark multi-line-text">
+							<span class="pop-text multi-line-text">
 								{{ post.comment }}
 							</span>
 						</div>
 						<div v-if="actor.show_video_infos" class="left-row">
 							<svg-icon size="24px" name="camera" />
-							<span class="pop-remark">
+							<span class="pop-text">
 								{{ actor.str_video_infos }}
 							</span>
 						</div>
@@ -47,10 +46,9 @@
 				{{ actor.actor_platform }}
 			</el-text>
 
-			<div v-if="actor.is_linked" class="avatar-friend-container center-column" style="gap: 0"
-				@click="findLinkedActor">
+			<div v-if="actor.is_linked" class="avatar-friend-container no-gap center-column" @click="findLinkedActor">
 				<svg-icon size="40px" name="avatar" :style="group_color_style" />
-				<div v-if="linked_group_ids.length > 1" class="center-row wrap" style="gap: 0;width: 40px;">
+				<div v-if="linked_group_ids.length > 1" class="center-row wrap no-gap" style="width: 40px;">
 					<svg-icon v-for="group_id in linked_group_ids" size="10px" name="circle"
 						:style="getGroupColorStyle(group_id)" />
 				</div>
@@ -61,7 +59,7 @@
 			<svg-icon v-if="show_select" size="40px" :name="actor_data.selected ? 'completed' : 'remove'"
 				class="avatar-select" @click="onSelectCLick" />
 
-			<div class="avatar-bottom-container center-row" style="gap: 0;">
+			<div class="avatar-bottom-container center-row no-gap">
 				<!-- actor remark -->
 				<svg-icon :name="actor.has_remark ? 'remark' : 'remark_empty'" @click="startEditRemark"
 					class="remark-icon" />
@@ -87,41 +85,45 @@
 			<el-popover trigger="click" placement="top" v-model:visible="is_show_op"
 				:popper-style="group_color_popper_style" :offset="6">
 				<template #reference>
-					<el-text class="actor_name_text hint-selectable" tag="a" :style="group_color_style">
+					<span class="actor_name_text hint-selectable" tag="a" :style="group_color_style">
 						{{ actor.actor_name }}
-					</el-text>
+					</span>
 				</template>
 				<template #default>
-					<el-space direction="vertical" alignment="center">
-						<el-text class="actor_name_text" :style="group_color_style">
-							{{ actor.actor_name }}
-						</el-text>
-						<el-space direction="horizontal">
+					<div class="center-column">
+						<div class="center-row wrap no-gap pop-name-line">
+							<span class="actor_name_text" :style="group_color_style">
+								{{ actor.actor_name }}
+							</span>
+							<span class="actor_name_text" :style="group_color_style">
+								({{ actor.actor_id }})
+							</span>
+						</div>
+						<div class="center-row">
 							<el-button class="pop-button" type="primary" @click="showDialog(EActorDialog.log)">
 								Show Logs
 							</el-button>
 							<el-button class="pop-button" type="primary" @click="gotoActorPage">
 								Go To Page
 							</el-button>
-						</el-space>
-						<el-space direction="horizontal" v-if="has_folder">
-							<el-button class="pop-button" type="warning" :disabled="!actor.has_last_post_id"
-								@click="resetPosts">
-								Reset Posts
-							</el-button>
+						</div>
+						<div class="center-row" v-if="has_folder">
 							<el-button class="pop-button" type="warning" @click="clearFolder">
 								Clear Folder
 							</el-button>
-						</el-space>
-						<el-space direction="horizontal" v-if="has_folder">
 							<el-button class="pop-button" type="success" @click="toDownloadFromOp" v-if="has_folder">
 								Download
 							</el-button>
+						</div>
+						<div class="center-row" v-if="has_folder">
 							<el-button class="pop-button" type="success" @click="openFolder" v-if="has_folder">
 								Open Folder
 							</el-button>
-						</el-space>
-					</el-space>
+							<el-button class="pop-button" type="success" @click="openThumbnailFolder" v-if="has_folder">
+								Thumbnail
+							</el-button>
+						</div>
+					</div>
 				</template>
 			</el-popover>
 		</div>
@@ -141,7 +143,7 @@
 			</div>
 
 			<!-- actor res info -->
-			<div class="center-column hint-selectable" style="gap: 0;" @click="showDialog(EActorDialog.file_info)">
+			<div class="center-column no-gap hint-selectable" @click="showDialog(EActorDialog.file_info)">
 				<div v-for="res_file_info in actor.file_info.res_info" class="center-row"
 					:style="{ 'color': res_file_info.res_state_color }">
 					<!-- <span v-for="i in res_file_info.col_count" class="res_info">
@@ -172,7 +174,7 @@
 			<el-tooltip v-if="actor.in_fav_folder" placement="top-start" :offset="3" effect="light">
 				<template #content>
 					<div class="center-column" style="gap: 2px;">
-						<span v-for="folder_id in actor.folder_ids" class="pop-remark remark-color">
+						<span v-for="folder_id in actor.folder_ids" class="pop-text remark-color">
 							{{ favFolderStore.getName(folder_id) }}
 						</span>
 					</div>
@@ -260,41 +262,41 @@
 <script setup lang="ts">
 // imports
 import { computed, onMounted, ref } from "vue";
-import { ActorData } from "../data/ActorData";
 import {
 	ChangeActorTag,
+	changeActorComment,
 	changeActorGroup,
-	openActorFolder,
 	changeActorRemark,
-	getActorFileInfo,
 	changeActorScore,
 	clearActorFolder,
-	resetActorPosts,
+	getActorFileInfo,
+	getActorVideoInfo,
 	getLinkedActorGroupIds,
-	changeActorComment,
-	getActorVideoInfo
+	openActorFolder,
+	openActorThumbnailFolder
 } from "../ctrls/ActorCtrl";
-import { ActorTagStore } from "../store/ActorTagStore";
-import SvgIcon from "./SvgIcon/index.vue";
-import ActorTagChooser from "./ActorTagChooser.vue";
-import RemarkEditor from "./RemarkEditor.vue";
-import Posts from "./Posts.vue";
-import ActorLogs from "./ActorLogs.vue";
-import { ActorElement } from "../data/ArrayElement";
-import { ActorGroupStore } from "../store/ActorGroupStore";
-import { Popper_Styles } from "../data/Consts";
 import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
-import { ActorFilterStore } from "../store/ActorFilterStore";
-import { ActorFileDetail } from "../data/FileInfo";
-import { ActorCardDialog, EActorDialog } from "../data/ActorCardDialog";
-import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
-import { FavFolderStore } from "../store/FavFolderStore";
 import { addActorToFolder, delActorFromFolder } from "../ctrls/FolderCtrl";
-import FavFolderSelector from "./FavFolderSelector.vue";
+import { ActorCardDialog, EActorDialog } from "../data/ActorCardDialog";
+import { ActorData } from "../data/ActorData";
+import { ActorElement } from "../data/ArrayElement";
+import { Popper_Styles } from "../data/Consts";
 import { ECardRefresh, EConfirmOp } from "../data/Enums";
-import MyRate from "./MyRate.vue";
+import { ActorFileDetail } from "../data/FileInfo";
 import { LogMessages } from "../data/Messages";
+import { ActorFilterStore } from "../store/ActorFilterStore";
+import { ActorGroupStore } from "../store/ActorGroupStore";
+import { ActorTagStore } from "../store/ActorTagStore";
+import { FavFolderStore } from "../store/FavFolderStore";
+import ActorFileInfoTabs from "./ActorFileInfoTabs.vue";
+import ActorLogs from "./ActorLogs.vue";
 import ActorPostInfoTabs from "./ActorPostInfoTabs.vue";
+import ActorTagChooser from "./ActorTagChooser.vue";
+import FavFolderSelector from "./FavFolderSelector.vue";
+import MyRate from "./MyRate.vue";
+import Posts from "./Posts.vue";
+import RemarkEditor from "./RemarkEditor.vue";
+import SvgIcon from "./SvgIcon/index.vue";
 
 // emits
 const emit = defineEmits(['refresh', 'download', 'friend', 'update'])
@@ -391,6 +393,12 @@ function gotoActorPage() {
 	hideOp()
 	window.open(actor.value.href, '_blank', 'noreferrer');
 }
+
+function openThumbnailFolder() {
+	hideOp()
+	openActorThumbnailFolder(actor_id.value)
+}
+
 function openFolder() {
 	hideOp()
 	openActorFolder(actor_id.value)
@@ -402,17 +410,6 @@ async function clearFolder() {
 		if (ok) {
 			setFileInfo(file_info)
 			logInfo(LogMessages.ClearFolder())
-		}
-	})
-}
-async function resetPosts() {
-	hideOp()
-	await confirmOp(EConfirmOp.ResetPosts, async () => {
-		const [ok, file_info] = await resetActorPosts(actor_id.value)
-		if (ok) {
-			actor.value.has_last_post_id = false
-			setFileInfo(file_info)
-			logInfo(LogMessages.ResetPosts())
 		}
 	})
 }
@@ -562,8 +559,12 @@ onMounted(() => {
 </script>
 
 <style scoped>
-.pop-remark {
+.pop-text {
 	font-size: var(--el-font-size-large);
+}
+
+.pop-remark {
+	max-width: var(--me-remark-inner-width);
 }
 
 .actor_name_text {
@@ -693,8 +694,12 @@ onMounted(() => {
 	left: var(--avatar-margin);
 }
 
+.pop-name-line {
+	max-width: 290px;
+}
+
 .pop-button {
-	width: 126px;
+	width: 140px;
 	height: 32px;
 }
 

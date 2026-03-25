@@ -19,6 +19,7 @@ export enum TaskType {
 	Resume,
 	FixPost,
 	FixRes,
+	Thumbnail,
 
 	MaxSingleActor = 100,  // above are single actor tasks, below are multiple actor tasks
 
@@ -32,6 +33,7 @@ export enum SortType {
 	Default,
 	Score,
 	GroupTime,
+	LogTime,
 	TotalPostCount,
 	CompletedPostCount,
 	InitFileSize,
@@ -180,7 +182,8 @@ export enum EOtherOp {
 
 export enum EConfirmOp {
 	ClearActorFolder,
-	ResetPosts,
+	ResetResStates,
+	ResetLastPostId,
 	RemoveDownloading,
 	RemoveDownloadingAll,
 	ClearGroupFolder,

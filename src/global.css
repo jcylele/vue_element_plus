@@ -30,6 +30,8 @@
 	--me-comment-color: pink;
 	--me-post-color: #81D8D0;
 	--me-remark-width: 500px;
+	--me-remark-inner-width: 478px;
+
 	--me-common-gap: 8px;
 
 	/* 默认/正文 */
@@ -309,10 +311,6 @@ span {
 	align-items: end;
 }
 
-.el-button+.el-button {
-	margin-left: 0;
-}
-
 .split-row {
 	display: flex;
 	justify-content: space-between;
@@ -351,6 +349,14 @@ span {
 
 .fill-column.fit-width {
 	width: fit-content;
+}
+
+.no-gap {
+	gap: 0;
+}
+
+.el-button+.el-button {
+	margin-left: 0;
 }
 
 .bottom-line {

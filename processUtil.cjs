@@ -1,7 +1,7 @@
 const fs = require("fs")
 const path = require('path');
 
-const ProjRoot = "D:\\Projects\\Python Projects\\PythonCrawler\\";
+const ProjRoot = "C:\\Users\\wangle\\Documents\\Projects\\Python Projects\\PythonCrawler\\";
 const ProjAssets = ProjRoot + "assets\\";
 const DistAssets = ProjRoot + "dist\\web\\_internal\\assets\\";
 const DeployAssets = "D:\\OnlyFans\\__app\\_internal\\assets\\";

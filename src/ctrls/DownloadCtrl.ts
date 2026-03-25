@@ -1,13 +1,15 @@
-import { fetchDelete, fetchGet, fetchPatch, fetchPost } from "./FetchCtrl";
 import {
 	ActorUrl,
-	GroupDownloadForm,
+	BaseBatchActor,
 	DownloadLimitForm,
-	ActorIdDownloadForm,
-	UrlDownloadForm, NewDownloadForm,
-	FixVideoForm
+	FixVideoForm,
+	GroupDownloadForm,
+	NewDownloadForm,
+	SpecificDownloadForm,
+	UrlDownloadForm
 } from "../data/DownloadForms";
 import { TaskData } from "../data/TaskData";
+import { fetchDelete, fetchGet, fetchPost } from "./FetchCtrl";
 
 const baseUrl = `/download`
 
@@ -31,7 +33,7 @@ export async function downloadByGroup(download_limit: DownloadLimitForm, group_i
 
 export async function downloadByActorIds(download_limit: DownloadLimitForm, actor_ids: number[]) {
 	let url = `${baseUrl}/specific`
-	const nameDownForm = new ActorIdDownloadForm()
+	const nameDownForm = new SpecificDownloadForm()
 	nameDownForm.download_limit = download_limit
 	nameDownForm.actor_ids = actor_ids
 	return await fetchPost(url, nameDownForm)
@@ -50,13 +52,14 @@ export async function downloadByUrls(download_limit: DownloadLimitForm, group_id
 export async function resumeActorDownload(actor_id: number) {
 	let url = `${baseUrl}/resume/${actor_id}`
 
-	return await fetchPatch(url)
+	return await fetchPost(url)
 }
 
 export async function fixPosts(actor_ids: number[]) {
 	let url = `${baseUrl}/fix_posts`
-
-	return await fetchPost(url, actor_ids)
+	let fixForm = new BaseBatchActor()
+	fixForm.actor_ids = actor_ids
+	return await fetchPost(url, fixForm)
 }
 
 export async function fixRes(actor_ids: number[], end_date: string) {
@@ -65,6 +68,13 @@ export async function fixRes(actor_ids: number[], end_date: string) {
 	fixForm.actor_ids = actor_ids
 	fixForm.end_date = end_date
 	return await fetchPost(url, fixForm)
+}
+
+export async function downloadThumbnail(actor_ids: number[]) {
+	let url = `${baseUrl}/thumbnail`
+	let form = new BaseBatchActor()
+	form.actor_ids = actor_ids
+	return await fetchPost(url, form)
 }
 
 export async function manualDownload(download_limit: DownloadLimitForm, group_id: number) {

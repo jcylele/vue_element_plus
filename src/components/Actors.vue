@@ -118,6 +118,9 @@
 						<el-button type="primary" size="large" @click="batchShowDownload">
 							Download
 						</el-button>
+						<el-button type="primary" size="large" @click="toThumbnail">
+							Thumbnail
+						</el-button>
 						<el-button type="warning" size="large" @click="toFixPosts">
 							Scan All Posts
 						</el-button>
@@ -176,10 +179,6 @@
 <script setup lang="ts">
 // imports
 import { computed, onMounted, ref } from "vue";
-import { ActorFilterData } from "../data/ActorFilterData";
-import ActorFilter from "./ActorFilter.vue";
-import ActorCard from "./ActorCard.vue";
-import { ActorElement } from "../data/ArrayElement";
 import {
 	batchChangeActorGroup,
 	getActorCount,
@@ -187,27 +186,31 @@ import {
 	getLinkedActorIds,
 	linkSameActors, unlinkSameActors
 } from "../ctrls/ActorCtrl";
-import { ActorTagStore } from "../store/ActorTagStore";
-import { ActorFilterStore } from "../store/ActorFilterStore";
-import { DownloadLimitForm } from "../data/DownloadForms";
-import { downloadByActorIds, fixPosts, fixRes } from "../ctrls/DownloadCtrl";
-import DownloadLimit from "./DownloadLimit.vue";
-import { ActorGroupStore } from "../store/ActorGroupStore";
+import { downloadByActorIds, downloadThumbnail, fixPosts, fixRes } from "../ctrls/DownloadCtrl";
 import { logInfo, logWarn } from "../ctrls/FetchCtrl";
-import { ActorData } from "../data/ActorData";
-import { BadgeStore } from "../store/BadgeStore";
-import ActorLinkPreview from "./ActorLinkPreview.vue";
-import ActorFilterItem from "./ActorFilterItem.vue";
-import { FilterItem } from "../data/WebData";
-import { ECardRefresh, EStoreType } from "../data/Enums";
-import { FavFolderStore } from "../store/FavFolderStore";
-import { ActorsDialog, EActorsDialog } from "../data/ActorsDialog";
-import FavFolderSelector from "./FavFolderSelector.vue";
-import DownloadingStats from "./DownloadingStats.vue";
 import { batchAddActorToFolder, batchDelActorFromFolder } from "../ctrls/FolderCtrl";
-import { LogMessages } from "../data/Messages";
+import { ActorData } from "../data/ActorData";
 import { ActorDataMgr } from "../data/ActorDataMgr";
+import { ActorFilterData } from "../data/ActorFilterData";
+import { ActorsDialog, EActorsDialog } from "../data/ActorsDialog";
+import { ActorElement } from "../data/ArrayElement";
 import { format_date } from "../data/DataUtil";
+import { DownloadLimitForm } from "../data/DownloadForms";
+import { ECardRefresh, EStoreType } from "../data/Enums";
+import { LogMessages } from "../data/Messages";
+import { FilterItem } from "../data/WebData";
+import { ActorFilterStore } from "../store/ActorFilterStore";
+import { ActorGroupStore } from "../store/ActorGroupStore";
+import { ActorTagStore } from "../store/ActorTagStore";
+import { BadgeStore } from "../store/BadgeStore";
+import { FavFolderStore } from "../store/FavFolderStore";
+import ActorCard from "./ActorCard.vue";
+import ActorFilter from "./ActorFilter.vue";
+import ActorFilterItem from "./ActorFilterItem.vue";
+import ActorLinkPreview from "./ActorLinkPreview.vue";
+import DownloadingStats from "./DownloadingStats.vue";
+import DownloadLimit from "./DownloadLimit.vue";
+import FavFolderSelector from "./FavFolderSelector.vue";
 
 enum FilterType {
 	Normal = "Normal",
@@ -466,6 +469,14 @@ function batchShowDownload() {
 async function onSubmitDownload() {
 	let [ok, _] = await downloadByActorIds(download_limit.value, actors_dialog.value.selected_actor_ids)
 	onDownloadClose()
+	if (ok) {
+		await refreshDownloadingInfos(true)
+	}
+}
+
+async function toThumbnail() {
+	let actor_ids = getSelectedActorIds()
+	const [ok, _] = await downloadThumbnail(actor_ids)
 	if (ok) {
 		await refreshDownloadingInfos(true)
 	}

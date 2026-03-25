@@ -54,8 +54,8 @@ export const LogMessages = {
 	ClearFolder(): string {
 		return "clear folder succeed"
 	},
-	ResetPosts(): string {
-		return "reset posts succeed"
+	ResetResStates(): string {
+		return "reset res states succeed"
 	},
 	AddActorToFolder(): string {
 		return "add actor to folder succeed"
@@ -86,6 +86,9 @@ export const LogMessages = {
 	},
 	TaskStart(): string {
 		return "download task started"
+	},
+	ResetLastPostId(): string {
+		return "reset last post id succeed"
 	},
 	TaskStop(): string {
 		return "stop task succeed"

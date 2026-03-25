@@ -146,9 +146,19 @@ export async function openActorFolder(actor_id: number) {
 	return await fetchGet(url)
 }
 
-export async function resetActorPosts(actor_id: number) {
-	const url = `${baseUrl}/${actor_id}/reset_posts`;
+export async function openActorThumbnailFolder(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/open_thumbnail_folder`;
+	return await fetchGet(url)
+}
+
+export async function resetActorResStates(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/reset_res_states`;
 	return await fetchPatch<ActorFileDetail>(url, undefined, ActorFileDetail, false)
+}
+
+export async function resetLastPostId(actor_id: number) {
+	const url = `${baseUrl}/${actor_id}/reset_last_post_id`;
+	return await fetchPatch(url)
 }
 
 export async function clearActorFolder(actor_id: number) {

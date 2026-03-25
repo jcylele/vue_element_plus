@@ -59,7 +59,7 @@
 			</span>
 		</div>
 		<div class="left-column">
-			<div v-for="post in actor.commented_posts" class="left-column" style="gap: 0;">
+			<div v-for="post in actor.commented_posts" class="left-column no-gap">
 				<span class="post-id">
 					{{ post.post_id }}
 				</span>
@@ -73,7 +73,7 @@
 
 <script setup lang="ts">
 // imports
-import { onMounted, ref, watch } from "vue";
+import { onMounted, ref } from "vue";
 import { getComments } from "../ctrls/ActorCtrl";
 import { ActorData } from "../data/ActorData";
 import { DescEditInfo, EditType } from "../data/DescEditInfo";
@@ -142,10 +142,12 @@ onMounted(() => {
 <style scoped>
 .remark-root {
 	--this-color: var(--me-remark-color);
+	width: var(--me-remark-width);
 }
 
 .comment-root {
 	--this-color: var(--me-comment-color);
+	width: var(--me-remark-width);
 }
 
 .this-color {
@@ -166,6 +168,7 @@ onMounted(() => {
 	background-color: var(--el-input-bg-color, var(--el-fill-color-blank));
 	width: var(--me-remark-width);
 	min-height: 34px;
+	line-height: 30px;
 	/* 34px = 24px + 2*5px */
 }
 
