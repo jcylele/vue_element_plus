@@ -183,7 +183,6 @@ export enum EOtherOp {
 export enum EConfirmOp {
 	ClearActorFolder,
 	ResetResStates,
-	ResetLastPostId,
 	RemoveDownloading,
 	RemoveDownloadingAll,
 	ClearGroupFolder,

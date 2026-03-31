@@ -1,9 +1,9 @@
+import { BaseData } from "./BaseData";
+import { Task_Type_Descs } from "./Consts";
+import { format_file_size } from "./DataUtil";
 import { DownloadLimitForm } from "./DownloadForms";
 import { PostFilter, ResType, TaskType } from "./Enums";
-import { format_file_size } from "./DataUtil";
-import { BaseData } from "./BaseData";
 import { IActorAbstract, ICommonCount, IDownloadLimit, IDownloadTask, IWorkerProcessStats } from "./SchemasOthers";
-import { Task_Type_Descs } from "./Consts";
 
 export class DownloadProgress extends BaseData {
 	actor_count: number
@@ -44,6 +44,7 @@ export class DownloadLimit extends BaseData {
 				desc_list.push(`${this.progress.post_count} posts`)
 			}
 		}
+
 		// file count / res type
 		let str_desc = ResType[this.limit.res_type]
 		if (this.limit.file_count > 0) {
@@ -53,9 +54,20 @@ export class DownloadLimit extends BaseData {
 		}
 		desc_list.push(str_desc)
 
-		// single file size
-		if (this.limit.single_file_size > 0) {
-			desc_list.push(`single ${format_file_size(this.limit.single_file_size)}`)
+		// single file size range
+		const minVal = this.limit.single_file_size_min
+		const maxVal = this.limit.single_file_size_max
+		if (minVal > 0 || maxVal > 0) {
+			const minSize = minVal > 0 ? format_file_size(minVal) : ""
+			const maxSize = maxVal > 0 ? format_file_size(maxVal) : ""
+
+			if (minVal > 0 && maxVal > 0) {
+				desc_list.push(`${minSize} < single < ${maxSize}`)
+			} else if (minVal === 0 && maxVal > 0) {
+				desc_list.push(`single < ${maxSize}`)
+			} else if (minVal > 0 && maxVal === 0) {
+				desc_list.push(`single > ${minSize}`)
+			}
 		}
 
 		// total file size

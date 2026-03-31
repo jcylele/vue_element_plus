@@ -322,7 +322,6 @@ export const Confirm_Ops: Record<EConfirmOp, ConfirmOp> =
 {
 	[EConfirmOp.ClearActorFolder]: { title: "Clear Actor Folder", content: "clear all files of actor, make sure you have watched them" },
 	[EConfirmOp.ResetResStates]: { title: "Reset Res States", content: "reset all deleted reses to initial state" },
-	[EConfirmOp.ResetLastPostId]: { title: "Reset Last Post Id", content: "reset last post id of actor, so to download older posts" },
 	[EConfirmOp.RemoveDownloading]: { title: "Remove Downloading", content: "remove downloading files below {0}%" },
 	[EConfirmOp.RemoveDownloadingAll]: { title: "Remove Downloading", content: "remove all downloading files of actor" },
 	[EConfirmOp.ClearGroupFolder]: { title: "Clear Group Folder", content: "clear all files of actors in this group, be careful" },

@@ -16,7 +16,6 @@ export class ActorData extends BaseData {
 	icon: string
 	href: string
 	is_linked: boolean
-	has_last_post_id: boolean
 	comment: string
 	remark: string
 	commented_posts: PostData[]

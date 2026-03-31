@@ -1,72 +1,53 @@
 <template>
-	<div v-if="show_percent" class="center-column">
-		<el-table :data="percent_files_stats" border>
-			<el-table-column prop="file_path" label="Stats" min-width="100" />
+	<div class="fill-column">
+		<el-table v-if="show_percent" :data="percent_files_stats" show-summary
+			:summary-method="downloadingSummaryMethod" style="height: 360px;" border>
+			<el-table-column prop="file_path" label="Stats" min-width="200" />
 			<el-table-column prop="file_count" label="File Count" min-width="100" />
 			<el-table-column prop="file_size" label="Cur Size" :formatter="formatFileSize" min-width="100" />
 			<el-table-column prop="res_size" label="Full Size" :formatter="formatFileSize" min-width="100" />
 			<el-table-column prop="percent" label="Percent" :formatter="formatPercent" min-width="100" />
 		</el-table>
-		<div v-if="downloading_table_source.count > 0" class="split-row">
-			<el-button @click="switchShow" plain>
-				<div class="center-row">
-					<svg-icon size="24px" name="switch" />
-					<span>To File List</span>
-				</div>
-			</el-button>
-			<div class="center-row">
-				<el-input-number v-model="threshold_percent" min="0" max="100" step="10" step-strictly>
-					<template #suffix>
-						<span>%</span>
-					</template>
-				</el-input-number>
-				<el-button type="warning" @click="removeDownloading">
-					Remove Below Files
-				</el-button>
-			</div>
-		</div>
-	</div>
-	<div v-else class="center-column">
-		<el-table :data="downloading_table_source.list" :default-sort="{ prop: 'percent', order: 'descending' }"
+		<el-table v-else :data="downloading_table_source.list" :default-sort="{ prop: 'percent', order: 'descending' }"
 			show-summary :summary-method="downloadingSummaryMethod" :empty-text="downloading_table_source.empty_text"
-			max-height="360" scrollbar-always-on border>
+			style="height: 360px;" scrollbar-always-on border>
 			<el-table-column prop="file_path" label="File Name" min-width="300" />
 			<el-table-column prop="file_size" label="Cur Size" sortable :formatter="formatFileSize" min-width="100" />
 			<el-table-column prop="res_size" label="Full Size" sortable :formatter="formatFileSize" min-width="100" />
 			<el-table-column prop="percent" label="Percent" sortable :formatter="formatPercent" min-width="100" />
 		</el-table>
 		<div v-if="downloading_table_source.count > 0" class="split-row">
-			<el-button @click="switchShow" plain>
-				<div class="center-row">
-					<svg-icon size="24px" name="switch" />
-					<span>To Percent View</span>
-				</div>
-			</el-button>
 			<div class="center-row">
+				<svg-icon @click="switchShow" size="24px" name="switch" style="margin: 0 10px;" />
 				<el-button type="warning" @click="removeDownloading">
-					Remove All Files
+					{{ show_percent ? "Remove Files Below" : "Remove All Files" }}
 				</el-button>
-				<el-button type="success" @click="resumeDownloading">
-					Resume Downloading
-				</el-button>
+				<el-input-number v-if="show_percent" v-model="threshold_percent" :min="0" :max="100" :step="10"
+					step-strictly controls-position="right" style="width: 120px;">
+					<template #suffix>
+						<span>%</span>
+					</template>
+				</el-input-number>
 			</div>
+			<el-button type="success" @click="resumeDownloading">
+				Resume Downloading
+			</el-button>
 		</div>
 	</div>
-
 </template>
 <script setup lang="ts">
 // imports
 import { computed, onMounted, ref } from "vue";
-import { TableSource } from "../data/TableSource";
-import { ResFileInfo } from "../data/ResFileInfo";
 import { getActorDownloadingFiles, removeDownloadingFiles } from "../ctrls/ActorCtrl";
+import { resumeActorDownload } from "../ctrls/DownloadCtrl";
 import { confirmOp, logInfo } from "../ctrls/FetchCtrl";
+import { format_file_size, format_percent } from "../data/DataUtil";
 import { EConfirmOp } from "../data/Enums";
 import { LogMessages } from "../data/Messages";
-import { format_file_size, format_percent } from "../data/DataUtil";
-import { resumeActorDownload } from "../ctrls/DownloadCtrl";
-import { BadgeStore } from "../store/BadgeStore";
+import { ResFileInfo } from "../data/ResFileInfo";
+import { TableSource } from "../data/TableSource";
 import { ActorFilterStore } from "../store/ActorFilterStore";
+import { BadgeStore } from "../store/BadgeStore";
 
 // emits
 // stores/routers

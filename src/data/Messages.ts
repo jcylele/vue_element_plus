@@ -87,9 +87,6 @@ export const LogMessages = {
 	TaskStart(): string {
 		return "download task started"
 	},
-	ResetLastPostId(): string {
-		return "reset last post id succeed"
-	},
 	TaskStop(): string {
 		return "stop task succeed"
 	},

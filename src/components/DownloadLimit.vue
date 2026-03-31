@@ -32,27 +32,17 @@
 				<el-input-number v-model="download_limit.file_count" :min="0" :max="200" :step="50" />
 			</el-form-item>
 			<el-form-item label="Total Res Size(MB)">
-				<el-input-number v-model="download_limit.show_total_file_size" :min="0" :max="10240" :step="256" />
+				<el-input-number v-model="download_limit.show_total_file_size" :min="0" :max="10240" :step="512" />
 			</el-form-item>
 			<el-form-item label="Single Res Size(MB)">
-				<!-- <el-input-number v-model="download_limit.show_single_file_size" :min="0" :max="1024" :step="20" /> -->
-				<el-radio-group v-model="selected_single_preset" class="common-border" @change="onSinglePresetChange">
-					<el-radio v-for="single_option in Single_File_Size_Options" :value="single_option.value"
-						size="small">
-						<div class="center-column double-line">
-							<div>{{ single_option.label }}</div>
-							<div>{{ single_option.value }}</div>
-						</div>
-					</el-radio>
-					<el-radio :value="-1" size="small">
-						<div class="center-column double-line">
-							<div>Custom</div>
-							<div>{{ custom_single_value }}</div>
-						</div>
-					</el-radio>
-					<el-input-number v-model="custom_single_value" :min="0" :max="1024" style="width: 96px;"
-						@change="onCustomSingleValueChange" :disabled="selected_single_preset !== -1" :controls="false" />
-				</el-radio-group>
+				<div class="fill-column no-gap" style="width: 100%;">
+					<el-slider v-model="single_range_index" range :min="0" :max="single_size_steps.length - 1" :step="1"
+						:show-tooltip="false" @change="onSingleRangeChange" />
+					<div class="split-row">
+						<el-text size="small">{{ single_range_value[0] }} MB</el-text>
+						<el-text size="small">{{ formatSingleMax(single_range_value[1]) }}</el-text>
+					</div>
+				</div>
 			</el-form-item>
 		</el-form>
 	</div>
@@ -60,10 +50,10 @@
 
 <script setup lang="ts">
 // imports
-import { ref } from "vue";
+import { computed, ref } from "vue";
+import downJson from "../assets/down.json";
+import { Post_Filter_Options, Res_Type_Options } from "../data/Consts";
 import { DownloadLimitForm } from "../data/DownloadForms";
-import { Post_Filter_Options, Res_Type_Options, Single_File_Size_Options } from "../data/Consts"
-import downJson from "../assets/down.json"
 
 // emits
 // stores/routers
@@ -76,22 +66,41 @@ const props = defineProps({
 })
 // variables
 const down_json_obj = ref(downJson)
-const selected_single_preset = ref<number>(-1)
-const custom_single_value = ref<number>(0)
-// computed
+// last step uses value 0 to represent "no upper limit"
+const single_size_steps = [0, 1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 0]
+const single_range_index = ref<[number, number]>([0, 1])
+
+const single_range_value = computed<[number, number]>(() => ([
+	single_size_steps[single_range_index.value[0]],
+	single_size_steps[single_range_index.value[1]],
+]))
+
+function formatSingleMax(maxValue: number): string {
+	return maxValue === 0 ? "0 MB (不封顶)" : `${maxValue} MB`
+}
+
 // watch
 // methods
 
-function onCustomSingleValueChange(value: number) {
-	props.download_limit.show_single_file_size = value
+function getNearestStepIndex(targetValue: number, preferLastZero: boolean): number {
+	if (targetValue === 0 && preferLastZero) return single_size_steps.length - 1
+
+	let nearestIndex = 0
+	let minDiff = Number.POSITIVE_INFINITY
+	for (let i = 0; i < single_size_steps.length; i++) {
+		const diff = Math.abs(single_size_steps[i] - targetValue)
+		if (diff < minDiff) {
+			minDiff = diff
+			nearestIndex = i
+		}
+	}
+	return nearestIndex
 }
 
-function onSinglePresetChange(preset: number) {
-	if (preset === -1) {
-		props.download_limit.show_single_file_size = custom_single_value.value
-	} else {
-		props.download_limit.show_single_file_size = preset
-	}
+function onSingleRangeChange(indexRange: [number, number]) {
+	const [minIndex, maxIndex] = indexRange
+	props.download_limit.show_single_file_size_min = single_size_steps[minIndex]
+	props.download_limit.show_single_file_size_max = single_size_steps[maxIndex]
 }
 
 function onPostFilterChange() {
@@ -110,15 +119,12 @@ function refreshPreset() {
 	// console.log(`change to ${preset.name}`)
 	props.download_limit.setPresetValue(preset)
 
-	const show_single_file_size = props.download_limit.show_single_file_size
-	custom_single_value.value = show_single_file_size
-	if (Single_File_Size_Options.find(option => option.value === show_single_file_size)) {
-		selected_single_preset.value = show_single_file_size
-	} else {
-		selected_single_preset.value = -1
-	}
+	const minIndex = getNearestStepIndex(props.download_limit.show_single_file_size_min || 0, false)
+	const maxIndex = getNearestStepIndex(props.download_limit.show_single_file_size_max || 0, true)
+	single_range_index.value = [Math.min(minIndex, maxIndex), Math.max(minIndex, maxIndex)]
 }
 // lifecycle
+refreshPreset()
 </script>
 
 <style scoped>
@@ -127,8 +133,15 @@ function refreshPreset() {
 	padding: 5px;
 }
 
-.double-line {
-	line-height: 1.0;
-	gap: 0;
+.single-slider-wrap {
+	/* width: 100%; */
+	/* padding-right: 8px; */
+	height: 50px;
+}
+
+.single-range-endpoint {
+	display: flex;
+	justify-content: space-between;
+	margin-top: 6px;
 }
 </style>

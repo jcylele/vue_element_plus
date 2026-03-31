@@ -30,14 +30,6 @@
 					</div>
 				</div>
 				<div class="left-column common-border">
-					<span class="part-title">Last Post Id</span>
-					<span class="part-desc">When actor is moved to final group, the maximum post id will be saved</span>
-					<span class="part-desc">reset this to fetch older posts</span>
-					<el-button type="warning" :disabled="!actor.has_last_post_id" @click="toResetLastPostId">
-						{{ actor.has_last_post_id ? "Reset Last Post Id" : "No Last Post Id" }}
-					</el-button>
-				</div>
-				<div class="left-column common-border">
 					<span class="part-title">Res States</span>
 					<span class="part-desc">reset all deleted reses to initial state</span>
 					<el-button type="warning" @click="toResetResStates">
@@ -52,17 +44,17 @@
 <script setup lang="ts">
 // imports
 import { computed, onMounted, ref } from "vue";
-import { ActorData } from "../data/ActorData";
-import { ActorFilterStore } from "../store/ActorFilterStore";
-import { BadgeStore } from "../store/BadgeStore";
+import { getMissingPosts, getPostFetchDates, resetActorResStates } from "../ctrls/ActorCtrl";
 import { fixPosts, fixRes } from "../ctrls/DownloadCtrl";
 import { confirmOp, logError, logInfo } from "../ctrls/FetchCtrl";
-import { LogMessages } from "../data/Messages";
-import { IMissingPost } from "../data/SchemasOthers";
-import { getMissingPosts, getPostFetchDates, resetActorResStates, resetLastPostId } from "../ctrls/ActorCtrl";
-import PostFetchTimeChart from "./Chart/PostFetchTimeChart.vue";
+import { ActorData } from "../data/ActorData";
 import { format_date, to_date } from "../data/DataUtil";
 import { EConfirmOp } from "../data/Enums";
+import { LogMessages } from "../data/Messages";
+import { IMissingPost } from "../data/SchemasOthers";
+import { ActorFilterStore } from "../store/ActorFilterStore";
+import { BadgeStore } from "../store/BadgeStore";
+import PostFetchTimeChart from "./Chart/PostFetchTimeChart.vue";
 
 enum ETabNames {
 	FetchTimeStats,
@@ -125,16 +117,6 @@ async function toFixPosts() {
 		logInfo(LogMessages.TaskStart())
 		emit('close')
 	}
-}
-
-async function toResetLastPostId() {
-	await confirmOp(EConfirmOp.ResetLastPostId, async () => {
-		const [ok, _] = await resetLastPostId(props.actor.actor_id)
-		if (ok) {
-			props.actor.has_last_post_id = false
-			logInfo(LogMessages.ResetLastPostId())
-		}
-	})
 }
 
 async function toResetResStates() {

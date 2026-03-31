@@ -89,7 +89,6 @@ export interface IActor extends IActorMain {
 	comment: string
 
 	is_linked: boolean
-	has_last_post_id: boolean
 	folder_ids: number[]
 	commented_posts: IPost[]
 

@@ -156,11 +156,6 @@ export async function resetActorResStates(actor_id: number) {
 	return await fetchPatch<ActorFileDetail>(url, undefined, ActorFileDetail, false)
 }
 
-export async function resetLastPostId(actor_id: number) {
-	const url = `${baseUrl}/${actor_id}/reset_last_post_id`;
-	return await fetchPatch(url)
-}
-
 export async function clearActorFolder(actor_id: number) {
 	const url = `${baseUrl}/${actor_id}/clear`;
 	return await fetchPatch<ActorFileDetail>(url, undefined, ActorFileDetail, false)
